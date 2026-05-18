@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(37, 99, 235, 0.3);
+    border-radius: 2px;
+  }
+  .glass {
+    background: rgba(26, 39, 68, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .glass-card {
+    background: rgba(26, 39, 68, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(96, 165, 250, 0.08);
+  }
+  .anx-gradient {
+    background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+  }
+  .anx-glow {
+    box-shadow: 0 0 40px rgba(37, 99, 235, 0.15);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #60a5fa 0%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer;
+  }
+  .sidebar-item-active {
+    @apply bg-blue-600/20 text-blue-400 border border-blue-500/20;
+  }
+  .sidebar-item-inactive {
+    @apply text-slate-400 hover:text-white hover:bg-white/5;
+  }
+  .stat-card {
+    @apply rounded-2xl border border-[#2563eb]/10 bg-[#1a2744]/60 p-5 backdrop-blur-sm;
+  }
+  .page-header {
+    @apply text-2xl font-bold text-white tracking-tight;
+  }
+  .input-dark {
+    @apply bg-[#0d1a35] border-white/10 text-white placeholder:text-slate-600 focus:border-blue-500/50 h-11 rounded-xl transition-colors;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+  .badge-blue {
+    @apply bg-blue-500/10 text-blue-400 border-blue-500/20;
+  }
+  .badge-green {
+    @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20;
+  }
+  .badge-yellow {
+    @apply bg-amber-500/10 text-amber-400 border-amber-500/20;
+  }
+  .badge-red {
+    @apply bg-red-500/10 text-red-400 border-red-500/20;
+  }
+  .badge-slate {
+    @apply bg-slate-500/10 text-slate-400 border-slate-500/20;
+  }
+  .badge-violet {
+    @apply bg-violet-500/10 text-violet-400 border-violet-500/20;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 220 47% 8%;
+    --foreground: 213 31% 91%;
+    --card: 220 47% 10%;
+    --card-foreground: 213 31% 91%;
+    --popover: 220 47% 8%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 30% 15%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 220 30% 15%;
+    --muted-foreground: 215 16% 55%;
+    --accent: 213 94% 68%;
+    --accent-foreground: 220 47% 8%;
+    --destructive: 0 62% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 30% 20%;
+    --input: 220 30% 15%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
+    --anx-navy: #0a1628;
+    --anx-dark: #0d1a35;
+    --anx-primary: #1a2744;
+    --anx-blue: #2563eb;
+    --anx-accent: #60a5fa;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.3);
+    color: #93c5fd;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(37, 99, 235, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.4);
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.3); }
+}
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-count-up { animation: count-up 0.5s ease-out forwards; }
+
+/* Date input color fix */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6) sepia(1) saturate(3) hue-rotate(175deg);
+  cursor: pointer;
+}
+[color-scheme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
