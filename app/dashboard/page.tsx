@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import AccessDeniedToast from '@/components/AccessDeniedToast'
+import dynamic from 'next/dynamic'
+
+const AccessDeniedToast = dynamic(() => import('@/components/AccessDeniedToast'), { ssr: false })
 import {
   Users,
   IndianRupee,
