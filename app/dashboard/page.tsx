@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useSearchParams } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
+import AccessDeniedToast from '@/components/AccessDeniedToast'
 import {
   Users,
   IndianRupee,
@@ -54,21 +53,6 @@ function StatCard({ label, value, icon: Icon, color, bg, border, delay }: any) {
   )
 }
 
-// Separated into its own component so Suspense can wrap it (Next.js requirement)
-function AccessDeniedToast() {
-  const searchParams = useSearchParams()
-  const { toast } = useToast()
-  useEffect(() => {
-    if (searchParams.get('access_denied') === '1') {
-      toast({
-        variant: 'destructive',
-        title: '🔒 Access Restricted',
-        description: 'You don\'t have permission to access that page.',
-      })
-    }
-  }, [searchParams])
-  return null
-}
 
 export default function DashboardPage() {
   const [clients, setClients] = useState<Client[]>([])
