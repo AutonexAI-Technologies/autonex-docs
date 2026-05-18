@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
@@ -54,13 +54,10 @@ function StatCard({ label, value, icon: Icon, color, bg, border, delay }: any) {
   )
 }
 
-export default function DashboardPage() {
-  const [clients, setClients] = useState<Client[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+// Separated into its own component so Suspense can wrap it (Next.js requirement)
+function AccessDeniedToast() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
-
   useEffect(() => {
     if (searchParams.get('access_denied') === '1') {
       toast({
@@ -70,6 +67,13 @@ export default function DashboardPage() {
       })
     }
   }, [searchParams])
+  return null
+}
+
+export default function DashboardPage() {
+  const [clients, setClients] = useState<Client[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     fetch('/api/clients')
@@ -249,6 +253,11 @@ export default function DashboardPage() {
 
       {/* Background glow */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-blue-600/3 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* Access denied toast — must be in Suspense */}
+      <Suspense fallback={null}>
+        <AccessDeniedToast />
+      </Suspense>
     </div>
   )
 }
