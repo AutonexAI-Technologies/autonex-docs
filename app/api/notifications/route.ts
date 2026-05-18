@@ -1,32 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabaseServer'
+import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
-// GET /api/notifications — fetch real notifications (company-wide)
+// GET /api/notifications — company-wide, all roles see same data
 export async function GET(req: NextRequest) {
-  // Verify authenticated
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const adminSupabase = createAdminSupabaseClient()
+    const { data, error } = await adminSupabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
 
-  const adminSupabase = createAdminSupabaseClient()
-  const { data, error } = await adminSupabase
-    .from('notifications')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  if (error) {
-    if (
-      error.message.includes('relation') ||
-      error.message.includes('does not exist') ||
-      error.message.includes('schema cache')
-    ) {
-      return NextResponse.json([])
+    if (error) {
+      if (error.message.includes('relation') || error.message.includes('does not exist') || error.message.includes('schema cache')) {
+        return NextResponse.json([])
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data ?? [])
+  } catch (err: any) {
+    console.error('[GET /api/notifications]', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
-
-  return NextResponse.json(data ?? [])
 }
 
 // POST /api/notifications — create a notification (called internally)

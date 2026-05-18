@@ -1,38 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabaseServer'
+import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
-// GET /api/invoices
+// GET /api/invoices — all team members see company-wide invoices (admin client bypasses RLS)
 export async function GET(req: NextRequest) {
-  // Verify authenticated
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const adminSupabase = createAdminSupabaseClient()
+    const { searchParams } = new URL(req.url)
+    const clientId = searchParams.get('client_id')
 
-  const adminSupabase = createAdminSupabaseClient()
-  const { searchParams } = new URL(req.url)
-  const clientId = searchParams.get('client_id')
+    let query = adminSupabase
+      .from('invoices')
+      .select('*, clients(name, email)')
+      .order('created_at', { ascending: false })
 
-  let query = adminSupabase
-    .from('invoices')
-    .select('*, clients(name, email)')
-    .order('created_at', { ascending: false })
+    if (clientId) query = query.eq('client_id', clientId)
 
-  if (clientId) query = query.eq('client_id', clientId)
+    const { data, error } = await query
 
-  const { data, error } = await query
-
-  if (error) {
-    if (
-      error.message.includes('relation') ||
-      error.message.includes('does not exist') ||
-      error.message.includes('schema cache')
-    ) {
-      return NextResponse.json([])
+    if (error) {
+      if (error.message.includes('relation') || error.message.includes('does not exist') || error.message.includes('schema cache')) {
+        return NextResponse.json([])
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data ?? [])
+  } catch (err: any) {
+    console.error('[GET /api/invoices]', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
-
-  return NextResponse.json(data ?? [])
 }
 
 // POST /api/invoices — create invoice

@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabaseServer'
+import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
 // ─── GET /api/team/members ───────────────────────────────────────────────────
 export async function GET() {
-  // Verify authenticated
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  // Admin client bypasses RLS so all team members can see the full team list
+  // Admin client bypasses RLS so ALL team members see the full company team list
   const adminSupabase = createAdminSupabaseClient()
   const { data, error } = await adminSupabase
     .from('team_members')
