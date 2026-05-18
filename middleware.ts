@@ -36,6 +36,13 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/change-password')
   )
 
+  // ── NEVER interfere with API routes ────────────────────────────────────
+  // API security is handled by the admin client (service role key).
+  // Middleware redirecting API requests was breaking data sync for invited users.
+  if (pathname.startsWith('/api')) {
+    return supabaseResponse
+  }
+
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
