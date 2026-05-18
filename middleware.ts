@@ -61,12 +61,24 @@ export async function middleware(request: NextRequest) {
 
       const roleName: string | null = (member as any)?.roles?.name ?? null
 
+      // If NO team_members record exists → user is likely the original admin/founder
+      // Grant full access (they created the platform, they see everything)
+      if (!member) {
+        return supabaseResponse
+      }
+
+      // If role IS found but doesn't have access → redirect to dashboard
       if (roleName && !canAccess(roleName, pathname)) {
-        // Role doesn't have access — redirect to dashboard with a message
         const url = request.nextUrl.clone()
         url.pathname = '/dashboard'
         url.searchParams.set('access_denied', '1')
         return NextResponse.redirect(url)
+      }
+
+      // If member exists but has no role assigned yet → send to dashboard (safe fallback)
+      if (member && !roleName && pathname !== '/dashboard') {
+        // Allow – they at least have a team record, let them see what they can
+        return supabaseResponse
       }
     }
   }

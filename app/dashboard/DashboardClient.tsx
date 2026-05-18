@@ -15,18 +15,22 @@ import {
   Loader2,
   Search,
   CheckCircle,
+  Shield,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Client } from '@/types'
 import { format } from 'date-fns'
+import { useUserRole } from '@/lib/useUserRole'
+import { createClient } from '@/lib/supabase'
+import { ROLE_ACCESS_LABEL, ROLE_COLOR } from '@/lib/roleAccess'
 
 const AccessDeniedToast = dynamicImport(() => import('@/components/AccessDeniedToast'), { ssr: false })
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { delay, duration: 0.4, ease: 'easeOut' },
+  transition: { delay, duration: 0.4, ease: 'easeOut' as const },
 })
 
 const statusColors: Record<string, string> = {
@@ -55,12 +59,27 @@ export default function DashboardClient() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [userName, setUserName] = useState('')
+  const { role_name, department_name, isAdmin, loading: roleLoading } = useUserRole()
 
   useEffect(() => {
+    // Fetch clients (all roles see the same data — admin client bypasses RLS)
     fetch('/api/clients')
       .then(r => r.json())
       .then(data => { setClients(Array.isArray(data) ? data : []); setLoading(false) })
       .catch(() => setLoading(false))
+
+    // Get user name for greeting
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
+      if (user) {
+        const name = user.user_metadata?.full_name
+          || user.user_metadata?.invited_name
+          || user.email?.split('@')[0]
+          || 'there'
+        setUserName(name.split(' ')[0])
+      }
+    })
   }, [])
 
   const now = new Date()
@@ -87,6 +106,15 @@ export default function DashboardClient() {
     (c.company ?? '').toLowerCase().includes(search.toLowerCase())
   )
 
+  // Role display
+  const displayRole = role_name ?? 'Team Member'
+  const roleColor = role_name ? (ROLE_COLOR[role_name] ?? 'text-slate-400') : 'text-violet-400'
+  const accessLabel = role_name ? (ROLE_ACCESS_LABEL[role_name] ?? '') : 'Full Access'
+
+  // Quick actions visible based on role — Juniors/Interns can't add clients
+  const canAddClient = !role_name || isAdmin
+    || ['Founder', 'Managing Director', 'Head', 'Senior'].includes(role_name)
+
   return (
     <div className="px-6 py-8 max-w-[1400px] mx-auto">
 
@@ -97,18 +125,31 @@ export default function DashboardClient() {
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-emerald-400 text-xs font-medium uppercase tracking-widest">Live Platform</span>
           </div>
-          <h1 className="page-header">Operations Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-1">Welcome back to Autonex AI HQ</p>
+          <h1 className="page-header">
+            {userName ? `Welcome back, ${userName} 👋` : 'Operations Dashboard'}
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-slate-400 text-sm">Autonex AI HQ</p>
+            {!roleLoading && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/8">
+                <Shield className="w-3 h-3 text-slate-500" />
+                <span className={`text-xs font-semibold ${roleColor}`}>{displayRole}</span>
+                {accessLabel && <span className="text-slate-600 text-[10px]">· {accessLabel}</span>}
+              </div>
+            )}
+          </div>
         </div>
-        <Link href="/clients/new">
-          <Button className="anx-gradient text-white font-semibold gap-2 h-10 px-5 rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:opacity-90 transition-all">
-            <Plus className="w-4 h-4" />
-            New Client
-          </Button>
-        </Link>
+        {canAddClient && (
+          <Link href="/clients/new">
+            <Button className="anx-gradient text-white font-semibold gap-2 h-10 px-5 rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:opacity-90 transition-all">
+              <Plus className="w-4 h-4" />
+              New Client
+            </Button>
+          </Link>
+        )}
       </motion.div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid — all roles see all stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         {stats.map(s => <StatCard key={s.label} {...s} />)}
       </div>
@@ -134,7 +175,7 @@ export default function DashboardClient() {
         ))}
       </motion.div>
 
-      {/* Clients Table */}
+      {/* Clients Table — all roles see client data */}
       <motion.div {...fadeUp(0.35)} className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden">
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/5">
           <div>
@@ -167,7 +208,7 @@ export default function DashboardClient() {
             <p className="text-slate-400 text-sm font-medium">
               {search ? 'No clients match your search' : 'No clients yet'}
             </p>
-            {!search && (
+            {!search && canAddClient && (
               <Link href="/clients/new">
                 <Button variant="ghost" className="mt-3 text-blue-400 hover:text-blue-300 text-sm">
                   <Plus className="w-3.5 h-3.5 mr-1.5" />

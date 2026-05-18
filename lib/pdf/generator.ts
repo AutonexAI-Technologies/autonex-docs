@@ -1,8 +1,6 @@
-import { Client } from '@/types'
-
 // Dynamic import so Vercel doesn't bundle chromium unnecessarily
 export async function generatePDF(html: string): Promise<Buffer> {
-  let browser
+  let browser: any
 
   try {
     // Vercel / serverless environment
@@ -10,9 +8,9 @@ export async function generatePDF(html: string): Promise<Buffer> {
       const chromium = await import('@sparticuz/chromium')
       const puppeteer = await import('puppeteer-core')
 
-      browser = await puppeteer.default.launch({
+      browser = await (puppeteer.default as any).launch({
         args: chromium.default.args,
-        defaultViewport: chromium.default.defaultViewport,
+        defaultViewport: (chromium.default as any).defaultViewport ?? null,
         executablePath: await chromium.default.executablePath(),
         headless: true,
       })
@@ -28,7 +26,7 @@ export async function generatePDF(html: string): Promise<Buffer> {
           ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
           : '/usr/bin/google-chrome'
 
-      browser = await puppeteer.default.launch({
+      browser = await (puppeteer.default as any).launch({
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
         executablePath,
         headless: true,
@@ -36,7 +34,7 @@ export async function generatePDF(html: string): Promise<Buffer> {
     }
 
     const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: 'networkidle0' })
+    await page.setContent(html, { waitUntil: 'load' })
 
     const pdf = await page.pdf({
       format: 'A4',

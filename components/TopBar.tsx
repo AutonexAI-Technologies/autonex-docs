@@ -40,7 +40,7 @@ export default function TopBar() {
 
     // Fetch current user info
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
       if (user) {
         const name = user.user_metadata?.full_name || user.user_metadata?.invited_name || user.email?.split('@')[0] || 'A'
         setUserName(name)

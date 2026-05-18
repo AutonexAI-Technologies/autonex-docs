@@ -8,6 +8,8 @@ export interface UserRole {
   department_name: string | null
   status: string | null
   loading: boolean
+  /** true when user has no team_members record (platform admin/founder) */
+  isAdmin: boolean
 }
 
 // Session-scoped cache (per tab, cleared on new login)
@@ -19,6 +21,7 @@ export function useUserRole(): UserRole {
     role_name: null,
     department_name: null,
     status: null,
+    isAdmin: false,
   })
   const [loading, setLoading] = useState(true)
 
@@ -35,17 +38,32 @@ export function useUserRole(): UserRole {
         return
       }
 
-      const { data: member } = await supabase
+      const { data: member, error } = await supabase
         .from('team_members')
         .select('status, roles(name, departments(name))')
         .eq('email', user.email.toLowerCase())
         .single()
 
-      const result = {
-        role_name: (member as any)?.roles?.name ?? null,
-        department_name: (member as any)?.roles?.departments?.name ?? null,
-        status: (member as any)?.status ?? null,
+      let result: Omit<UserRole, 'loading'>
+
+      if (!member || error?.code === 'PGRST116') {
+        // No team_members record → this is the platform admin/founder
+        // Give them a "Founder" display but flag as isAdmin
+        result = {
+          role_name: 'Founder',
+          department_name: 'Leadership',
+          status: 'active',
+          isAdmin: true,
+        }
+      } else {
+        result = {
+          role_name: (member as any)?.roles?.name ?? null,
+          department_name: (member as any)?.roles?.departments?.name ?? null,
+          status: (member as any)?.status ?? null,
+          isAdmin: false,
+        }
       }
+
       cachedRole = result
       cachedForEmail = user.email
       setData(result)

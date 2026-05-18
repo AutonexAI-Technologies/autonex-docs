@@ -59,7 +59,7 @@ export default function Sidebar() {
   const pathname  = usePathname()
   const router    = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { role_name, department_name, loading } = useUserRole()
+  const { role_name, department_name, loading, isAdmin } = useUserRole()
 
   async function handleSignOut() {
     clearRoleCache()
@@ -69,12 +69,14 @@ export default function Sidebar() {
     router.refresh()
   }
 
-  // Filter nav items based on role permissions
-  const visibleNavItems = navItems.filter(item =>
-    !role_name || canAccess(role_name, item.href)
-  )
+  // Full access for platform admins, Founders, Managing Directors
+  // All other roles get filtered nav based on ROLE_ROUTES
+  const hasFullAccess = isAdmin || role_name === 'Founder' || role_name === 'Managing Director'
+  const visibleNavItems = hasFullAccess
+    ? navItems
+    : navItems.filter(item => !role_name || canAccess(role_name, item.href))
 
-  const roleColor = role_name ? (ROLE_COLOR[role_name] ?? 'text-slate-400') : 'text-slate-500'
+  const roleColor = role_name ? (ROLE_COLOR[role_name] ?? 'text-slate-400') : 'text-violet-400'
 
   const sidebarContent = (
     <div className="flex flex-col h-full">

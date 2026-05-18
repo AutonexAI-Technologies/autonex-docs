@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const html = generateContractHTML(client)
     const pdf = await generatePDF(html)
 
-    return new NextResponse(pdf, {
+    return new NextResponse(new Uint8Array(pdf), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

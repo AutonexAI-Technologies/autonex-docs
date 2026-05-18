@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users, UserPlus, Building2, Shield, Mail, RefreshCw,
@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { useUserRole } from '@/lib/useUserRole'
 
 /* ─── Types ─────────────────────────────────────────────────────── */
 interface Member {
@@ -94,6 +95,10 @@ function RemoveModal({
 /* ─── Main Page ──────────────────────────────────────────────────── */
 export default function TeamPage() {
   const { toast } = useToast()
+  const { role_name, isAdmin } = useUserRole()
+
+  // Only Founder, Managing Director, and platform admins can manage the team
+  const canManage = isAdmin || role_name === 'Founder' || role_name === 'Managing Director'
 
   const [members, setMembers]         = useState<Member[]>([])
   const [loading, setLoading]         = useState(true)
@@ -220,13 +225,15 @@ export default function TeamPage() {
               {active} active · {invited} pending invite · Invite-only platform access
             </p>
           </div>
-          <Button
-            onClick={() => setShowInvite(v => !v)}
-            className="anx-gradient text-white font-semibold gap-2 h-10 px-5 rounded-xl shadow-lg shadow-blue-500/20 hover:opacity-90"
-          >
-            <UserPlus className="w-4 h-4" />
-            Invite Member
-          </Button>
+          {canManage && (
+            <Button
+              onClick={() => setShowInvite(v => !v)}
+              className="anx-gradient text-white font-semibold gap-2 h-10 px-5 rounded-xl shadow-lg shadow-blue-500/20 hover:opacity-90"
+            >
+              <UserPlus className="w-4 h-4" />
+              Invite Member
+            </Button>
+          )}
         </motion.div>
 
         {/* ── Invite form ─────────────────────────────────────── */}
@@ -439,32 +446,34 @@ export default function TeamPage() {
                         {m.joined_at ? format(new Date(m.joined_at), 'dd MMM yyyy') : '—'}
                       </span>
 
-                      {/* ── ACTION BUTTONS — always visible ── */}
+                      {/* ── ACTION BUTTONS — only for admins/founders/MD ── */}
                       <div className="flex items-center justify-end gap-2">
-                        {linkLoading === m.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
-                        ) : (
-                          <>
-                            {/* Send login link */}
-                            <button
-                              onClick={() => sendLink(m)}
-                              title="Send login link"
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
-                            >
-                              <Send className="w-3 h-3" />
-                              Login Link
-                            </button>
-
-                            {/* REMOVE — solid red, always visible */}
-                            <button
-                              onClick={() => setRemoveTarget(m)}
-                              title="Remove from team"
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-red-600 hover:bg-red-500 transition-colors"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              Remove
-                            </button>
-                          </>
+                        {canManage && (
+                          linkLoading === m.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => sendLink(m)}
+                                title="Send login link"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                              >
+                                <Send className="w-3 h-3" />
+                                Login Link
+                              </button>
+                              <button
+                                onClick={() => setRemoveTarget(m)}
+                                title="Remove from team"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-red-600 hover:bg-red-500 transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Remove
+                              </button>
+                            </>
+                          )
+                        )}
+                        {!canManage && (
+                          <span className="text-slate-600 text-xs">View only</span>
                         )}
                       </div>
                     </div>
@@ -481,16 +490,18 @@ export default function TeamPage() {
                         </div>
                         <span className={`ml-auto ${statusBadge[m.status]}`}>{m.status}</span>
                       </div>
-                      <div className="flex gap-2 pt-1">
-                        <button onClick={() => sendLink(m)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20">
-                          <Send className="w-3 h-3" /> Login Link
-                        </button>
-                        <button onClick={() => setRemoveTarget(m)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-white bg-red-600">
-                          <Trash2 className="w-3 h-3" /> Remove
-                        </button>
-                      </div>
+                      {canManage && (
+                        <div className="flex gap-2 pt-1">
+                          <button onClick={() => sendLink(m)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20">
+                            <Send className="w-3 h-3" /> Login Link
+                          </button>
+                          <button onClick={() => setRemoveTarget(m)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-white bg-red-600">
+                            <Trash2 className="w-3 h-3" /> Remove
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )

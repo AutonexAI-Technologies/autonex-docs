@@ -24,19 +24,21 @@ export const ROLE_ROUTES: Record<string, string[]> = {
   ],
   'Head': [
     '/dashboard', '/clients', '/documents', '/invoices',
-    '/retainers', '/reports', '/activity', '/notifications',
+    '/retainers', '/reports', '/activity', '/team',
+    '/notifications', '/settings',
   ],
   'Senior': [
     '/dashboard', '/clients', '/documents', '/invoices',
-    '/retainers', '/reports', '/activity', '/notifications',
+    '/retainers', '/reports', '/activity', '/team',
+    '/notifications',
   ],
   'Junior': [
     '/dashboard', '/clients', '/documents', '/reports',
-    '/activity', '/notifications',
+    '/activity', '/team', '/notifications',
   ],
   'Intern': [
     '/dashboard', '/clients', '/documents', '/reports',
-    '/activity', '/notifications',
+    '/activity', '/team', '/notifications',
   ],
 }
 
@@ -64,4 +66,55 @@ export function canAccess(roleName: string | null, pathname: string): boolean {
   if (!roleName) return false
   const allowed = ROLE_ROUTES[roleName] ?? []
   return allowed.some(route => pathname === route || pathname.startsWith(route + '/'))
+}
+
+// What actions a role can perform
+export const ROLE_PERMISSIONS: Record<string, {
+  canCreateClient: boolean
+  canEditClient: boolean
+  canDeleteClient: boolean
+  canCreateInvoice: boolean
+  canManageTeam: boolean
+  canViewReports: boolean
+  canViewRevenue: boolean
+  canManageSettings: boolean
+}> = {
+  'Founder': {
+    canCreateClient: true, canEditClient: true, canDeleteClient: true,
+    canCreateInvoice: true, canManageTeam: true, canViewReports: true,
+    canViewRevenue: true, canManageSettings: true,
+  },
+  'Managing Director': {
+    canCreateClient: true, canEditClient: true, canDeleteClient: true,
+    canCreateInvoice: true, canManageTeam: true, canViewReports: true,
+    canViewRevenue: true, canManageSettings: true,
+  },
+  'Head': {
+    canCreateClient: true, canEditClient: true, canDeleteClient: false,
+    canCreateInvoice: true, canManageTeam: false, canViewReports: true,
+    canViewRevenue: true, canManageSettings: false,
+  },
+  'Senior': {
+    canCreateClient: true, canEditClient: true, canDeleteClient: false,
+    canCreateInvoice: true, canManageTeam: false, canViewReports: true,
+    canViewRevenue: true, canManageSettings: false,
+  },
+  'Junior': {
+    canCreateClient: false, canEditClient: false, canDeleteClient: false,
+    canCreateInvoice: false, canManageTeam: false, canViewReports: true,
+    canViewRevenue: true, canManageSettings: false,
+  },
+  'Intern': {
+    canCreateClient: false, canEditClient: false, canDeleteClient: false,
+    canCreateInvoice: false, canManageTeam: false, canViewReports: true,
+    canViewRevenue: true, canManageSettings: false,
+  },
+}
+
+export function getPermissions(roleName: string | null) {
+  if (!roleName) {
+    // Platform admin / no role → full access
+    return ROLE_PERMISSIONS['Founder']
+  }
+  return ROLE_PERMISSIONS[roleName] ?? ROLE_PERMISSIONS['Intern']
 }

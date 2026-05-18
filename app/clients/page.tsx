@@ -4,14 +4,16 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
-  Plus, Search, Filter, Users, ArrowRight, Loader2,
-  ChevronDown, Trash2, RotateCcw, Mail, Building2, Phone,
+  Plus, Search, Users, ArrowRight, Loader2,
+  Trash2, Mail, Building2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Client, ClientStatus } from '@/types'
 import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
+import { useUserRole } from '@/lib/useUserRole'
+import { getPermissions } from '@/lib/roleAccess'
 
 const STATUSES: ClientStatus[] = ['Lead', 'Active', 'Completed', 'On Hold', 'Cancelled']
 
@@ -25,6 +27,9 @@ const statusStyles: Record<ClientStatus, string> = {
 
 export default function ClientsPage() {
   const { toast } = useToast()
+  const { role_name, isAdmin } = useUserRole()
+  const perms = getPermissions(isAdmin ? null : role_name)
+
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -75,12 +80,14 @@ export default function ClientsPage() {
             {clients.length} clients total · {clients.filter(c => c.status === 'Active').length} active
           </p>
         </div>
-        <Link href="/clients/new">
-          <Button className="anx-gradient text-white font-semibold gap-2 h-10 px-5 rounded-xl shadow-lg shadow-blue-500/20 hover:opacity-90 transition-all">
-            <Plus className="w-4 h-4" />
-            Add Client
-          </Button>
-        </Link>
+        {perms.canCreateClient && (
+          <Link href="/clients/new">
+            <Button className="anx-gradient text-white font-semibold gap-2 h-10 px-5 rounded-xl shadow-lg shadow-blue-500/20 hover:opacity-90 transition-all">
+              <Plus className="w-4 h-4" />
+              Add Client
+            </Button>
+          </Link>
+        )}
       </motion.div>
 
       {/* Status filter pills */}
@@ -206,20 +213,22 @@ export default function ClientsPage() {
                     ₹{(client.total_fee || 0).toLocaleString('en-IN')}
                   </span>
 
-                  {/* Actions */}
-                  <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Link href={`/clients/${client.id}`}>
-                      <button className="w-7 h-7 rounded-lg bg-white/5 hover:bg-blue-500/10 hover:text-blue-400 text-slate-500 flex items-center justify-center transition-colors">
-                        <ArrowRight className="w-3.5 h-3.5" />
+                  {/* Actions — only shown for roles with delete permission */}
+                  {perms.canDeleteClient && (
+                    <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Link href={`/clients/${client.id}`}>
+                        <button className="w-7 h-7 rounded-lg bg-white/5 hover:bg-blue-500/10 hover:text-blue-400 text-slate-500 flex items-center justify-center transition-colors">
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(client.id, client.name)}
+                        className="w-7 h-7 rounded-lg bg-white/5 hover:bg-red-500/10 hover:text-red-400 text-slate-500 flex items-center justify-center transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(client.id, client.name)}
-                      className="w-7 h-7 rounded-lg bg-white/5 hover:bg-red-500/10 hover:text-red-400 text-slate-500 flex items-center justify-center transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
