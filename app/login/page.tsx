@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Zap, Lock, Mail } from 'lucide-react'
+import { Loader2, Lock, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function LoginPage() {
@@ -64,12 +64,15 @@ export default function LoginPage() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl anx-gradient mb-4 shadow-xl shadow-blue-500/20"
+            className="flex justify-center mb-4"
           >
-            <Zap className="w-8 h-8 text-white" strokeWidth={2.5} />
+            <img
+              src="/logo.png"
+              alt="Autonex AI"
+              className="h-10 object-contain"
+            />
           </motion.div>
-          <h1 className="text-2xl font-bold text-white font-[Plus_Jakarta_Sans]">Autonex AI</h1>
-          <p className="text-slate-400 text-sm mt-1">Internal Operations Platform</p>
+          <p className="text-slate-400 text-sm mt-2">Internal Operations Platform</p>
         </div>
 
         {/* Card */}

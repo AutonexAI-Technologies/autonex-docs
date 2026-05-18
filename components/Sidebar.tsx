@@ -21,7 +21,6 @@ import {
   UserCog,
   LogOut,
   ChevronRight,
-  Zap,
   Menu,
   X,
   Shield,
@@ -82,14 +81,12 @@ export default function Sidebar() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-4 pt-5 pb-4 border-b border-white/5">
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl anx-gradient flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
-            <Zap className="w-5 h-5 text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-none font-[Plus_Jakarta_Sans]">Autonex AI</p>
-            <p className="text-slate-500 text-[10px] mt-0.5 leading-none">Operations Platform</p>
-          </div>
+        <Link href="/dashboard" className="flex items-center group">
+          <img
+            src="/logo.png"
+            alt="Autonex AI"
+            className="h-8 object-contain max-w-[160px] group-hover:opacity-80 transition-opacity"
+          />
         </Link>
       </div>
 
