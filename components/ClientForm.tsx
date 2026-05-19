@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { DEFAULT_SERVICES, ServiceType } from '@/types'
 import { Loader2, ChevronDown, Calculator, RefreshCw, Zap, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { validateStep, validateField, type FieldErrors } from '@/lib/validations/client'
 
 interface FormData {
   name: string
@@ -50,6 +51,7 @@ export default function ClientForm() {
   const [step, setStep] = useState(1)
   const [serviceOpen, setServiceOpen] = useState(false)
   const [duplicateWarning, setDuplicateWarning] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
   const selectedService = DEFAULT_SERVICES.find(s => s.name === form.service)
   const isRetainer = form.project_type === 'retainer'
@@ -57,6 +59,24 @@ export default function ClientForm() {
 
   function handleChange(field: keyof FormData, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
+    // Clear error for this field when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
+
+  function handleBlur(field: keyof FormData) {
+    const error = validateField(step, field, form[field], form)
+    setFieldErrors(prev => {
+      if (error) return { ...prev, [field]: error }
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
   }
 
   function handleServiceSelect(svc: ServiceType) {
@@ -67,6 +87,12 @@ export default function ClientForm() {
       total_fee: svc.is_custom ? '' : fee.toString(),
     }))
     setServiceOpen(false)
+    // Clear service error
+    setFieldErrors(prev => {
+      const next = { ...prev }
+      delete next['service']
+      return next
+    })
   }
 
   function handleProjectTypeChange(type: 'one-time' | 'retainer') {
@@ -78,6 +104,20 @@ export default function ClientForm() {
     })
   }
 
+  function goToStep(target: number) {
+    // Validate current step before advancing
+    if (target > step) {
+      const errors = validateStep(step, form)
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors)
+        toast({ variant: 'destructive', title: 'Please fix the errors before continuing.' })
+        return
+      }
+    }
+    setFieldErrors({})
+    setStep(target)
+  }
+
   async function checkDuplicate(email: string) {
     if (!email) return
     const res = await fetch(`/api/clients?email=${encodeURIComponent(email)}`)
@@ -87,6 +127,15 @@ export default function ClientForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // Validate step 3 before submit
+    const errors = validateStep(3, form)
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      toast({ variant: 'destructive', title: 'Please fix the errors before submitting.' })
+      return
+    }
+
     if (!form.service) {
       toast({ variant: 'destructive', title: 'Please select a service type.' })
       return
@@ -115,7 +164,24 @@ export default function ClientForm() {
   }
 
   const inputClass = 'input-dark h-11 px-3 w-full border focus:outline-none focus:ring-0'
+  const inputErrorClass = 'input-dark h-11 px-3 w-full border focus:outline-none focus:ring-0 !border-red-500/50'
   const labelClass = 'text-slate-400 text-sm font-medium mb-1.5 block'
+
+  /** Inline error message component */
+  function FieldError({ field }: { field: string }) {
+    const msg = fieldErrors[field]
+    if (!msg) return null
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-1.5 mt-1.5 text-red-400 text-xs"
+      >
+        <AlertCircle className="w-3 h-3 shrink-0" />
+        {msg}
+      </motion.div>
+    )
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -125,7 +191,7 @@ export default function ClientForm() {
           <div key={s.num} className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => step > s.num && setStep(s.num)}
+              onClick={() => step > s.num && goToStep(s.num)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
                 step === s.num
                   ? `${s.bg} ${s.border} ${s.color}`
@@ -153,16 +219,20 @@ export default function ClientForm() {
             <div>
               <label className={labelClass}>Full Name <span className="text-blue-400">*</span></label>
               <Input id="name" placeholder="Rahul Sharma" value={form.name}
-                onChange={e => handleChange('name', e.target.value)} required
-                className={inputClass} />
+                onChange={e => handleChange('name', e.target.value)}
+                onBlur={() => handleBlur('name')}
+                required
+                className={fieldErrors.name ? inputErrorClass : inputClass} />
+              <FieldError field="name" />
             </div>
             <div>
               <label className={labelClass}>Email Address <span className="text-blue-400">*</span></label>
               <Input id="email" type="email" placeholder="rahul@company.com" value={form.email}
                 onChange={e => handleChange('email', e.target.value)}
-                onBlur={e => checkDuplicate(e.target.value)}
-                required className={inputClass} />
-              {duplicateWarning && (
+                onBlur={e => { handleBlur('email'); checkDuplicate(e.target.value) }}
+                required className={fieldErrors.email ? inputErrorClass : inputClass} />
+              <FieldError field="email" />
+              {duplicateWarning && !fieldErrors.email && (
                 <div className="flex items-center gap-1.5 mt-1.5 text-amber-400 text-xs">
                   <AlertCircle className="w-3 h-3" />
                   A client with this email already exists.
@@ -172,12 +242,19 @@ export default function ClientForm() {
             <div>
               <label className={labelClass}>Phone Number</label>
               <Input placeholder="+91 9876543210" value={form.phone}
-                onChange={e => handleChange('phone', e.target.value)} className={inputClass} />
+                onChange={e => handleChange('phone', e.target.value)}
+                onBlur={() => handleBlur('phone')}
+                className={fieldErrors.phone ? inputErrorClass : inputClass} />
+              <FieldError field="phone" />
+              <p className="text-slate-600 text-[11px] mt-1">Include country code (e.g. +91, +1, +44)</p>
             </div>
             <div>
               <label className={labelClass}>Company Name</label>
               <Input placeholder="Acme Corp" value={form.company}
-                onChange={e => handleChange('company', e.target.value)} className={inputClass} />
+                onChange={e => handleChange('company', e.target.value)}
+                onBlur={() => handleBlur('company')}
+                className={fieldErrors.company ? inputErrorClass : inputClass} />
+              <FieldError field="company" />
             </div>
           </div>
           <div>
@@ -206,7 +283,7 @@ export default function ClientForm() {
               className="w-full h-20 px-3 py-2.5 bg-[#0d1a35] border border-white/10 text-white text-sm rounded-xl focus:outline-none focus:border-blue-500/50 resize-none placeholder:text-slate-600"
             />
           </div>
-          <Button type="button" onClick={() => setStep(2)}
+          <Button type="button" onClick={() => goToStep(2)}
             disabled={!form.name || !form.email}
             className="w-full h-11 anx-gradient text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-40">
             Continue to Project Details →
@@ -252,7 +329,7 @@ export default function ClientForm() {
               <button type="button" onClick={() => setServiceOpen(!serviceOpen)}
                 className={`w-full flex items-center justify-between px-3 h-11 rounded-xl border bg-[#0d1a35] text-left transition-colors ${
                   form.service ? 'text-white' : 'text-slate-600'
-                } border-white/10 hover:border-blue-500/30`}
+                } ${fieldErrors.service ? 'border-red-500/50' : 'border-white/10 hover:border-blue-500/30'}`}
               >
                 <span className="flex items-center gap-2 text-sm">
                   {selectedService && <span>{selectedService.emoji}</span>}
@@ -260,6 +337,7 @@ export default function ClientForm() {
                 </span>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${serviceOpen ? 'rotate-180' : ''}`} />
               </button>
+              <FieldError field="service" />
               <AnimatePresence>
                 {serviceOpen && (
                   <motion.div
@@ -301,7 +379,9 @@ export default function ClientForm() {
               </label>
               <Input type="number" placeholder="25000" value={form.total_fee}
                 onChange={e => handleChange('total_fee', e.target.value)}
-                required className={inputClass} />
+                onBlur={() => handleBlur('total_fee')}
+                required className={fieldErrors.total_fee ? inputErrorClass : inputClass} />
+              <FieldError field="total_fee" />
               {selectedService && !selectedService.is_custom && (
                 <p className="text-slate-500 text-xs mt-1">
                   Default {isRetainer ? 'retainer' : 'setup'}: ₹{(isRetainer ? selectedService.default_retainer_fee : selectedService.default_setup_fee).toLocaleString('en-IN')} — editable above
@@ -335,11 +415,11 @@ export default function ClientForm() {
           </AnimatePresence>
 
           <div className="flex gap-3">
-            <Button type="button" onClick={() => setStep(1)} variant="ghost"
+            <Button type="button" onClick={() => goToStep(1)} variant="ghost"
               className="flex-1 h-11 text-slate-400 border border-white/10 rounded-xl hover:text-white">
               ← Back
             </Button>
-            <Button type="button" onClick={() => setStep(3)}
+            <Button type="button" onClick={() => goToStep(3)}
               disabled={!form.service || !form.total_fee}
               className="flex-[2] h-11 anx-gradient text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-40">
               Continue to Payment →
@@ -358,22 +438,35 @@ export default function ClientForm() {
             <div>
               <label className={labelClass}>Bank Name</label>
               <Input placeholder="HDFC Bank" value={form.bank_name}
-                onChange={e => handleChange('bank_name', e.target.value)} className={inputClass} />
+                onChange={e => handleChange('bank_name', e.target.value)}
+                onBlur={() => handleBlur('bank_name')}
+                className={fieldErrors.bank_name ? inputErrorClass : inputClass} />
+              <FieldError field="bank_name" />
             </div>
             <div>
               <label className={labelClass}>Account Number</label>
-              <Input placeholder="1234567890" value={form.account_number}
-                onChange={e => handleChange('account_number', e.target.value)} className={inputClass} />
+              <Input placeholder="1234567890 or IBAN" value={form.account_number}
+                onChange={e => handleChange('account_number', e.target.value)}
+                onBlur={() => handleBlur('account_number')}
+                className={fieldErrors.account_number ? inputErrorClass : inputClass} />
+              <FieldError field="account_number" />
+              <p className="text-slate-600 text-[11px] mt-1">Supports Indian, IBAN, and international formats</p>
             </div>
             <div>
-              <label className={labelClass}>IFSC Code</label>
-              <Input placeholder="HDFC0001234" value={form.ifsc_code}
-                onChange={e => handleChange('ifsc_code', e.target.value)} className={inputClass} />
+              <label className={labelClass}>IFSC / SWIFT / Sort Code</label>
+              <Input placeholder="HDFC0001234 or HDFCINBB" value={form.ifsc_code}
+                onChange={e => handleChange('ifsc_code', e.target.value)}
+                onBlur={() => handleBlur('ifsc_code')}
+                className={fieldErrors.ifsc_code ? inputErrorClass : inputClass} />
+              <FieldError field="ifsc_code" />
             </div>
             <div>
               <label className={labelClass}>UPI ID</label>
               <Input placeholder="autonex@hdfc" value={form.upi_id}
-                onChange={e => handleChange('upi_id', e.target.value)} className={inputClass} />
+                onChange={e => handleChange('upi_id', e.target.value)}
+                onBlur={() => handleBlur('upi_id')}
+                className={fieldErrors.upi_id ? inputErrorClass : inputClass} />
+              <FieldError field="upi_id" />
             </div>
           </div>
 
@@ -391,7 +484,7 @@ export default function ClientForm() {
           </div>
 
           <div className="flex gap-3">
-            <Button type="button" onClick={() => setStep(2)} variant="ghost"
+            <Button type="button" onClick={() => goToStep(2)} variant="ghost"
               className="flex-1 h-11 text-slate-400 border border-white/10 rounded-xl hover:text-white">
               ← Back
             </Button>

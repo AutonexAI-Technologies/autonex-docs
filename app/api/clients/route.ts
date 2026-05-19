@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
+import { clientFormSchema } from '@/lib/validations/client'
 
 /**
  * GET /api/clients
@@ -37,20 +38,25 @@ export async function POST(request: NextRequest) {
     const adminSupabase = createAdminSupabaseClient()
     const body = await request.json()
 
-    const {
-      name, email, phone, company, service,
-      total_fee, deposit_fee, start_date,
-      bank_name, account_number, ifsc_code,
-      upi_id, invoice_number,
-      status, project_type, notes,
-    } = body
-
-    if (!name || !email || !service || !total_fee) {
+    // Server-side Zod validation
+    const parsed = clientFormSchema.safeParse(body)
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0]
       return NextResponse.json(
-        { error: 'Name, email, service, and total fee are required.' },
+        { error: firstError?.message || 'Validation failed', field: firstError?.path[0] },
         { status: 400 }
       )
     }
+
+    const {
+      name, email, phone, company, service,
+      total_fee, start_date,
+      bank_name, account_number, ifsc_code,
+      upi_id, status, project_type, notes,
+    } = parsed.data as any
+
+    const deposit_fee = body.deposit_fee
+    const invoice_number = body.invoice_number
 
     // Duplicate check
     const { data: existing } = await adminSupabase
