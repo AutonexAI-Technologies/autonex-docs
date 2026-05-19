@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     let query = adminSupabase
       .from('clients')
       .select('*')
+      .is('deleted_at', null)          // exclude soft-deleted clients
       .order('created_at', { ascending: false })
 
     if (email) query = query.eq('email', email)

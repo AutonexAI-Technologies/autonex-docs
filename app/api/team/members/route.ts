@@ -51,14 +51,13 @@ export async function POST(req: NextRequest) {
   }
 
   const adminSupabase = createAdminSupabaseClient()
-  const supabase      = await createServerSupabaseClient()
   const appUrl        = process.env.NEXT_PUBLIC_APP_URL || 'https://autonex-docs.vercel.app'
 
   // ── Resolve role + department name for email ────────────────────────────────
   let roleName = 'Team Member'
   let deptName = ''
   if (role_id) {
-    const { data: roleRow } = await supabase
+    const { data: roleRow } = await adminSupabase
       .from('roles')
       .select('name, departments(name)')
       .eq('id', role_id)
@@ -115,7 +114,7 @@ export async function POST(req: NextRequest) {
     joined_at: null as string | null,
   }
 
-  const { error: upsertError } = await supabase
+  const { error: upsertError } = await adminSupabase
     .from('team_members')
     .upsert([memberData], { onConflict: 'email' })
 
@@ -152,18 +151,16 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 5. Activity log + notification ────────────────────────────────────────
-  const actor = await (await createServerSupabaseClient()).auth.getUser()
-  const actorName = actor?.data?.user?.user_metadata?.full_name ||
-    actor?.data?.user?.email?.split('@')[0] || 'Admin'
+  const actorName = 'Admin'
 
-  await supabase.from('activity_logs').insert([{
+  await adminSupabase.from('activity_logs').insert([{
     user_name: actorName,
     action: `Invited ${name || email} to join as ${roleDisplay}`,
     entity_type: 'team',
     entity_name: name || email,
   }]).then(() => {})
 
-  await supabase.from('notifications').insert([{
+  await adminSupabase.from('notifications').insert([{
     title: 'Team Invite Sent',
     message: `Invite sent to ${email} for role: ${roleDisplay}`,
     type: 'success',
@@ -183,20 +180,20 @@ export async function POST(req: NextRequest) {
 
 // ─── DELETE /api/team/members — hard delete from DB ─────────────────────────
 export async function DELETE(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
-  const { id }   = await req.json()
+  const adminSupabase = createAdminSupabaseClient()
+  const { id }        = await req.json()
 
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
   // Fetch member before deleting
-  const { data: member } = await supabase
+  const { data: member } = await adminSupabase
     .from('team_members')
     .select('name, email, auth_user_id')
     .eq('id', id)
     .single()
 
   // Hard delete
-  const { error: delError } = await supabase
+  const { error: delError } = await adminSupabase
     .from('team_members')
     .delete()
     .eq('id', id)
@@ -204,20 +201,18 @@ export async function DELETE(req: NextRequest) {
   if (delError) return NextResponse.json({ error: delError.message }, { status: 500 })
 
   // Log
-  const actor = await (await createServerSupabaseClient()).auth.getUser()
-  const actorName = actor?.data?.user?.user_metadata?.full_name ||
-    actor?.data?.user?.email?.split('@')[0] || 'Admin'
+  const actorName2 = 'Admin'
 
-  await supabase.from('activity_logs').insert([{
-    user_name: actorName,
+  await adminSupabase.from('activity_logs').insert([{
+    user_name: actorName2,
     action: `Removed ${member?.name || member?.email} from the team`,
     entity_type: 'team',
     entity_name: member?.name || member?.email || 'Unknown',
   }]).then(() => {})
 
-  await supabase.from('notifications').insert([{
+  await adminSupabase.from('notifications').insert([{
     title: 'Team Member Removed',
-    message: `${member?.name || member?.email} was removed by ${actorName}`,
+    message: `${member?.name || member?.email} was removed by ${actorName2}`,
     type: 'warning',
     read: false,
   }]).then(() => {})
@@ -227,12 +222,12 @@ export async function DELETE(req: NextRequest) {
 
 // ─── PATCH /api/team/members — update role ──────────────────────────────────
 export async function PATCH(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const adminSupabase = createAdminSupabaseClient()
   const { id, role_id } = await req.json()
 
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('team_members')
     .update({ role_id })
     .eq('id', id)

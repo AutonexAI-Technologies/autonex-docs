@@ -47,13 +47,14 @@ export default function ClientsPage() {
   useEffect(() => { loadClients() }, [])
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Soft-delete client "${name}"? They can be recovered by the Founder.`)) return
+    if (!confirm(`Permanently delete client "${name}"? This action cannot be undone.`)) return
     const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' })
     if (res.ok) {
-      toast({ title: '🗑️ Client deleted', description: `${name} moved to archive.` })
+      toast({ title: '🗑️ Client deleted', description: `${name} has been permanently removed.` })
       loadClients()
     } else {
-      toast({ variant: 'destructive', title: 'Delete failed' })
+      const errData = await res.json().catch(() => ({}))
+      toast({ variant: 'destructive', title: 'Delete failed', description: errData.error || 'Something went wrong.' })
     }
   }
 

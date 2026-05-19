@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabaseServer'
 
+// Roles permitted to delete clients
+const DELETE_ALLOWED_ROLES = ['Founder', 'Managing Director']
+
+async function getCallerRole(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, user: { email?: string | null }) {
+  if (!user.email) return null
+  const admin = createAdminSupabaseClient()
+  const { data: member } = await admin
+    .from('team_members')
+    .select('status, roles(name)')
+    .eq('email', user.email.toLowerCase())
+    .single()
+  // No team_members record → platform admin, grant full access
+  if (!member) return '__admin__'
+  return (member as any)?.roles?.name ?? null
+}
+
 // GET /api/clients/[id]
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   // Verify authenticated
@@ -38,26 +54,28 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(data)
 }
 
-// DELETE /api/clients/[id] — soft delete if column exists, otherwise hard delete
+// DELETE /api/clients/[id] — permanently delete (Founder & Managing Director only)
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Try soft delete first
-  const softDelete = await supabase
-    .from('clients')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', params.id)
-
-  // If deleted_at column doesn't exist, do a real delete
-  if (softDelete.error && softDelete.error.message.includes('column')) {
-    const { error } = await supabase
-      .from('clients')
-      .delete()
-      .eq('id', params.id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  } else if (softDelete.error) {
-    return NextResponse.json({ error: softDelete.error.message }, { status: 500 })
+  // Enforce role-based access: only Founder, Managing Director, or platform admin may delete
+  const callerRole = await getCallerRole(supabase, user)
+  if (callerRole !== '__admin__' && !DELETE_ALLOWED_ROLES.includes(callerRole ?? '')) {
+    return NextResponse.json(
+      { error: 'Forbidden: only Founder or Managing Director can delete clients.' },
+      { status: 403 }
+    )
   }
 
+  // Hard delete — permanently remove the client from the database
+  const adminSupabase = createAdminSupabaseClient()
+  const { error } = await adminSupabase
+    .from('clients')
+    .delete()
+    .eq('id', params.id)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
