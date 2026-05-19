@@ -104,12 +104,24 @@ export async function POST(req: NextRequest) {
     authUserId = newUser?.user?.id ?? null
   }
 
-  // ── 3. Save to team_members DB ────────────────────────────────────────────
+  // ── 3. Save to team_members DB ─────────────────────────────────────────
+  // If role_id not provided (e.g. resend), look up the existing member's role
+  // so we NEVER accidentally wipe their role on a re-invite.
+  let resolvedRoleId = role_id || null
+  if (!resolvedRoleId) {
+    const { data: existingMember } = await adminSupabase
+      .from('team_members')
+      .select('role_id')
+      .eq('email', email.toLowerCase().trim())
+      .maybeSingle()
+    resolvedRoleId = existingMember?.role_id ?? null
+  }
+
   const memberData = {
     auth_user_id: authUserId,
     email: email.toLowerCase().trim(),
     name: name || email.split('@')[0],
-    role_id: role_id || null,
+    role_id: resolvedRoleId,
     status: 'invited' as const,
     joined_at: null as string | null,
   }

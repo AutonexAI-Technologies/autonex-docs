@@ -16,6 +16,7 @@ interface Member {
   id: string
   name: string
   email: string
+  role_id?: string | null
   role_name?: string
   department_name?: string
   status: 'active' | 'invited' | 'inactive'
@@ -159,7 +160,8 @@ export default function TeamPage() {
       const res = await fetch('/api/team/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: m.email, name: m.name }),
+        // Pass role_id so the upsert never wipes the member's assigned role
+        body: JSON.stringify({ email: m.email, name: m.name, role_id: m.role_id ?? null }),
       })
       const d = await res.json()
       toast(res.ok
