@@ -237,7 +237,7 @@ function KanbanColumn({
         </AnimatePresence>
 
         {clients.length === 0 && (
-          <div className="h-20 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-500">
+          <div className="h-20 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white">
             <p className="text-[11px] text-slate-400">Drop here</p>
           </div>
         )}
