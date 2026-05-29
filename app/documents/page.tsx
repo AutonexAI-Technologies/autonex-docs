@@ -76,7 +76,7 @@ export default function DocumentsPage() {
             placeholder="Search clients..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-56 h-9 bg-white/5 border-white/10 text-white placeholder:text-slate-600 text-sm rounded-xl focus:border-blue-500/50"
+            className="w-56 h-9 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-xl focus:border-blue-500/50"
           />
         </div>
       </motion.div>
@@ -95,7 +95,7 @@ export default function DocumentsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
             <FileText className="w-6 h-6 text-slate-600" />
           </div>
           <p className="text-white font-medium">No clients found</p>
@@ -114,10 +114,10 @@ export default function DocumentsPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: ci * 0.04 }}
-              className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden"
+              className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
             >
               {/* Client header */}
-              <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
+              <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-200">
                 <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-blue-400 font-bold text-sm shrink-0">
                   {client.name.charAt(0).toUpperCase()}
                 </div>
@@ -131,7 +131,7 @@ export default function DocumentsPage() {
               </div>
 
               {/* Document cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-x divide-white/[0.04]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-x divide-slate-100">
                 {DOCUMENTS.map(doc => {
                   const key = `${client.id}-${doc.id}`
                   const isGenerating = generating === key

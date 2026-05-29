@@ -60,7 +60,7 @@ function RemoveModal({
       <motion.div
         initial={{ opacity: 0, scale: 0.92, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b1628] p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-slate-200 bg-[#0b1628] p-6 shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         {/* Icon */}
@@ -76,7 +76,7 @@ function RemoveModal({
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 h-11 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-colors text-sm font-medium"
+            className="flex-1 h-11 rounded-xl border border-slate-200 text-slate-400 hover:text-white hover:border-white/20 transition-colors text-sm font-medium"
           >
             Cancel
           </button>
@@ -199,7 +199,7 @@ export default function TeamPage() {
 
   const active  = members.filter(m => m.status === 'active').length
   const invited = members.filter(m => m.status === 'invited').length
-  const inputCls = 'w-full h-10 px-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-600 text-sm focus:outline-none focus:border-blue-500/60 transition-colors'
+  const inputCls = 'w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-blue-500/60 transition-colors'
 
   return (
     <>
@@ -355,7 +355,7 @@ export default function TeamPage() {
 
         {/* ── Role reference ──────────────────────────────────── */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-          className="mb-6 rounded-xl border border-white/5 bg-white/[0.02] px-5 py-3 flex flex-wrap gap-x-6 gap-y-1"
+          className="mb-6 rounded-xl border border-slate-200 bg-white/[0.02] px-5 py-3 flex flex-wrap gap-x-6 gap-y-1"
         >
           <span className="text-slate-500 text-xs font-medium mr-2 self-center">Access levels:</span>
           {Object.entries(ROLE_ACCESS).map(([role, info]) => (
@@ -367,22 +367,22 @@ export default function TeamPage() {
 
         {/* ── Members table ───────────────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden"
+          className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
         >
           {/* Table header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
               <h2 className="text-white font-semibold text-sm">Team Members</h2>
               <p className="text-slate-500 text-xs">{members.length} member{members.length !== 1 ? 's' : ''}</p>
             </div>
             <button onClick={load} title="Refresh"
-              className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
+              className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Column labels */}
-          <div className="hidden md:grid px-6 py-3 border-b border-white/5 text-[10px] text-slate-500 uppercase tracking-wider"
+          <div className="hidden md:grid px-6 py-3 border-b border-slate-200 text-[10px] text-slate-500 uppercase tracking-wider"
             style={{ gridTemplateColumns: '2fr 1fr 1fr 0.8fr 1fr 1fr' }}>
             <span>Member</span>
             <span>Department</span>
@@ -403,7 +403,7 @@ export default function TeamPage() {
               <p className="text-slate-400 text-sm">No members yet — invite someone above</p>
             </div>
           ) : (
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-slate-100">
               {members.map((m, i) => {
                 const accessInfo = ROLE_ACCESS[m.role_name || '']
                 return (
@@ -413,14 +413,14 @@ export default function TeamPage() {
                   >
                     {/* Desktop row */}
                     <div
-                      className="hidden md:grid items-center px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                      className="hidden md:grid items-center px-6 py-4 hover:bg-slate-50 transition-colors"
                       style={{ gridTemplateColumns: '2fr 1fr 1fr 0.8fr 1fr 1fr' }}
                     >
                       {/* Avatar + name */}
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
                           m.status === 'invited'  ? 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
-                          : m.status === 'inactive' ? 'bg-white/5 border border-white/10 text-slate-500'
+                          : m.status === 'inactive' ? 'bg-slate-50 border border-slate-200 text-slate-500'
                           : 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
                         }`}>
                           {m.name.charAt(0).toUpperCase()}

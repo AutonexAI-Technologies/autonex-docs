@@ -66,7 +66,7 @@ export default function ActivityPage() {
             placeholder="Search activity..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 h-9 w-56 bg-white/5 border-white/10 text-white placeholder:text-slate-600 text-sm rounded-xl focus:border-blue-500/50"
+            className="pl-9 h-9 w-56 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-xl focus:border-blue-500/50"
           />
         </div>
       </motion.div>
@@ -84,9 +84,9 @@ export default function ActivityPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden"
+        className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
       >
-        <div className="hidden md:grid grid-cols-[auto_2fr_2fr_1fr_1fr] gap-4 px-6 py-3 border-b border-white/5 text-xs text-slate-500 uppercase tracking-wider">
+        <div className="hidden md:grid grid-cols-[auto_2fr_2fr_1fr_1fr] gap-4 px-6 py-3 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
           <span className="w-8" />
           <span>Action</span>
           <span>Entity</span>
@@ -100,14 +100,14 @@ export default function ActivityPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
               <Activity className="w-6 h-6 text-slate-600" />
             </div>
             <p className="text-white font-medium">No activity yet</p>
             <p className="text-slate-500 text-sm mt-1">Actions will appear here as you use the platform</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-slate-100">
             {filtered.map((log, i) => {
               const Icon = entityIcon[log.entity_type] || Activity
               const colorClass = entityColor[log.entity_type] || 'text-slate-400 bg-slate-500/10'
@@ -118,7 +118,7 @@ export default function ActivityPage() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-[auto_2fr_2fr_1fr_1fr] gap-4 items-center px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                  <div className="grid grid-cols-1 md:grid-cols-[auto_2fr_2fr_1fr_1fr] gap-4 items-center px-6 py-4 hover:bg-slate-50 transition-colors">
                     <div className={`w-8 h-8 rounded-xl ${colorClass} flex items-center justify-center shrink-0`}>
                       <Icon className="w-3.5 h-3.5" />
                     </div>

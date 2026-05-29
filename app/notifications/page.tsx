@@ -69,7 +69,7 @@ export default function NotificationsPage() {
             onClick={markAllRead}
             disabled={marking}
             variant="ghost"
-            className="text-slate-400 hover:text-white gap-2 h-9 px-4 rounded-xl border border-white/10"
+            className="text-slate-400 hover:text-white gap-2 h-9 px-4 rounded-xl border border-slate-200"
           >
             {marking ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
             Mark all read
@@ -84,7 +84,7 @@ export default function NotificationsPage() {
         </div>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
             <Bell className="w-6 h-6 text-slate-600" />
           </div>
           <p className="text-white font-medium">No notifications yet</p>
@@ -129,7 +129,7 @@ export default function NotificationsPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-8 rounded-2xl border border-white/5 bg-[#0d1a35]/60 p-6"
+        className="mt-8 rounded-2xl border border-slate-200 bg-white p-6"
       >
         <h2 className="text-white font-semibold text-sm mb-4">Notification Preferences</h2>
         <div className="space-y-3">
@@ -140,7 +140,7 @@ export default function NotificationsPage() {
             { label: 'Document sent',          desc: 'Confirm when a PDF is emailed' },
             { label: 'New team member joined', desc: 'Alert when an invite is accepted' },
           ].map((pref) => (
-            <div key={pref.label} className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+            <div key={pref.label} className="flex items-center justify-between py-2.5 border-b border-slate-200 last:border-0">
               <div>
                 <p className="text-white text-sm">{pref.label}</p>
                 <p className="text-slate-500 text-xs">{pref.desc}</p>

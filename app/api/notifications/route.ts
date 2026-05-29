@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/notifications — create a notification (called internally)
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
   const body = await req.json()
 
   const { title, message, type, link } = body
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
 // PATCH /api/notifications — mark all as read
 export async function PATCH(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
   const body = await req.json()
   const { ids } = body // optional: specific IDs, or all if not provided
 

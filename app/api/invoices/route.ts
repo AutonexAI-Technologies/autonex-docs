@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/invoices — create invoice
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
   const body = await req.json()
 
   // Get next invoice number

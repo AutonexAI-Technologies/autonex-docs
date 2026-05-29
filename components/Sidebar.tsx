@@ -24,19 +24,25 @@ import {
   Menu,
   X,
   Shield,
+  Briefcase,
+  MessageSquare,
+  Megaphone,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard',      label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/clients',        label: 'Clients',       icon: Users },
-  { href: '/documents',      label: 'Documents',     icon: FileText },
-  { href: '/invoices',       label: 'Invoices',      icon: Receipt },
-  { href: '/retainers',      label: 'Retainers',     icon: RefreshCw },
-  { href: '/reports',        label: 'Reports',       icon: BarChart3 },
-  { href: '/activity',       label: 'Activity Log',  icon: Activity },
-  { href: '/team',           label: 'Team',          icon: UserCog },
-  { href: '/notifications',  label: 'Notifications', icon: Bell },
-  { href: '/settings',       label: 'Settings',      icon: Settings },
+  { href: '/dashboard',      label: 'Dashboard',      icon: LayoutDashboard },
+  { href: '/clients',        label: 'Clients',         icon: Users },
+  { href: '/pipeline',       label: 'Pipeline',        icon: Briefcase },
+  { href: '/messages',       label: 'Messages',        icon: MessageSquare },
+  { href: '/announcements',  label: 'Announcements',   icon: Megaphone },
+  { href: '/documents',      label: 'Documents',       icon: FileText },
+  { href: '/invoices',       label: 'Invoices',        icon: Receipt },
+  { href: '/retainers',      label: 'Retainers',       icon: RefreshCw },
+  { href: '/reports',        label: 'Reports',         icon: BarChart3 },
+  { href: '/activity',       label: 'Activity Log',    icon: Activity },
+  { href: '/team',           label: 'Team',            icon: UserCog },
+  { href: '/notifications',  label: 'Notifications',   icon: Bell },
+  { href: '/settings',       label: 'Settings',        icon: Settings },
 ]
 
 function NavItem({ item, active, onClick }: { item: typeof navItems[0]; active: boolean; onClick?: () => void }) {
@@ -46,9 +52,9 @@ function NavItem({ item, active, onClick }: { item: typeof navItems[0]; active: 
         whileHover={{ x: 2 }}
         className={`sidebar-item ${active ? 'sidebar-item-active' : 'sidebar-item-inactive'}`}
       >
-        <item.icon className={`w-4 h-4 shrink-0 ${active ? 'text-blue-400' : 'text-slate-500'}`} />
+        <item.icon className={`w-4 h-4 shrink-0 ${active ? 'text-white/90' : 'text-slate-400'}`} />
         <span className="flex-1">{item.label}</span>
-        {active && <ChevronRight className="w-3.5 h-3.5 text-blue-400/60" />}
+        {active && <ChevronRight className="w-3.5 h-3.5 text-white/50" />}
       </motion.div>
     </Link>
   )

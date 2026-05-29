@@ -26,7 +26,7 @@ export async function GET() {
 
 // POST /api/retainers — create retainer
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
   const { client_id, amount, billing_cycle, start_date } = await req.json()
 
   if (!client_id || !amount || !start_date) {

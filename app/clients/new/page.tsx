@@ -23,7 +23,7 @@ export default function NewClientPage() {
       </div>
 
       {/* Form card */}
-      <div className="bg-[#0d1a35]/60 border border-white/5 rounded-2xl p-6 sm:p-8">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8">
         <ClientForm />
       </div>
     </div>

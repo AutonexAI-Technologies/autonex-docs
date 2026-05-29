@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabaseServer'
+import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createServerSupabaseClient()
-  const { payment_method, paid_at } = await req.json()
+  const admin = createAdminSupabaseClient()
+  const body = await req.json().catch(() => ({}))
+  const { payment_method, paid_at } = body
 
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from('invoices')
     .update({
       status: 'Paid',

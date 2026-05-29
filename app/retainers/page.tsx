@@ -115,9 +115,9 @@ export default function RetainersPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden"
+        className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
       >
-        <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-white/5 text-xs text-slate-500 uppercase tracking-wider">
+        <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
           <span>Client</span>
           <span>Amount</span>
           <span>Cycle</span>
@@ -132,14 +132,14 @@ export default function RetainersPage() {
           </div>
         ) : retainers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
               <RefreshCw className="w-6 h-6 text-slate-600" />
             </div>
             <p className="text-white font-medium">No retainers yet</p>
             <p className="text-slate-500 text-sm mt-1">Set up a monthly retainer when adding a client</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-slate-100">
             {retainers.map((r, i) => {
               const daysUntil = differenceInDays(new Date(r.next_billing_date), new Date())
               const isDue = daysUntil <= 7 && daysUntil >= 0
@@ -153,7 +153,7 @@ export default function RetainersPage() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.04 }}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-white/[0.02] transition-colors group">
+                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-slate-50 transition-colors group">
                     <div>
                       <p className="text-white text-sm font-medium">{clientName}</p>
                       <p className="text-slate-500 text-xs">{(r as any).clients?.email}</p>

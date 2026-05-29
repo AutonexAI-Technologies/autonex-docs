@@ -131,7 +131,7 @@ export default function DashboardClient() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-slate-400 text-sm">Autonex AI HQ</p>
             {!roleLoading && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/8">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200">
                 <Shield className="w-3 h-3 text-slate-500" />
                 <span className={`text-xs font-semibold ${roleColor}`}>{displayRole}</span>
                 {accessLabel && <span className="text-slate-600 text-[10px]">· {accessLabel}</span>}
@@ -176,8 +176,8 @@ export default function DashboardClient() {
       </motion.div>
 
       {/* Clients Table — all roles see client data */}
-      <motion.div {...fadeUp(0.35)} className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden">
-        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/5">
+      <motion.div {...fadeUp(0.35)} className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-slate-200">
           <div>
             <h2 className="text-white font-semibold text-sm">All Clients</h2>
             <p className="text-slate-500 text-xs">{clients.length} total</p>
@@ -188,7 +188,7 @@ export default function DashboardClient() {
               placeholder="Search clients..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-8 h-9 bg-white/5 border-white/10 text-white placeholder:text-slate-600 text-sm rounded-lg focus:border-blue-500/50"
+              className="pl-8 h-9 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-lg focus:border-blue-500/50"
             />
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function DashboardClient() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-3">
               <Users className="w-5 h-5 text-slate-600" />
             </div>
             <p className="text-slate-400 text-sm font-medium">
@@ -218,7 +218,7 @@ export default function DashboardClient() {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-slate-100">
             {/* Table head */}
             <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-6 py-3 text-xs text-slate-500 uppercase tracking-wider">
               <span>Client</span>
@@ -235,7 +235,7 @@ export default function DashboardClient() {
                 transition={{ delay: i * 0.03 }}
               >
                 <Link href={`/clients/${client.id}`}>
-                  <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto] gap-4 items-center px-6 py-4 hover:bg-white/[0.02] transition-colors group cursor-pointer">
+                  <div className="grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto] gap-4 items-center px-6 py-4 hover:bg-slate-50 transition-colors group cursor-pointer">
                     {/* Name + email */}
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 text-blue-400 font-bold text-xs">
@@ -265,7 +265,7 @@ export default function DashboardClient() {
         )}
 
         {filtered.length > 20 && (
-          <div className="px-6 py-3 border-t border-white/5">
+          <div className="px-6 py-3 border-t border-slate-200">
             <Link href="/clients" className="text-blue-400 text-sm hover:text-blue-300 transition-colors">
               View all {filtered.length} clients →
             </Link>

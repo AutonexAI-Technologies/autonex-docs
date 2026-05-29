@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/activity — log an action (called internally)
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient()
+  const supabase = createAdminSupabaseClient()
   const body = await req.json()
 
   const { user_name, action, entity_type, entity_id, entity_name, metadata } = body

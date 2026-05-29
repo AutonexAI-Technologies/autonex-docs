@@ -1,0 +1,211 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabaseServer'
+import { Resend } from 'resend'
+import crypto from 'crypto'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+function generatePassword(length = 12): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$'
+  let pw = ''
+  const bytes = crypto.randomBytes(length)
+  for (let i = 0; i < length; i++) pw += chars[bytes[i] % chars.length]
+  return pw
+}
+
+/**
+ * POST /api/portal/invite
+ * Creates a portal user with credentials and sends them an email with login details.
+ * Body: { client_id, email, name?, portal_role? }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const admin = createAdminSupabaseClient()
+    const supabase = await createServerSupabaseClient()
+
+    // Verify caller is authenticated
+    const { data: { user: caller } } = await supabase.auth.getUser()
+    if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { client_id, email, name, portal_role = 'client_viewer' } = await request.json()
+
+    if (!client_id || !email) {
+      return NextResponse.json({ error: 'client_id and email are required' }, { status: 400 })
+    }
+
+    // Verify client exists
+    const { data: client } = await admin
+      .from('clients')
+      .select('id, name, company, email')
+      .eq('id', client_id)
+      .single()
+
+    if (!client) {
+      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+    }
+
+    const clientDisplayName = name || client.name
+    const password = generatePassword()
+
+    // Create Supabase auth user directly with the generated password
+    const { data: authData, error: authErr } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      app_metadata: {
+        user_type: 'client',
+        client_id,
+        portal_role,
+      },
+      user_metadata: {
+        name: clientDisplayName,
+      },
+    })
+
+    if (authErr) {
+      if (authErr.message.includes('already been registered')) {
+        return NextResponse.json({ error: 'This email is already registered. The client can sign in with their existing credentials.' }, { status: 409 })
+      }
+      return NextResponse.json({ error: authErr.message }, { status: 500 })
+    }
+
+    // Create portal_user record
+    await admin.from('portal_users').insert({
+      user_id: authData.user.id,
+      client_id,
+      name: clientDisplayName,
+      email,
+      portal_role,
+      invited_by: caller.id,
+    })
+
+    // Also create invite record for tracking (mark as accepted immediately)
+    await admin.from('portal_invites').insert({
+      client_id,
+      email,
+      portal_role,
+      invited_by: caller.id,
+      accepted: true,
+    })
+
+    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.autonexai.org'
+
+    // Send credentials email via Resend
+    try {
+      await resend.emails.send({
+        from: 'Autonex AI <noreply@autonexai.org>',
+        to: email,
+        subject: `Your Autonex AI Client Portal Credentials`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f0f4fa;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4fa;min-height:100vh;">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <!-- Logo -->
+        <tr><td style="padding-bottom:32px;text-align:center;">
+          <span style="font-size:22px;font-weight:800;color:#1D4ED8;">Autonex AI</span>
+          <span style="font-size:12px;color:#64748b;display:block;margin-top:2px;">Client Portal</span>
+        </td></tr>
+        <!-- Card -->
+        <tr><td style="background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;box-shadow:0 4px 16px rgba(15,23,42,0.06);">
+          <h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0 0 8px;">Welcome to your Portal! 🎉</h1>
+          <p style="color:#64748b;font-size:15px;margin:0 0 24px;line-height:1.6;">
+            Hi <strong style="color:#0f172a;">${clientDisplayName}</strong>, your Autonex AI Client Portal account has been created.
+            Use the credentials below to sign in and track your project progress, view invoices, share files, and communicate with your team.
+          </p>
+          
+          <!-- Credentials Box -->
+          <div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:16px;padding:24px;margin:0 0 24px;">
+            <p style="color:#64748b;font-size:11px;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Your Login Credentials</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding:8px 0;">
+                  <span style="color:#64748b;font-size:13px;">Email</span><br/>
+                  <span style="color:#0f172a;font-size:16px;font-weight:600;">${email}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;border-top:1px solid #e2e8f0;">
+                  <span style="color:#64748b;font-size:13px;">Password</span><br/>
+                  <code style="color:#1D4ED8;font-size:18px;font-weight:700;background:#eff6ff;padding:4px 12px;border-radius:8px;display:inline-block;margin-top:4px;">${password}</code>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Project Info -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin:0 0 24px;">
+            <p style="color:#64748b;font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em;">Project</p>
+            <p style="color:#0f172a;font-size:16px;font-weight:600;margin:0;">${client.company || client.name}</p>
+          </div>
+
+          <a href="${portalUrl}/login" style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin:0 0 16px;">
+            Sign In to My Portal →
+          </a>
+          <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0 0 8px;">We recommend changing your password after first login.</p>
+          <p style="color:#cbd5e1;font-size:11px;text-align:center;margin:0;word-break:break-all;">Portal URL: ${portalUrl}/login</p>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="padding:24px 0 0;text-align:center;">
+          <p style="color:#94a3b8;font-size:11px;margin:0;">© ${new Date().getFullYear()} Autonex AI Technologies · Invitation-only access</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+      })
+    } catch (emailErr: any) {
+      console.error('[Resend error]', emailErr)
+    }
+
+    return NextResponse.json({
+      message: 'Portal account created and credentials sent',
+      user_id: authData.user.id,
+      email,
+      portal_url: `${portalUrl}/login`,
+    }, { status: 201 })
+  } catch (err: any) {
+    console.error('[POST /api/portal/invite]', err)
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}
+
+/**
+ * GET /api/portal/invite?token=xxx
+ * Validates an invite token (kept for backward compatibility).
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const admin = createAdminSupabaseClient()
+    const token = new URL(request.url).searchParams.get('token')
+
+    if (!token) return NextResponse.json({ error: 'Token is required' }, { status: 400 })
+
+    const { data: invite, error } = await admin
+      .from('portal_invites')
+      .select('*, clients(name, company)')
+      .eq('token', token)
+      .eq('accepted', false)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (error || !invite) {
+      return NextResponse.json({ error: 'Invalid or expired invite' }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      invite_id: invite.id,
+      email: invite.email,
+      portal_role: invite.portal_role,
+      client_name: (invite as any).clients?.name,
+      company: (invite as any).clients?.company,
+      expires_at: invite.expires_at,
+    })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}

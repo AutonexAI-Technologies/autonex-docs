@@ -121,7 +121,7 @@ function NewInvoicePanel({
     setSaving(false)
   }
 
-  const inputCls = 'h-9 px-3 bg-[#0a1628] border border-white/10 text-white text-sm rounded-xl focus:outline-none focus:border-blue-500/50 w-full placeholder:text-slate-600'
+  const inputCls = 'h-9 px-3 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 w-full placeholder:text-slate-400 shadow-sm'
 
   return (
     <AnimatePresence>
@@ -141,27 +141,27 @@ function NewInvoicePanel({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 280, damping: 30 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-[#0d1a35] border-l border-white/5 z-50 flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-white border-l border-slate-200 z-50 flex flex-col shadow-2xl shadow-slate-300/50"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
               <div>
-                <h2 className="text-white font-bold text-base">New Invoice</h2>
-                <p className="text-slate-500 text-xs mt-0.5">Auto-assigned ANX-XXX number</p>
+                <h2 className="text-slate-900 font-bold text-base">New Invoice</h2>
+                <p className="text-slate-400 text-xs mt-0.5">Auto-assigned ANX-XXX number</p>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-5">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-5 bg-white">
               {/* Client selector */}
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Client <span className="text-blue-400">*</span></label>
+                <label className="text-slate-600 text-xs font-medium mb-1.5 block">Client <span className="text-blue-600">*</span></label>
                 <select
                   value={clientId}
                   onChange={e => setClientId(e.target.value)}
@@ -178,7 +178,7 @@ function NewInvoicePanel({
               {/* Line items */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-slate-400 text-xs">Line Items</label>
+                  <label className="text-slate-600 text-xs font-medium mb-1.5 block">Line Items</label>
                   <button
                     type="button"
                     onClick={addLine}
@@ -234,37 +234,36 @@ function NewInvoicePanel({
               </div>
 
               {/* GST toggle */}
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-white/5 bg-[#0a1628]/60">
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-blue-100 bg-blue-50">
                 <div>
-                  <p className="text-white text-sm font-medium">GST 18%</p>
-                  <p className="text-slate-500 text-xs">Goods & Services Tax</p>
+                  <p className="text-slate-900 text-sm font-medium">GST 18%</p>
+                  <p className="text-slate-500 text-xs">Goods &amp; Services Tax</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setGstEnabled(p => !p)}
-                  className={`w-11 h-6 rounded-full transition-colors relative ${gstEnabled ? 'bg-blue-500' : 'bg-white/10'}`}
                 >
                   <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${gstEnabled ? 'left-5.5 left-[22px]' : 'left-0.5'}`} />
                 </button>
               </div>
 
               {/* Totals */}
-              <div className="rounded-xl border border-white/5 bg-[#0a1628]/60 p-4 space-y-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Subtotal</span>
-                  <span className="text-white font-medium">₹{subtotal.toLocaleString('en-IN')}</span>
+                  <span className="text-slate-500">Subtotal</span>
+                  <span className="text-slate-900 font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 {gstEnabled && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">GST (18%)</span>
-                    <span className="text-white">₹{gstAmount.toLocaleString('en-IN')}</span>
+                    <span className="text-slate-500">GST (18%)</span>
+                    <span className="text-slate-700">₹{gstAmount.toLocaleString('en-IN')}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-bold pt-2 border-t border-white/5">
-                  <span className="text-white">Total</span>
-                  <span className="text-blue-400">₹{total.toLocaleString('en-IN')}</span>
+                <div className="flex justify-between text-base font-bold pt-2 border-t border-slate-200">
+                  <span className="text-slate-900">Total</span>
+                  <span className="text-blue-600">₹{total.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-xs text-slate-500">
+                <div className="flex justify-between text-xs text-slate-400">
                   <span>50% Deposit</span>
                   <span>₹{Math.round(total * 0.5).toLocaleString('en-IN')}</span>
                 </div>
@@ -289,7 +288,7 @@ function NewInvoicePanel({
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Any additional notes..."
                   rows={2}
-                  className="w-full px-3 py-2.5 bg-[#0a1628] border border-white/10 text-white text-sm rounded-xl focus:outline-none focus:border-blue-500/50 resize-none placeholder:text-slate-600"
+                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 resize-none placeholder:text-slate-400 shadow-sm"
                 />
               </div>
 
@@ -301,12 +300,12 @@ function NewInvoicePanel({
             </form>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-white/5 flex gap-3">
+              <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-slate-50">
               <Button
                 type="button"
                 onClick={onClose}
                 variant="ghost"
-                className="flex-1 h-10 border border-white/10 text-slate-400 hover:text-white rounded-xl"
+                className="flex-1 h-10 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
               >
                 Cancel
               </Button>
@@ -412,18 +411,18 @@ export default function InvoicesPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {[
-            { label: 'Total Paid', value: `₹${totalPaid.toLocaleString('en-IN')}`, color: 'text-emerald-400', border: 'border-emerald-500/15' },
-            { label: 'Pending Amount', value: `₹${pendingAmt.toLocaleString('en-IN')}`, color: 'text-amber-400', border: 'border-amber-500/15' },
-            { label: 'Overdue', value: `${overdueCount} invoice${overdueCount !== 1 ? 's' : ''}`, color: 'text-red-400', border: 'border-red-500/15' },
+          { label: 'Total Paid',      value: `₹${totalPaid.toLocaleString('en-IN')}`,  color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: '✅' },
+            { label: 'Pending Amount', value: `₹${pendingAmt.toLocaleString('en-IN')}`, color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200',   icon: '⏳' },
+            { label: 'Overdue',        value: `${overdueCount} invoice${overdueCount !== 1 ? 's' : ''}`, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: '🔴' },
           ].map((s, i) => (
             <motion.div
               key={s.label}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
-              className={`stat-card border ${s.border}`}
+              className={`stat-card border ${s.border} ${s.bg} transition-all hover:shadow-md`}
             >
-              <p className="text-slate-400 text-sm mb-1">{s.label}</p>
+              <p className="text-slate-500 text-sm mb-1 flex items-center gap-1.5">{s.icon} {s.label}</p>
               <p className={`text-2xl font-bold ${s.color} font-[Plus_Jakarta_Sans]`}>{s.value}</p>
             </motion.div>
           ))}
@@ -440,10 +439,10 @@ export default function InvoicesPage() {
             <button
               key={s}
               onClick={() => setFilter(s as any)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                 filter === s
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                  : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600'
               }`}
             >
               {s}
@@ -460,7 +459,7 @@ export default function InvoicesPage() {
               placeholder="Search invoices..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-9 w-56 bg-white/5 border-white/10 text-white placeholder:text-slate-600 text-sm rounded-xl focus:border-blue-500/50"
+              className="pl-9 h-9 w-56 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-xl focus:border-blue-500 shadow-sm"
             />
           </div>
         </motion.div>
@@ -470,9 +469,9 @@ export default function InvoicesPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 overflow-hidden"
+          className="rounded-2xl border border-[#E8EDF5] bg-white overflow-hidden shadow-sm"
         >
-          <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-white/5 text-xs text-slate-500 uppercase tracking-wider">
+          <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-100 text-xs text-slate-500 font-semibold uppercase tracking-wider bg-slate-50">
             <span>Invoice #</span>
             <span>Client</span>
             <span>Amount</span>
@@ -487,10 +486,10 @@ export default function InvoicesPage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-                <Receipt className="w-6 h-6 text-slate-600" />
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4">
+                <Receipt className="w-6 h-6 text-blue-500" />
               </div>
-              <p className="text-white font-medium">No invoices yet</p>
+              <p className="text-slate-900 font-semibold">No invoices yet</p>
               <p className="text-slate-500 text-sm mt-1">
                 Click <strong className="text-blue-400">New Invoice</strong> to create your first one
               </p>
@@ -502,7 +501,7 @@ export default function InvoicesPage() {
               </Button>
             </div>
           ) : (
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-slate-50">
               {filtered.map((inv, i) => {
                 const StatusIcon = statusIcon[inv.status] || Clock
                 const isOverdue =
@@ -519,18 +518,18 @@ export default function InvoicesPage() {
                     transition={{ delay: i * 0.03 }}
                     className="group"
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-blue-50/40 transition-colors">
                       <div>
-                        <p className="text-blue-400 font-bold text-sm font-mono">
+                        <p className="text-blue-600 font-bold text-sm font-mono">
                           {inv.invoice_number}
                         </p>
                         {inv.is_retainer_invoice && (
-                          <span className="text-xs text-violet-400">🔄 Retainer</span>
+                          <span className="text-xs text-violet-600">🔄 Retainer</span>
                         )}
                       </div>
-                      <p className="hidden md:block text-white text-sm">{clientName}</p>
+                      <p className="hidden md:block text-slate-800 text-sm font-medium">{clientName}</p>
                       <div className="hidden md:block">
-                        <p className="text-white font-semibold text-sm">
+                        <p className="text-slate-900 font-bold text-sm">
                           ₹{inv.total.toLocaleString('en-IN')}
                         </p>
                         {inv.gst_enabled && (
@@ -557,7 +556,7 @@ export default function InvoicesPage() {
                           <button
                             onClick={() => handleMarkPaid(inv.id)}
                             disabled={markingPaid === inv.id}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium border border-emerald-500/20 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition-colors disabled:opacity-50"
                           >
                             {markingPaid === inv.id ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
@@ -576,7 +575,7 @@ export default function InvoicesPage() {
           )}
 
           {filtered.length > 0 && (
-            <div className="px-6 py-3 border-t border-white/5">
+            <div className="px-6 py-3 border-t border-slate-100 bg-slate-50">
               <p className="text-slate-500 text-xs">
                 Showing {filtered.length} of {invoices.length} invoices
               </p>
@@ -585,7 +584,7 @@ export default function InvoicesPage() {
         </motion.div>
 
         {/* Late payment notice */}
-        <p className="text-slate-700 text-xs mt-4 text-center">
+        <p className="text-slate-400 text-xs mt-4 text-center">
           ⚖️ 1.5%/month interest on overdue invoices · MSME delayed payment norms · Hyderabad jurisdiction
         </p>
       </div>

@@ -44,7 +44,7 @@ export default function ReportsPage() {
           <h1 className="page-header">Reports & Analytics</h1>
           <p className="text-slate-400 text-sm mt-1">Revenue breakdown, service analysis, and team activity</p>
         </div>
-        <Button variant="outline" className="border-white/10 text-slate-300 hover:text-white hover:bg-white/5 gap-2 h-10 px-4 rounded-xl">
+        <Button variant="outline" className="border-slate-200 text-slate-300 hover:text-white hover:bg-slate-50 gap-2 h-10 px-4 rounded-xl">
           <Download className="w-4 h-4" />
           Export CSV
         </Button>
@@ -83,7 +83,7 @@ export default function ReportsPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 p-6"
+          className="rounded-2xl border border-slate-200 bg-white p-6"
         >
           <div className="flex items-center gap-2 mb-5">
             <PieChart className="w-4 h-4 text-blue-400" />
@@ -109,7 +109,7 @@ export default function ReportsPage() {
                     </div>
                   </div>
                   {/* Bar */}
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${totalRevenue ? (svc.revenue / totalRevenue) * 100 : 0}%` }}
@@ -128,7 +128,7 @@ export default function ReportsPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="rounded-2xl border border-white/5 bg-[#0d1a35]/60 p-6"
+          className="rounded-2xl border border-slate-200 bg-white p-6"
         >
           <div className="flex items-center gap-2 mb-5">
             <Activity className="w-4 h-4 text-violet-400" />
@@ -199,7 +199,7 @@ export default function ReportsPage() {
                   return (
                     <div key={status} className="flex items-center gap-2 mb-2">
                       <span className="text-slate-400 text-xs w-20">{status}</span>
-                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-slate-50 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${clients.length ? (count / clients.length) * 100 : 0}%` }}

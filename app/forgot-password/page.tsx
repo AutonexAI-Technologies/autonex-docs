@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="rounded-2xl border border-white/8 bg-[#0d1a35]/80 backdrop-blur-xl p-8 shadow-2xl">
+        <div className="rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-xl p-8 shadow-2xl">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl anx-gradient shadow-lg shadow-blue-500/25 mb-4">
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
                     onChange={e => setEmail(e.target.value)}
                     placeholder="your@email.com"
                     required
-                    className="w-full h-11 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-600 text-sm focus:outline-none focus:border-blue-500/60 transition-colors"
+                    className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-blue-500/60 transition-colors"
                   />
                 </div>
               </div>
