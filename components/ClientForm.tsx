@@ -323,8 +323,9 @@ export default function ClientForm() {
             <label className={labelClass}>Service Type <span className="text-blue-400">*</span></label>
             <div className="relative">
               <button type="button" onClick={() => setServiceOpen(!serviceOpen)}
-                className={`w-full flex items-center justify-between px-3 h-11 rounded-xl border bg-[#0d1a35] text-left transition-colors ${form.service ? 'text-white' : 'text-slate-600'
-                  } ${fieldErrors.service ? 'border-red-500/50' : 'border-white/10 hover:border-blue-500/30'}`}
+                className={`w-full flex items-center justify-between px-3 h-11 rounded-xl border bg-white text-left transition-colors ${
+                  form.service ? 'text-slate-900' : 'text-slate-400'
+                } ${fieldErrors.service ? 'border-red-400' : 'border-slate-200 hover:border-blue-400'}`}
               >
                 <span className="flex items-center gap-2 text-sm">
                   {selectedService && <span>{selectedService.emoji}</span>}
@@ -340,13 +341,14 @@ export default function ClientForm() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-[calc(100%+4px)] left-0 right-0 z-50 rounded-xl border border-white/10 bg-[#0d1a35] shadow-xl overflow-hidden"
+                    className="absolute top-[calc(100%+4px)] left-0 right-0 z-50 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden"
                   >
                     {DEFAULT_SERVICES.map(svc => (
                       <button key={svc.id} type="button"
                         onClick={() => handleServiceSelect(svc)}
-                        className={`w-full px-4 py-3 text-left transition-colors hover:bg-blue-500/10 ${form.service === svc.name ? 'text-blue-400 bg-blue-500/10' : 'text-slate-300'
-                          }`}
+                        className={`w-full px-4 py-3 text-left transition-colors hover:bg-blue-50 ${
+                          form.service === svc.name ? 'text-blue-700 bg-blue-50' : 'text-slate-800'
+                        }`}
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-base">{svc.emoji}</span>
@@ -383,10 +385,19 @@ export default function ClientForm() {
               )}
             </div>
             <div>
-              <label className={labelClass}>Project Start Date</label>
-              <Input type="date" value={form.start_date}
+              <label className={labelClass}>Project Start Date <span className="text-red-500">*</span></label>
+              <input
+                type="date"
+                value={form.start_date}
+                min={new Date().toISOString().split('T')[0]}
                 onChange={e => handleChange('start_date', e.target.value)}
-                className={`${inputClass} [color-scheme:dark]`} />
+                required
+                style={{ colorScheme: 'light' }}
+                className={`h-11 w-full rounded-xl border px-3 text-sm bg-white text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 ${
+                  !form.start_date ? 'border-slate-200' : 'border-blue-300'
+                }`}
+              />
+              {!form.start_date && <p className="text-[11px] text-slate-400 mt-1">Required to proceed to payment</p>}
             </div>
           </div>
 
@@ -410,11 +421,11 @@ export default function ClientForm() {
 
           <div className="flex gap-3">
             <Button type="button" onClick={() => goToStep(1)} variant="ghost"
-              className="flex-1 h-11 text-slate-400 border border-white/10 rounded-xl hover:text-white">
+              className="flex-1 h-11 text-slate-600 border border-slate-200 rounded-xl hover:text-slate-900 hover:bg-slate-50">
               ← Back
             </Button>
             <Button type="button" onClick={() => goToStep(3)}
-              disabled={!form.service || !form.total_fee}
+              disabled={!form.service || !form.total_fee || !form.start_date}
               className="flex-[2] h-11 anx-gradient text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-40">
               Continue to Payment →
             </Button>
@@ -425,8 +436,8 @@ export default function ClientForm() {
       {/* STEP 3 — Payment Details */}
       {step === 3 && (
         <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-          <p className="text-slate-500 text-sm">
-            Payment details are for the <strong className="text-slate-300">Invoice PDF</strong>. These auto-fill from Settings if configured.
+          <p className="text-slate-600 text-sm">
+            Payment details are for the <strong className="text-slate-800">Invoice PDF</strong>. These auto-fill from Settings if configured.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -464,22 +475,28 @@ export default function ClientForm() {
             </div>
           </div>
 
-          {/* Summary preview */}
-          <div className="rounded-xl border border-white/5 bg-[#0a1628]/60 p-4 space-y-2">
-            <p className="text-slate-400 text-xs uppercase tracking-wider mb-3">Client Summary</p>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div><span className="text-slate-500">Name:</span> <span className="text-white ml-1">{form.name}</span></div>
-              <div><span className="text-slate-500">Email:</span> <span className="text-white ml-1">{form.email}</span></div>
-              <div><span className="text-slate-500">Service:</span> <span className="text-white ml-1">{selectedService?.emoji} {form.service}</span></div>
-              <div><span className="text-slate-500">Type:</span> <span className={`ml-1 font-medium ${isRetainer ? 'text-violet-400' : 'text-blue-400'}`}>{isRetainer ? 'Retainer' : 'One-time'}</span></div>
-              <div><span className="text-slate-500">{isRetainer ? 'Monthly:' : 'Total:'}</span> <span className="text-emerald-400 font-semibold ml-1">₹{Number(form.total_fee).toLocaleString('en-IN')}</span></div>
-              {!isRetainer && <div><span className="text-slate-500">Deposit:</span> <span className="text-blue-400 font-semibold ml-1">₹{deposit.toLocaleString('en-IN')}</span></div>}
+          {/* Summary preview — blue themed */}
+          <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 space-y-2">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+              <p className="text-blue-700 text-xs font-semibold uppercase tracking-wider">Client Summary</p>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase tracking-wide">Name</span><span className="text-slate-900 font-semibold">{form.name}</span></div>
+              <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase tracking-wide">Email</span><span className="text-slate-700 font-medium truncate">{form.email}</span></div>
+              <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase tracking-wide">Service</span><span className="text-slate-900 font-semibold">{selectedService?.emoji} {form.service}</span></div>
+              <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase tracking-wide">Type</span><span className={`font-semibold ${isRetainer ? 'text-violet-600' : 'text-blue-600'}`}>{isRetainer ? 'Monthly Retainer' : 'One-time'}</span></div>
+              <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase tracking-wide">{isRetainer ? 'Monthly' : 'Total Fee'}</span><span className="text-emerald-600 font-bold">₹{Number(form.total_fee).toLocaleString('en-IN')}</span></div>
+              {!isRetainer && <div className="flex flex-col"><span className="text-slate-400 text-[10px] uppercase tracking-wide">50% Deposit</span><span className="text-blue-600 font-bold">₹{deposit.toLocaleString('en-IN')}</span></div>}
+              {form.start_date && <div className="flex flex-col col-span-2"><span className="text-slate-400 text-[10px] uppercase tracking-wide">Start Date</span><span className="text-slate-700 font-medium">{new Date(form.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span></div>}
             </div>
           </div>
 
           <div className="flex gap-3">
             <Button type="button" onClick={() => goToStep(2)} variant="ghost"
-              className="flex-1 h-11 text-slate-400 border border-white/10 rounded-xl hover:text-white">
+              className="flex-1 h-11 text-slate-600 border border-slate-200 rounded-xl hover:text-slate-900 hover:bg-slate-50">
               ← Back
             </Button>
             <Button type="submit" disabled={loading}
