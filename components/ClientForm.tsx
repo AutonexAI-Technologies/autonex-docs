@@ -192,17 +192,15 @@ export default function ClientForm() {
             <button
               type="button"
               onClick={() => step > s.num && goToStep(s.num)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
-                step === s.num
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${step === s.num
                   ? `${s.bg} ${s.border} ${s.color}`
                   : step > s.num
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 cursor-pointer'
-                  : 'bg-white/5 border-white/10 text-slate-500 cursor-default'
-              }`}
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 cursor-pointer'
+                    : 'bg-white/5 border-white/10 text-slate-500 cursor-default'
+                }`}
             >
-              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                step > s.num ? 'bg-emerald-500 text-white' : ''
-              }`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${step > s.num ? 'bg-emerald-500 text-white' : ''
+                }`}>
                 {step > s.num ? '✓' : s.num}
               </span>
               {s.label}
@@ -263,11 +261,10 @@ export default function ClientForm() {
               {CLIENT_STATUSES.map(s => (
                 <button key={s} type="button"
                   onClick={() => handleChange('status', s)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
-                    form.status === s
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${form.status === s
                       ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
                       : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {s}
                 </button>
@@ -301,13 +298,12 @@ export default function ClientForm() {
               {(['one-time', 'retainer'] as const).map(type => (
                 <button key={type} type="button"
                   onClick={() => handleProjectTypeChange(type)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    form.project_type === type
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${form.project_type === type
                       ? type === 'retainer'
                         ? 'bg-violet-500/15 border-violet-500/25 text-violet-400'
                         : 'bg-blue-500/15 border-blue-500/25 text-blue-400'
                       : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {type === 'retainer' ? <RefreshCw className="w-3.5 h-3.5" /> : <Zap className="w-3.5 h-3.5" />}
                   {type === 'retainer' ? 'Monthly Retainer' : 'One-time Project'}
@@ -327,9 +323,8 @@ export default function ClientForm() {
             <label className={labelClass}>Service Type <span className="text-blue-400">*</span></label>
             <div className="relative">
               <button type="button" onClick={() => setServiceOpen(!serviceOpen)}
-                className={`w-full flex items-center justify-between px-3 h-11 rounded-xl border bg-[#0d1a35] text-left transition-colors ${
-                  form.service ? 'text-white' : 'text-slate-600'
-                } ${fieldErrors.service ? 'border-red-500/50' : 'border-white/10 hover:border-blue-500/30'}`}
+                className={`w-full flex items-center justify-between px-3 h-11 rounded-xl border bg-[#0d1a35] text-left transition-colors ${form.service ? 'text-white' : 'text-slate-600'
+                  } ${fieldErrors.service ? 'border-red-500/50' : 'border-white/10 hover:border-blue-500/30'}`}
               >
                 <span className="flex items-center gap-2 text-sm">
                   {selectedService && <span>{selectedService.emoji}</span>}
@@ -350,9 +345,8 @@ export default function ClientForm() {
                     {DEFAULT_SERVICES.map(svc => (
                       <button key={svc.id} type="button"
                         onClick={() => handleServiceSelect(svc)}
-                        className={`w-full px-4 py-3 text-left transition-colors hover:bg-blue-500/10 ${
-                          form.service === svc.name ? 'text-blue-400 bg-blue-500/10' : 'text-slate-300'
-                        }`}
+                        className={`w-full px-4 py-3 text-left transition-colors hover:bg-blue-500/10 ${form.service === svc.name ? 'text-blue-400 bg-blue-500/10' : 'text-slate-300'
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-base">{svc.emoji}</span>

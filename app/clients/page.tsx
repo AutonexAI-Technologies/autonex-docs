@@ -230,7 +230,7 @@ export default function ClientsPage() {
 
                     {/* Actions */}
                     {perms.canDeleteClient && (
-                      <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1">
                         <Link href={`/clients/${client.id}`}>
                           <button className="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-500 flex items-center justify-center transition-colors">
                             <ArrowRight className="w-3.5 h-3.5" />
