@@ -8,7 +8,7 @@ export default function NewClientPage() {
       {/* Back link */}
       <Link
         href="/clients"
-        className="inline-flex items-center gap-2 text-slate-500 hover:text-white text-sm mb-8 transition-colors group"
+        className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors group"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
         Back to Clients
