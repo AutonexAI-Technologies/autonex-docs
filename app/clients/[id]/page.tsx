@@ -28,6 +28,7 @@ import OnboardingPage from './onboarding/page'
 import ClientMessagesPage from './messages/page'
 import ClientActivityPage from './activity/page'
 import TeamPage from './team/page'
+import AssignmentsPage from './assignments/page'
 
 const statusStyles: Record<ClientStatus, string> = {
   Lead: 'badge badge-violet',
@@ -56,10 +57,11 @@ const TABS = [
   { key: 'files', label: 'Files', icon: FolderOpen },
   { key: 'onboarding', label: 'Onboarding', icon: ClipboardList },
   { key: 'support', label: 'Support', icon: LifeBuoy },
-  { key: 'portal', label: 'Portal', icon: Users },
-  { key: 'notes', label: 'Notes', icon: StickyNote },
-  { key: 'health', label: 'Health', icon: Heart },
-  { key: 'activity', label: 'Activity', icon: Activity },
+  { key: 'portal',      label: 'Portal',      icon: Users },
+  { key: 'assignments', label: 'Assignments',  icon: Shield },
+  { key: 'notes',       label: 'Notes',       icon: StickyNote },
+  { key: 'health',      label: 'Health',      icon: Heart },
+  { key: 'activity',    label: 'Activity',    icon: Activity },
 ]
 
 export default function ClientDetailPage() {
@@ -347,6 +349,7 @@ export default function ClientDetailPage() {
         {activeTab === 'onboarding' && <OnboardingPage />}
         {activeTab === 'support' && <SupportPage />}
         {activeTab === 'portal' && <TeamPage />}
+        {activeTab === 'assignments' && <AssignmentsPage />}
         {activeTab === 'notes' && <NotesPage />}
         {activeTab === 'health' && <HealthPage />}
         {activeTab === 'activity' && <ClientActivityPage />}
