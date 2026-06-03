@@ -15,30 +15,30 @@ export const ROLE_ROUTES: Record<string, string[]> = {
   'Founder': [
     '/dashboard', '/clients', '/documents', '/invoices',
     '/retainers', '/reports', '/activity', '/team',
-    '/notifications', '/settings',
+    '/notifications', '/settings', '/pipeline', '/messages', '/announcements',
   ],
   'Managing Director': [
     '/dashboard', '/clients', '/documents', '/invoices',
     '/retainers', '/reports', '/activity', '/team',
-    '/notifications', '/settings',
+    '/notifications', '/settings', '/pipeline', '/messages', '/announcements',
   ],
   'Head': [
     '/dashboard', '/clients', '/documents', '/invoices',
     '/retainers', '/reports', '/activity', '/team',
-    '/notifications', '/settings',
+    '/notifications', '/settings', '/pipeline', '/messages', '/announcements',
   ],
   'Senior': [
     '/dashboard', '/clients', '/documents', '/invoices',
     '/retainers', '/reports', '/activity', '/team',
-    '/notifications',
+    '/notifications', '/pipeline', '/messages', '/announcements',
   ],
   'Junior': [
     '/dashboard', '/clients', '/documents', '/reports',
-    '/activity', '/team', '/notifications',
+    '/activity', '/team', '/notifications', '/pipeline', '/messages', '/announcements',
   ],
   'Intern': [
     '/dashboard', '/clients', '/documents', '/reports',
-    '/activity', '/team', '/notifications',
+    '/activity', '/team', '/notifications', '/messages', '/announcements',
   ],
 }
 
