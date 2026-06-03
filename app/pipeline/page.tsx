@@ -7,18 +7,15 @@ import Link from 'next/link'
 import {
   Users, Briefcase, FileText, CheckCircle2,
   TrendingUp, Zap, Eye, Building2, Trash2,
-  Plus, ExternalLink, X, Search, ChevronDown,
+  Plus, ExternalLink, X, Search, ChevronDown, Filter,
 } from 'lucide-react'
+import { useUserRole } from '@/lib/useUserRole'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type PipelineStatus =
-  | 'lead'
-  | 'proposal_sent'
-  | 'contract_signed'
-  | 'active'
-  | 'review'
-  | 'completed'
+  | 'lead' | 'proposal_sent' | 'contract_signed'
+  | 'active' | 'review' | 'completed'
 
 interface PipelineClient {
   id: string
@@ -29,25 +26,17 @@ interface PipelineClient {
   email: string
   phone?: string
   created_at: string
-  invoice_status?: string
 }
 
 // ── Column Config ─────────────────────────────────────────────────────────────
 
-const COLUMNS: {
-  key: PipelineStatus
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  color: string
-  bg: string
-  border: string
-}[] = [
-  { key: 'lead',            label: 'Lead',            icon: Users,        color: 'text-slate-600',  bg: 'bg-slate-100',  border: 'border-slate-200'  },
-  { key: 'proposal_sent',   label: 'Proposal Sent',   icon: FileText,     color: 'text-violet-600', bg: 'bg-violet-50',  border: 'border-violet-200' },
-  { key: 'contract_signed', label: 'Contract Signed', icon: CheckCircle2, color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200'   },
-  { key: 'active',          label: 'Active',           icon: Zap,          color: 'text-emerald-600',bg: 'bg-emerald-50', border: 'border-emerald-200'},
-  { key: 'review',          label: 'In Review',        icon: Eye,          color: 'text-amber-600',  bg: 'bg-amber-50',   border: 'border-amber-200'  },
-  { key: 'completed',       label: 'Completed',        icon: TrendingUp,   color: 'text-teal-600',   bg: 'bg-teal-50',    border: 'border-teal-200'   },
+const COLUMNS = [
+  { key: 'lead' as PipelineStatus,            label: 'Lead',            icon: Users,        color: 'text-slate-600',   bg: 'bg-slate-100',   border: 'border-slate-200'  },
+  { key: 'proposal_sent' as PipelineStatus,   label: 'Proposal Sent',   icon: FileText,     color: 'text-violet-600',  bg: 'bg-violet-50',   border: 'border-violet-200' },
+  { key: 'contract_signed' as PipelineStatus, label: 'Contract Signed', icon: CheckCircle2, color: 'text-blue-600',    bg: 'bg-blue-50',     border: 'border-blue-200'   },
+  { key: 'active' as PipelineStatus,          label: 'Active',          icon: Zap,          color: 'text-emerald-600', bg: 'bg-emerald-50',  border: 'border-emerald-200'},
+  { key: 'review' as PipelineStatus,          label: 'In Review',       icon: Eye,          color: 'text-amber-600',   bg: 'bg-amber-50',    border: 'border-amber-200'  },
+  { key: 'completed' as PipelineStatus,       label: 'Completed',       icon: TrendingUp,   color: 'text-teal-600',    bg: 'bg-teal-50',     border: 'border-teal-200'   },
 ]
 
 function serviceInitials(service: string) {
@@ -65,10 +54,11 @@ function timeAgo(dateStr: string) {
 
 // ── Client Card ───────────────────────────────────────────────────────────────
 
-function ClientCard({ client, onDragStart, onDelete }: {
+function ClientCard({ client, onDragStart, onDelete, viewOnly }: {
   client: PipelineClient
   onDragStart: (id: string) => void
   onDelete: (id: string) => void
+  viewOnly: boolean
 }) {
   return (
     <motion.div
@@ -76,16 +66,14 @@ function ClientCard({ client, onDragStart, onDelete }: {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      draggable
-      onDragStart={() => onDragStart(client.id)}
-      className="group bg-white border border-slate-200 rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-blue-300 transition-all duration-200 hover:shadow-md shadow-sm"
+      draggable={!viewOnly}
+      onDragStart={() => !viewOnly && onDragStart(client.id)}
+      className={`group bg-white border border-slate-200 rounded-xl p-3.5 transition-all duration-200 hover:border-blue-300 hover:shadow-md shadow-sm ${viewOnly ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0">
-            <span className="text-[9px] font-bold text-white">
-              {serviceInitials(client.service_type || 'CU')}
-            </span>
+            <span className="text-[9px] font-bold text-white">{serviceInitials(client.service_type || 'CU')}</span>
           </div>
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-slate-900 truncate leading-tight">{client.name}</p>
@@ -101,19 +89,20 @@ function ClientCard({ client, onDragStart, onDelete }: {
             className="p-1 rounded-md hover:bg-blue-50 transition-colors">
             <ExternalLink className="w-3 h-3 text-blue-500" />
           </Link>
-          <button onClick={e => { e.stopPropagation(); onDelete(client.id) }}
-            className="p-1 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
-            <Trash2 className="w-3 h-3" />
-          </button>
+          {!viewOnly && (
+            <button onClick={e => { e.stopPropagation(); onDelete(client.id) }}
+              className="p-1 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
+              <Trash2 className="w-3 h-3" />
+            </button>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="badge badge-blue text-[10px]">{client.service_type || 'Custom'}</span>
-        {client.invoice_status === 'overdue' && <span className="badge badge-red text-[10px]">Overdue</span>}
       </div>
       <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between">
         <span className="text-[10px] text-slate-400">{timeAgo(client.created_at)}</span>
-        <span className="text-[10px] text-slate-400">{client.email}</span>
+        <span className="text-[10px] text-slate-400 truncate max-w-[120px]">{client.email}</span>
       </div>
     </motion.div>
   )
@@ -121,7 +110,7 @@ function ClientCard({ client, onDragStart, onDelete }: {
 
 // ── Kanban Column ─────────────────────────────────────────────────────────────
 
-function KanbanColumn({ col, clients, onDragStart, onDrop, isOver, onDragOver, onDelete }: {
+function KanbanColumn({ col, clients, onDragStart, onDrop, isOver, onDragOver, onDelete, viewOnly }: {
   col: typeof COLUMNS[0]
   clients: PipelineClient[]
   onDragStart: (id: string) => void
@@ -129,15 +118,16 @@ function KanbanColumn({ col, clients, onDragStart, onDrop, isOver, onDragOver, o
   isOver: boolean
   onDragOver: () => void
   onDelete: (id: string) => void
+  viewOnly: boolean
 }) {
   const Icon = col.icon
   return (
     <div
       className={`flex flex-col min-w-[260px] w-[260px] shrink-0 rounded-2xl border transition-all duration-200 ${
-        isOver ? 'border-blue-400 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-slate-200 bg-slate-50'
+        isOver && !viewOnly ? 'border-blue-400 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-slate-200 bg-slate-50'
       }`}
-      onDragOver={e => { e.preventDefault(); onDragOver() }}
-      onDrop={e => { e.preventDefault(); onDrop(col.key) }}
+      onDragOver={e => { if (!viewOnly) { e.preventDefault(); onDragOver() } }}
+      onDrop={e => { if (!viewOnly) { e.preventDefault(); onDrop(col.key) } }}
     >
       <div className="px-3.5 py-3 border-b border-slate-200 flex items-center justify-between bg-white rounded-t-2xl">
         <div className="flex items-center gap-2">
@@ -146,19 +136,17 @@ function KanbanColumn({ col, clients, onDragStart, onDrop, isOver, onDragOver, o
           </div>
           <span className="text-sm font-semibold text-slate-900">{col.label}</span>
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${col.bg} ${col.color}`}>
-          {clients.length}
-        </span>
+        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${col.bg} ${col.color}`}>{clients.length}</span>
       </div>
       <div className="flex-1 p-2.5 space-y-2.5 min-h-[120px] overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin">
         <AnimatePresence>
           {clients.map(c => (
-            <ClientCard key={c.id} client={c} onDragStart={onDragStart} onDelete={onDelete} />
+            <ClientCard key={c.id} client={c} onDragStart={onDragStart} onDelete={onDelete} viewOnly={viewOnly} />
           ))}
         </AnimatePresence>
         {clients.length === 0 && (
           <div className="h-20 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white">
-            <p className="text-[11px] text-slate-400">Drop here</p>
+            <p className="text-[11px] text-slate-400">{viewOnly ? 'No clients' : 'Drop here'}</p>
           </div>
         )}
       </div>
@@ -178,13 +166,12 @@ function MoveToStageModal({ allClients, onClose, onMove }: {
   const [selectedStage, setSelectedStage] = useState<PipelineStatus>('lead')
   const [stageOpen, setStageOpen] = useState(false)
   const [moving, setMoving] = useState(false)
-
   const filtered = allClients.filter(c =>
-    !search ||
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    !search || c.name.toLowerCase().includes(search.toLowerCase()) ||
     (c.company || '').toLowerCase().includes(search.toLowerCase()) ||
     c.email.toLowerCase().includes(search.toLowerCase())
   )
+  const selectedCol = COLUMNS.find(c => c.key === selectedStage)!
 
   async function handleMove() {
     if (!selectedClient) return
@@ -194,78 +181,48 @@ function MoveToStageModal({ allClients, onClose, onMove }: {
     onClose()
   }
 
-  const selectedCol = COLUMNS.find(c => c.key === selectedStage)!
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden"
-      >
-        {/* Header */}
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Move Client to Pipeline</h2>
+            <h2 className="text-base font-bold text-slate-900">Move Client to Stage</h2>
             <p className="text-xs text-slate-500 mt-0.5">Select a client and assign a stage</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X className="w-4 h-4" /></button>
         </div>
-
         <div className="p-5 space-y-4">
-          {/* Search client */}
           <div>
             <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Select Client</label>
             <div className="relative mb-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name, company or email…"
-                className="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/10"
-              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, company or email…"
+                className="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-400" />
             </div>
             <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <div className="py-6 text-center text-sm text-slate-400">No clients found</div>
-              ) : (
-                filtered.map(c => (
-                  <button key={c.id} type="button"
-                    onClick={() => setSelectedClient(c)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
-                      selectedClient?.id === c.id
-                        ? 'bg-blue-50 border-l-2 border-blue-500'
-                        : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-white">{serviceInitials(c.service_type || 'CU')}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-900 truncate">{c.name}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{c.company || c.email}</p>
-                    </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                      c.status === 'active' ? 'bg-emerald-50 text-emerald-600' :
-                      c.status === 'lead' ? 'bg-slate-100 text-slate-600' :
-                      'bg-blue-50 text-blue-600'
-                    }`}>{c.status.replace('_', ' ')}</span>
-                  </button>
-                ))
-              )}
+              ) : filtered.map(c => (
+                <button key={c.id} type="button" onClick={() => setSelectedClient(c)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${selectedClient?.id === c.id ? 'bg-blue-50 border-l-2 border-blue-500' : 'hover:bg-slate-50'}`}>
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0">
+                    <span className="text-[9px] font-bold text-white">{serviceInitials(c.service_type || 'CU')}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{c.name}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{c.company || c.email}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Stage selector */}
           <div>
             <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Assign to Stage</label>
             <div className="relative">
               <button type="button" onClick={() => setStageOpen(!stageOpen)}
-                className="w-full flex items-center justify-between h-10 px-3 rounded-xl border border-slate-200 bg-white hover:border-blue-400 transition-colors text-sm text-slate-900">
+                className="w-full flex items-center justify-between h-10 px-3 rounded-xl border border-slate-200 bg-white hover:border-blue-400 text-sm text-slate-900">
                 <div className="flex items-center gap-2">
                   <span className={`w-5 h-5 rounded-md ${selectedCol.bg} border ${selectedCol.border} flex items-center justify-center`}>
                     <selectedCol.icon className={`w-2.5 h-2.5 ${selectedCol.color}`} />
@@ -276,17 +233,11 @@ function MoveToStageModal({ allClients, onClose, onMove }: {
               </button>
               <AnimatePresence>
                 {stageOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                    className="absolute top-[calc(100%+4px)] left-0 right-0 z-10 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden"
-                  >
+                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    className="absolute top-[calc(100%+4px)] left-0 right-0 z-10 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden">
                     {COLUMNS.map(col => (
-                      <button key={col.key} type="button"
-                        onClick={() => { setSelectedStage(col.key); setStageOpen(false) }}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-slate-50 ${
-                          selectedStage === col.key ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'
-                        }`}
-                      >
+                      <button key={col.key} type="button" onClick={() => { setSelectedStage(col.key); setStageOpen(false) }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-slate-50 ${selectedStage === col.key ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700'}`}>
                         <span className={`w-5 h-5 rounded-md ${col.bg} border ${col.border} flex items-center justify-center`}>
                           <col.icon className={`w-2.5 h-2.5 ${col.color}`} />
                         </span>
@@ -299,20 +250,11 @@ function MoveToStageModal({ allClients, onClose, onMove }: {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
         <div className="flex gap-3 px-5 pb-5">
-          <button onClick={onClose}
-            className="flex-1 h-10 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
-            Cancel
-          </button>
+          <button onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">Cancel</button>
           <button onClick={handleMove} disabled={!selectedClient || moving}
-            className="flex-[2] h-10 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
-            {moving ? (
-              <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Moving…</>
-            ) : (
-              <>Move to {selectedCol.label} →</>
-            )}
+            className="flex-[2] h-10 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold disabled:opacity-40 flex items-center justify-center gap-2">
+            {moving ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Moving…</> : `Move to ${selectedCol.label} →`}
           </button>
         </div>
       </motion.div>
@@ -329,7 +271,16 @@ export default function PipelinePage() {
   const [overColumn, setOverColumn] = useState<PipelineStatus | null>(null)
   const [saving, setSaving] = useState(false)
   const [showMoveModal, setShowMoveModal] = useState(false)
+  const [myTeamOnly, setMyTeamOnly] = useState(false)
+  const [myTeamClientIds, setMyTeamClientIds] = useState<string[]>([])
   const supabase = createClient()
+  const { role_name, isAdmin } = useUserRole()
+
+  // Intern = view only, no drag/drop/delete
+  const isIntern = role_name === 'Intern'
+  const isJunior = role_name === 'Junior'
+  const needsTeamFilter = (isIntern || isJunior) && !isAdmin
+  const viewOnly = isIntern
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -341,21 +292,41 @@ export default function PipelinePage() {
     setLoading(false)
   }, [supabase])
 
-  useEffect(() => { load() }, [load])
+  // Load team-assigned client IDs for Juniors/Interns
+  const loadMyTeamClients = useCallback(async () => {
+    if (!needsTeamFilter) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user?.email) return
+    // Get this member's team memberships → assignments → client ids
+    const { data: memberships } = await supabase
+      .from('team_memberships')
+      .select('team_id, team_members!inner(email)')
+      .eq('team_members.email', user.email.toLowerCase())
+    const teamIds = (memberships ?? []).map((m: any) => m.team_id)
+    if (!teamIds.length) { setMyTeamClientIds([]); return }
+    const { data: assignments } = await supabase
+      .from('client_assignments')
+      .select('client_id')
+      .in('team_id', teamIds)
+    setMyTeamClientIds((assignments ?? []).map((a: any) => a.client_id))
+  }, [supabase, needsTeamFilter])
+
+  useEffect(() => { load(); loadMyTeamClients() }, [load, loadMyTeamClients])
+  // Default to team filter for Juniors/Interns
+  useEffect(() => { if (needsTeamFilter) setMyTeamOnly(true) }, [needsTeamFilter])
 
   const handleDrop = async (newStatus: PipelineStatus) => {
-    if (!draggingId || saving) return
-    const prevClients = clients
-    setClients(prev => prev.map(c => c.id === draggingId ? { ...c, status: newStatus } : c))
-    setDraggingId(null)
-    setOverColumn(null)
-    setSaving(true)
+    if (!draggingId || saving || viewOnly) return
+    const prev = clients
+    setClients(p => p.map(c => c.id === draggingId ? { ...c, status: newStatus } : c))
+    setDraggingId(null); setOverColumn(null); setSaving(true)
     const { error } = await supabase.from('clients').update({ status: newStatus }).eq('id', draggingId)
-    if (error) setClients(prevClients)
+    if (error) setClients(prev)
     setSaving(false)
   }
 
   const handleDelete = async (clientId: string) => {
+    if (viewOnly) return
     if (!confirm('Delete this client permanently? This cannot be undone.')) return
     setClients(prev => prev.filter(c => c.id !== clientId))
     await supabase.from('clients').delete().eq('id', clientId)
@@ -364,28 +335,26 @@ export default function PipelinePage() {
   const handleMoveToStage = async (clientId: string, stage: PipelineStatus) => {
     setSaving(true)
     const { error } = await supabase.from('clients').update({ status: stage }).eq('id', clientId)
-    if (!error) {
-      setClients(prev => prev.map(c => c.id === clientId ? { ...c, status: stage } : c))
-    }
+    if (!error) setClients(prev => prev.map(c => c.id === clientId ? { ...c, status: stage } : c))
     setSaving(false)
   }
 
+  // Filter clients based on myTeamOnly toggle
+  const displayClients = myTeamOnly
+    ? clients.filter(c => myTeamClientIds.includes(c.id))
+    : clients
+
   const grouped = COLUMNS.reduce<Record<PipelineStatus, PipelineClient[]>>(
     (acc, col) => {
-      acc[col.key] = clients.filter(c => {
+      acc[col.key] = displayClients.filter(c => {
         if (col.key === 'active') return c.status === 'active' || (c.status as string) === 'onboarding'
         return c.status === col.key
       })
       return acc
-    },
-    {} as Record<PipelineStatus, PipelineClient[]>
+    }, {} as Record<PipelineStatus, PipelineClient[]>
   )
 
-  const totals = {
-    total: clients.length,
-    active: grouped['active']?.length ?? 0,
-    lead: grouped['lead']?.length ?? 0,
-  }
+  const totals = { total: displayClients.length, active: grouped['active']?.length ?? 0, lead: grouped['lead']?.length ?? 0 }
 
   return (
     <div className="flex flex-col h-full">
@@ -396,59 +365,47 @@ export default function PipelinePage() {
             <h1 className="page-header flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-blue-600" />
               Pipeline
+              {viewOnly && <span className="text-xs font-normal text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">View Only</span>}
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
-              Drag clients between stages · move existing clients with the button
+              {viewOnly ? 'Track project stages' : 'Drag clients between stages · use Move to Stage for quick reassignment'}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Live stats */}
+            {/* Stats */}
             <div className="hidden sm:flex items-center gap-4">
-              <div className="text-center">
-                <p className="text-lg font-bold text-slate-900">{totals.total}</p>
-                <p className="text-[10px] text-slate-500">Total</p>
-              </div>
+              <div className="text-center"><p className="text-lg font-bold text-slate-900">{totals.total}</p><p className="text-[10px] text-slate-500">Total</p></div>
               <div className="w-px h-8 bg-slate-200" />
-              <div className="text-center">
-                <p className="text-lg font-bold text-emerald-600">{totals.active}</p>
-                <p className="text-[10px] text-slate-500">Active</p>
-              </div>
+              <div className="text-center"><p className="text-lg font-bold text-emerald-600">{totals.active}</p><p className="text-[10px] text-slate-500">Active</p></div>
               <div className="w-px h-8 bg-slate-200" />
-              <div className="text-center">
-                <p className="text-lg font-bold text-slate-500">{totals.lead}</p>
-                <p className="text-[10px] text-slate-500">Leads</p>
-              </div>
+              <div className="text-center"><p className="text-lg font-bold text-slate-500">{totals.lead}</p><p className="text-[10px] text-slate-500">Leads</p></div>
             </div>
-
-            {/* Move existing client to stage */}
-            <button
-              onClick={() => setShowMoveModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-sm font-medium rounded-xl transition-colors"
-            >
-              <Users className="w-3.5 h-3.5" />
-              Move to Stage
+            {/* My Team filter */}
+            <button onClick={() => setMyTeamOnly(!myTeamOnly)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                myTeamOnly ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-700'
+              }`}>
+              <Filter className="w-3.5 h-3.5" />
+              My Team
             </button>
-
-            {/* Add new client */}
-            <Link
-              href="/clients/new"
-              className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add Client
-            </Link>
+            {!viewOnly && (
+              <>
+                <button onClick={() => setShowMoveModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-sm font-medium rounded-xl transition-colors">
+                  <Users className="w-3.5 h-3.5" /> Move to Stage
+                </button>
+                <Link href="/clients/new"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> Add Client
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Saving indicator */}
-      {saving && (
-        <div className="px-6 py-2 bg-blue-50 border-b border-blue-200 text-xs text-blue-600 font-medium">
-          Saving…
-        </div>
-      )}
+      {saving && <div className="px-6 py-2 bg-blue-50 border-b border-blue-200 text-xs text-blue-600 font-medium">Saving…</div>}
 
-      {/* Board */}
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -457,29 +414,18 @@ export default function PipelinePage() {
         <div className="flex-1 overflow-x-auto p-6">
           <div className="flex gap-4 h-full" style={{ minWidth: 'max-content' }}>
             {COLUMNS.map(col => (
-              <KanbanColumn
-                key={col.key}
-                col={col}
-                clients={grouped[col.key] ?? []}
-                onDragStart={id => setDraggingId(id)}
-                onDrop={handleDrop}
-                isOver={overColumn === col.key}
-                onDragOver={() => setOverColumn(col.key)}
-                onDelete={handleDelete}
-              />
+              <KanbanColumn key={col.key} col={col} clients={grouped[col.key] ?? []}
+                onDragStart={id => setDraggingId(id)} onDrop={handleDrop}
+                isOver={overColumn === col.key} onDragOver={() => setOverColumn(col.key)}
+                onDelete={handleDelete} viewOnly={viewOnly} />
             ))}
           </div>
         </div>
       )}
 
-      {/* Move to Stage Modal */}
       <AnimatePresence>
         {showMoveModal && (
-          <MoveToStageModal
-            allClients={clients}
-            onClose={() => setShowMoveModal(false)}
-            onMove={handleMoveToStage}
-          />
+          <MoveToStageModal allClients={clients} onClose={() => setShowMoveModal(false)} onMove={handleMoveToStage} />
         )}
       </AnimatePresence>
     </div>

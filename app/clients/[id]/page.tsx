@@ -14,7 +14,7 @@ import {
   Edit, StickyNote,
   // Tab icons
   Milestone, MessageSquare, FolderOpen, ClipboardList,
-  LifeBuoy, Activity, Heart, Users, Send, ExternalLink, Check,
+  LifeBuoy, Activity, Heart, Users, Send, ExternalLink, Check, Shield,
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -39,27 +39,27 @@ const statusStyles: Record<ClientStatus, string> = {
 
 // Pipeline status styles (lowercase)
 const pipelineStatusStyles: Record<string, string> = {
-  lead:            'badge badge-violet',
-  proposal_sent:   'badge badge-blue',
+  lead: 'badge badge-violet',
+  proposal_sent: 'badge badge-blue',
   contract_signed: 'badge badge-blue',
-  active:          'badge badge-green',
-  review:          'badge badge-yellow',
-  completed:       'badge badge-blue',
-  paused:          'badge badge-yellow',
-  cancelled:       'badge badge-red',
+  active: 'badge badge-green',
+  review: 'badge badge-yellow',
+  completed: 'badge badge-blue',
+  paused: 'badge badge-yellow',
+  cancelled: 'badge badge-red',
 }
 
 const TABS = [
-  { key: 'overview',    label: 'Overview',    icon: User },
-  { key: 'timeline',    label: 'Timeline',    icon: Milestone },
-  { key: 'messages',    label: 'Messages',    icon: MessageSquare },
-  { key: 'files',       label: 'Files',       icon: FolderOpen },
-  { key: 'onboarding',  label: 'Onboarding',  icon: ClipboardList },
-  { key: 'support',     label: 'Support',     icon: LifeBuoy },
-  { key: 'portal',      label: 'Portal',      icon: Users },
-  { key: 'notes',       label: 'Notes',       icon: StickyNote },
-  { key: 'health',      label: 'Health',      icon: Heart },
-  { key: 'activity',    label: 'Activity',    icon: Activity },
+  { key: 'overview', label: 'Overview', icon: User },
+  { key: 'timeline', label: 'Timeline', icon: Milestone },
+  { key: 'messages', label: 'Messages', icon: MessageSquare },
+  { key: 'files', label: 'Files', icon: FolderOpen },
+  { key: 'onboarding', label: 'Onboarding', icon: ClipboardList },
+  { key: 'support', label: 'Support', icon: LifeBuoy },
+  { key: 'portal', label: 'Portal', icon: Users },
+  { key: 'notes', label: 'Notes', icon: StickyNote },
+  { key: 'health', label: 'Health', icon: Heart },
+  { key: 'activity', label: 'Activity', icon: Activity },
 ]
 
 export default function ClientDetailPage() {
@@ -216,11 +216,10 @@ export default function ClientDetailPage() {
             <button
               onClick={handleSendPortalInvite}
               disabled={sendingInvite}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-                inviteSent
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${inviteSent
                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                   : 'bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/15'
-              }`}
+                }`}
             >
               {sendingInvite ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -268,11 +267,10 @@ export default function ClientDetailPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`relative flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-medium whitespace-nowrap transition-all rounded-t-lg ${
-                isActive
+              className={`relative flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-medium whitespace-nowrap transition-all rounded-t-lg ${isActive
                   ? 'text-blue-400 bg-blue-500/8'
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-50'
-              }`}
+                }`}
             >
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-blue-400' : 'text-slate-600'}`} />
               {tab.label}

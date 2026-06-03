@@ -44,21 +44,21 @@ export const ROLE_ROUTES: Record<string, string[]> = {
 
 // Nav label shown in sidebar per role (for display only)
 export const ROLE_ACCESS_LABEL: Record<string, string> = {
-  'Founder':           'Full Access',
+  'Founder': 'Full Access',
   'Managing Director': 'Full Access',
-  'Head':              'Dept. Access',
-  'Senior':            'Read + Write',
-  'Junior':            'Read + Limited',
-  'Intern':            'Read Only',
+  'Head': 'Dept. Access',
+  'Senior': 'Read + Write',
+  'Junior': 'Read + Limited',
+  'Intern': 'Read Only',
 }
 
 export const ROLE_COLOR: Record<string, string> = {
-  'Founder':           'text-violet-400',
+  'Founder': 'text-violet-400',
   'Managing Director': 'text-blue-400',
-  'Head':              'text-emerald-400',
-  'Senior':            'text-teal-400',
-  'Junior':            'text-amber-400',
-  'Intern':            'text-slate-400',
+  'Head': 'text-emerald-400',
+  'Senior': 'text-teal-400',
+  'Junior': 'text-amber-400',
+  'Intern': 'text-slate-400',
 }
 
 // Check if a role can access a given pathname
