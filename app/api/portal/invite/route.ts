@@ -13,6 +13,77 @@ function generatePassword(length = 12): string {
   return pw
 }
 
+function buildCredentialsEmail({ clientDisplayName, email, password, client, portalUrl }: {
+  clientDisplayName: string, email: string, password: string,
+  client: { name: string; company?: string | null }, portalUrl: string
+}) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f4fa;font-family:'Inter',system-ui,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4fa;min-height:100vh;">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <!-- Logo -->
+        <tr><td style="padding-bottom:28px;text-align:center;">
+          <div style="display:inline-flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+              <span style="color:#fff;font-weight:800;font-size:18px;">A</span>
+            </div>
+            <div>
+              <div style="font-size:18px;font-weight:800;color:#1D4ED8;">Autonex AI</div>
+              <div style="font-size:11px;color:#64748b;margin-top:1px;">Client Portal</div>
+            </div>
+          </div>
+        </td></tr>
+        <!-- Card -->
+        <tr><td style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;box-shadow:0 4px 16px rgba(15,23,42,0.06);">
+          <h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0 0 8px;">Welcome to your Portal! 🎉</h1>
+          <p style="color:#64748b;font-size:15px;margin:0 0 24px;line-height:1.6;">
+            Hi <strong style="color:#0f172a;">${clientDisplayName}</strong>, your Autonex AI Client Portal is ready.
+            Use the credentials below to sign in and track your project, view invoices, share files, and communicate with your team.
+          </p>
+          <!-- Credentials Box -->
+          <div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:16px;padding:24px;margin:0 0 24px;">
+            <p style="color:#64748b;font-size:11px;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Your Login Credentials</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding:8px 0;">
+                  <span style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Email</span><br/>
+                  <span style="color:#0f172a;font-size:16px;font-weight:600;">${email}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 0 8px;border-top:1px solid #e2e8f0;margin-top:8px;">
+                  <span style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Password</span><br/>
+                  <code style="color:#1D4ED8;font-size:20px;font-weight:700;background:#eff6ff;padding:6px 14px;border-radius:10px;display:inline-block;margin-top:6px;letter-spacing:0.05em;">${password}</code>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Project -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin:0 0 24px;">
+            <p style="color:#64748b;font-size:11px;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em;">Project</p>
+            <p style="color:#0f172a;font-size:16px;font-weight:600;margin:0;">${client.company || client.name}</p>
+          </div>
+          <a href="${portalUrl}/login" style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin:0 0 16px;">
+            Sign In to My Portal →
+          </a>
+          <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0 0 6px;">We recommend changing your password after first login.</p>
+          <p style="color:#cbd5e1;font-size:11px;text-align:center;margin:0;word-break:break-all;">Portal: ${portalUrl}/login</p>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="padding:24px 0 0;text-align:center;">
+          <p style="color:#94a3b8;font-size:11px;margin:0;">© ${new Date().getFullYear()} Autonex AI Technologies · Invitation-only access</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+
 /**
  * POST /api/portal/invite
  * Creates a portal user with credentials and sends them an email with login details.
@@ -63,11 +134,41 @@ export async function POST(request: NextRequest) {
     })
 
     if (authErr) {
-      if (authErr.message.includes('already been registered')) {
-        return NextResponse.json({ error: 'This email is already registered. The client can sign in with their existing credentials.' }, { status: 409 })
+      if (authErr.message.includes('already been registered') || authErr.message.includes('already registered')) {
+        // User exists — reset their password and resend credentials
+        const { data: userList } = await admin.auth.admin.listUsers({ perPage: 1000 })
+        const existingUser = userList?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
+        if (existingUser) {
+          // Reset password to new generated one
+          await admin.auth.admin.updateUserById(existingUser.id, {
+            password,
+            app_metadata: { user_type: 'client', client_id, portal_role },
+            user_metadata: { name: clientDisplayName },
+          })
+          // Resend credentials email (falls through to email send below)
+          const portalUrl2 = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.autonexai.org'
+          try {
+            const { Resend } = await import('resend')
+            const resend2 = new Resend(process.env.RESEND_API_KEY)
+            await resend2.emails.send({
+              from: 'Autonex AI <noreply@autonexai.org>',
+              to: email,
+              subject: `Your Autonex AI Portal — Updated Credentials`,
+              html: buildCredentialsEmail({ clientDisplayName, email, password, client, portalUrl: portalUrl2 }),
+            })
+          } catch {}
+          return NextResponse.json({
+            message: 'Credentials reset and resent to existing user',
+            user_id: existingUser.id,
+            email,
+            portal_url: `${process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.autonexai.org'}/login`,
+            resent: true,
+          }, { status: 200 })
+        }
       }
       return NextResponse.json({ error: authErr.message }, { status: 500 })
     }
+
 
     // Create portal_user record
     await admin.from('portal_users').insert({
@@ -96,67 +197,7 @@ export async function POST(request: NextRequest) {
         from: 'Autonex AI <noreply@autonexai.org>',
         to: email,
         subject: `Your Autonex AI Client Portal Credentials`,
-        html: `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="margin:0;padding:0;background-color:#f0f4fa;font-family:'Inter',system-ui,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4fa;min-height:100vh;">
-    <tr><td align="center" style="padding:40px 20px;">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-        <!-- Logo -->
-        <tr><td style="padding-bottom:32px;text-align:center;">
-          <span style="font-size:22px;font-weight:800;color:#1D4ED8;">Autonex AI</span>
-          <span style="font-size:12px;color:#64748b;display:block;margin-top:2px;">Client Portal</span>
-        </td></tr>
-        <!-- Card -->
-        <tr><td style="background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;box-shadow:0 4px 16px rgba(15,23,42,0.06);">
-          <h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0 0 8px;">Welcome to your Portal! 🎉</h1>
-          <p style="color:#64748b;font-size:15px;margin:0 0 24px;line-height:1.6;">
-            Hi <strong style="color:#0f172a;">${clientDisplayName}</strong>, your Autonex AI Client Portal account has been created.
-            Use the credentials below to sign in and track your project progress, view invoices, share files, and communicate with your team.
-          </p>
-          
-          <!-- Credentials Box -->
-          <div style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:16px;padding:24px;margin:0 0 24px;">
-            <p style="color:#64748b;font-size:11px;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Your Login Credentials</p>
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding:8px 0;">
-                  <span style="color:#64748b;font-size:13px;">Email</span><br/>
-                  <span style="color:#0f172a;font-size:16px;font-weight:600;">${email}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:8px 0;border-top:1px solid #e2e8f0;">
-                  <span style="color:#64748b;font-size:13px;">Password</span><br/>
-                  <code style="color:#1D4ED8;font-size:18px;font-weight:700;background:#eff6ff;padding:4px 12px;border-radius:8px;display:inline-block;margin-top:4px;">${password}</code>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <!-- Project Info -->
-          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px;margin:0 0 24px;">
-            <p style="color:#64748b;font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em;">Project</p>
-            <p style="color:#0f172a;font-size:16px;font-weight:600;margin:0;">${client.company || client.name}</p>
-          </div>
-
-          <a href="${portalUrl}/login" style="display:block;text-align:center;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:600;font-size:15px;margin:0 0 16px;">
-            Sign In to My Portal →
-          </a>
-          <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0 0 8px;">We recommend changing your password after first login.</p>
-          <p style="color:#cbd5e1;font-size:11px;text-align:center;margin:0;word-break:break-all;">Portal URL: ${portalUrl}/login</p>
-        </td></tr>
-        <!-- Footer -->
-        <tr><td style="padding:24px 0 0;text-align:center;">
-          <p style="color:#94a3b8;font-size:11px;margin:0;">© ${new Date().getFullYear()} Autonex AI Technologies · Invitation-only access</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`,
+        html: buildCredentialsEmail({ clientDisplayName, email, password, client, portalUrl }),
       })
     } catch (emailErr: any) {
       console.error('[Resend error]', emailErr)

@@ -13,6 +13,7 @@ import {
 
 interface Message {
   id: string
+  sender_id: string
   content: string
   sender_name: string
   sender_role: string | null
@@ -150,6 +151,7 @@ export default function ThreadPage() {
     const tempId = `opt-${Date.now()}`
     const optimistic: Message = {
       id: tempId,
+      sender_id: userId,
       content,
       sender_name: userName,
       sender_role: userRole,

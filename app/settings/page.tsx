@@ -65,7 +65,7 @@ export default function SettingsPage() {
 
   // Load profile from Supabase auth user
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
       if (user) {
         setProfile({
           full_name: user.user_metadata?.name || user.user_metadata?.full_name || '',

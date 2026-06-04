@@ -68,7 +68,7 @@ export default function AnnouncementsPage() {
   useEffect(() => {
     // Load departments
     supabase.from('departments').select('id, name').order('name')
-      .then(({ data }) => setDepartments(data ?? []))
+      .then(({ data }: { data: any }) => setDepartments(data ?? []))
 
     // Get current user name + dept
     supabase.auth.getUser().then(({ data: { user } }: any) => {
