@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase'
 import { motion } from 'framer-motion'
 import {
   Settings, Building2, Scale, CreditCard, Mail, Wrench, Bell, Shield,
-  ChevronRight, Save, Loader2, IndianRupee,
+  ChevronRight, Save, Loader2, IndianRupee, User, Phone, Lock, Eye, EyeOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,19 +13,25 @@ import { DEFAULT_SERVICES } from '@/types'
 import { useToast } from '@/hooks/use-toast'
 
 const sections = [
-  { id: 'branding', label: 'Branding', icon: Building2, desc: 'Company name, logo, tagline, website' },
-  { id: 'legal', label: 'Legal Details', icon: Scale, desc: 'GST, PAN, registered address' },
-  { id: 'payment', label: 'Payment Details', icon: CreditCard, desc: 'Bank, IFSC, UPI — auto-fills invoices' },
-  { id: 'email', label: 'Email Config', icon: Mail, desc: 'From name, reply-to, signature' },
-  { id: 'services', label: 'Service Rates', icon: Wrench, desc: 'Default setup and retainer rates' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, desc: 'Per-user notification preferences' },
-  { id: 'security', label: 'Security', icon: Shield, desc: 'Sessions, change password' },
+  { id: 'profile',       label: 'Profile',          icon: User,      desc: 'Your name, email, contact' },
+  { id: 'branding',      label: 'Branding',         icon: Building2, desc: 'Company name, logo, tagline, website' },
+  { id: 'legal',         label: 'Legal Details',    icon: Scale,     desc: 'GST, PAN, registered address' },
+  { id: 'payment',       label: 'Payment Details',  icon: CreditCard,desc: 'Bank, IFSC, UPI — auto-fills invoices' },
+  { id: 'email',         label: 'Email Config',     icon: Mail,      desc: 'From name, reply-to, signature' },
+  { id: 'services',      label: 'Service Rates',    icon: Wrench,    desc: 'Default setup and retainer rates' },
+  { id: 'notifications', label: 'Notifications',    icon: Bell,      desc: 'Per-user notification preferences' },
+  { id: 'security',      label: 'Security',         icon: Shield,    desc: 'Sessions, change password' },
 ]
 
 export default function SettingsPage() {
   const { toast } = useToast()
-  const [active, setActive] = useState('branding')
+  const supabase = createClient()
+  const [active, setActive] = useState('profile')
   const [saving, setSaving] = useState(false)
+  const [profile, setProfile] = useState({ full_name: '', email: '', phone: '' })
+  const [showPw, setShowPw] = useState(false)
+  const [pwForm, setPwForm] = useState({ current: '', new_pw: '', confirm: '' })
+  const [pwSaving, setPwSaving] = useState(false)
   const [branding, setBranding] = useState({
     company_name: 'Autonex AI Technologies',
     tagline: 'Automate Today. Lead Tomorrow.',
@@ -56,6 +63,53 @@ export default function SettingsPage() {
     }))
   )
 
+  // Load profile from Supabase auth user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setProfile({
+          full_name: user.user_metadata?.name || user.user_metadata?.full_name || '',
+          email: user.email || '',
+          phone: user.user_metadata?.phone || '',
+        })
+      }
+    })
+  }, []) // eslint-disable-line
+
+  async function handleSaveProfile() {
+    setSaving(true)
+    const { error } = await supabase.auth.updateUser({
+      data: { name: profile.full_name, full_name: profile.full_name, phone: profile.phone },
+    })
+    if (error) {
+      toast({ title: '❌ Error', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: '✅ Profile saved!', description: 'Your profile has been updated.' })
+    }
+    setSaving(false)
+  }
+
+  async function handleChangePassword() {
+    if (!pwForm.new_pw || pwForm.new_pw !== pwForm.confirm) {
+      toast({ title: '❌ Password mismatch', description: 'New passwords do not match.', variant: 'destructive' })
+      return
+    }
+    if (pwForm.new_pw.length < 8) {
+      toast({ title: '❌ Too short', description: 'Password must be at least 8 characters.', variant: 'destructive' })
+      return
+    }
+    setPwSaving(true)
+    const { error } = await supabase.auth.updateUser({ password: pwForm.new_pw })
+    if (error) {
+      toast({ title: '❌ Error', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: '✅ Password changed!', description: 'Your password has been updated.' })
+      setPwForm({ current: '', new_pw: '', confirm: '' })
+    }
+    setPwSaving(false)
+  }
+
+
   async function handleSave() {
     setSaving(true)
     await new Promise(r => setTimeout(r, 600))
@@ -65,6 +119,7 @@ export default function SettingsPage() {
 
   const inputClass = 'h-10 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-blue-500/50 text-sm'
   const labelClass = 'text-slate-400 text-xs mb-1.5 block'
+  const iconInputClass = 'w-full h-11 pl-11 pr-4 bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-sm transition-all'
 
   return (
     <div className="flex h-[calc(100vh-56px)]">
@@ -76,7 +131,7 @@ export default function SettingsPage() {
             onClick={() => setActive(section.id)}
             className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
               active === section.id
-                ? 'bg-blue-500/10 text-blue-400 border-r-2 border-blue-500'
+                ? 'bg-blue-500/10 text-blue-600 border-r-2 border-blue-500'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -89,7 +144,113 @@ export default function SettingsPage() {
       {/* Settings content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="px-8 py-8 max-w-2xl">
-          {/* Branding */}
+
+          {/* ── Profile ── */}
+          {active === 'profile' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <h2 className="text-slate-900 font-bold text-lg mb-1">My Profile</h2>
+              <p className="text-slate-400 text-sm mb-6">Your personal details shown in the system.</p>
+              <div className="space-y-4">
+                {/* Full Name */}
+                <div>
+                  <label className={labelClass}>Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      value={profile.full_name}
+                      onChange={e => setProfile(p => ({ ...p, full_name: e.target.value }))}
+                      placeholder="Your full name"
+                      className={iconInputClass}
+                    />
+                  </div>
+                </div>
+                {/* Email (read-only) */}
+                <div>
+                  <label className={labelClass}>Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      value={profile.email}
+                      readOnly
+                      className={iconInputClass + ' opacity-60 cursor-not-allowed'}
+                    />
+                  </div>
+                  <p className="text-slate-400 text-xs mt-1">Email cannot be changed here. Contact admin.</p>
+                </div>
+                {/* Phone */}
+                <div>
+                  <label className={labelClass}>Phone</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      value={profile.phone}
+                      onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
+                      placeholder="+91 98765 43210"
+                      className={iconInputClass}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/20 hover:opacity-90 disabled:opacity-50 transition-all"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save Profile
+                </button>
+              </div>
+
+              {/* Change Password */}
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <h3 className="text-slate-900 font-semibold text-base mb-1">Change Password</h3>
+                <p className="text-slate-400 text-sm mb-4">Update your login password.</p>
+                <div className="space-y-3">
+                  <div>
+                    <label className={labelClass}>New Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type={showPw ? 'text' : 'password'}
+                        value={pwForm.new_pw}
+                        onChange={e => setPwForm(p => ({ ...p, new_pw: e.target.value }))}
+                        placeholder="Enter new password"
+                        className={iconInputClass}
+                        style={{ paddingRight: '2.75rem' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPw(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Confirm Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        type="password"
+                        value={pwForm.confirm}
+                        onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
+                        placeholder="Confirm new password"
+                        className={iconInputClass}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleChangePassword}
+                    disabled={pwSaving}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-slate-700 to-slate-800 text-white text-sm font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-all"
+                  >
+                    {pwSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                    Change Password
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
           {active === 'branding' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <h2 className="text-slate-900 font-bold text-lg mb-1">Branding</h2>

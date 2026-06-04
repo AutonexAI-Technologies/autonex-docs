@@ -66,16 +66,15 @@ export default function MessagesPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
-      .from('chat_threads')
-      .select(`
-        id, client_id, department, name, last_message, last_message_at,
-        clients (name, company)
-      `)
-      .order('last_message_at', { ascending: false, nullsFirst: false })
-    setThreads((data as any[]) ?? [])
+    try {
+      const res = await fetch('/api/messages/threads')
+      const data = await res.json()
+      setThreads(Array.isArray(data) ? data : [])
+    } catch {
+      setThreads([])
+    }
     setLoading(false)
-  }, [supabase])
+  }, [])
 
   useEffect(() => { load() }, [load])
 
@@ -94,13 +93,17 @@ export default function MessagesPage() {
     if (!broadcastMsg.trim() || sending) return
     setSending(true)
     try {
-      await fetch('/api/broadcast', {
+      const res = await fetch('/api/broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: broadcastMsg.trim(), target: broadcastTarget }),
       })
-      setBroadcastMsg('')
-      setShowBroadcast(false)
+      const d = await res.json()
+      if (res.ok) {
+        setBroadcastMsg('')
+        setShowBroadcast(false)
+        load() // refresh threads to show broadcast messages
+      }
     } catch {}
     setSending(false)
   }
@@ -175,12 +178,13 @@ export default function MessagesPage() {
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by client or channel…"
-            className="input-dark w-full pl-10"
+            className="input-dark w-full"
+            style={{ paddingLeft: '2.75rem' }}
           />
         </div>
 

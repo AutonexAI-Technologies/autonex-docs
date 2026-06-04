@@ -261,16 +261,16 @@ export default function ThreadPage() {
                     >
                       {showSender && (
                         <div className={`flex items-center gap-1.5 mb-1 ${isTeam ? 'flex-row-reverse' : ''}`}>
-                          <span className="text-[11px] font-medium text-white">{msg.sender_name}</span>
+                          <span className={`text-[11px] font-medium ${isTeam ? 'text-slate-400' : 'text-slate-600'}`}>{msg.sender_name}</span>
                           {msg.sender_role && (
-                            <span className="text-[10px] text-slate-500">· {msg.sender_role}</span>
+                            <span className="text-[10px] text-slate-400">· {msg.sender_role}</span>
                           )}
                         </div>
                       )}
-                      <div className={`max-w-[72%] rounded-2xl px-3.5 py-2.5 ${
+                      <div className={`max-w-[72%] rounded-2xl px-3.5 py-2.5 shadow-sm ${
                         isTeam
                           ? 'bg-blue-600 text-white rounded-tr-sm'
-                          : 'bg-white text-slate-200 border border-slate-200 rounded-tl-sm'
+                          : 'bg-white text-slate-800 border border-slate-200 rounded-tl-sm'
                       }`}>
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                         <div className={`flex items-center gap-1 mt-1 ${isTeam ? 'justify-end' : 'justify-start'}`}>
