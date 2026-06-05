@@ -145,8 +145,19 @@ export async function POST(request: NextRequest) {
             app_metadata: { user_type: 'client', client_id, portal_role },
             user_metadata: { name: clientDisplayName },
           })
-          // Resend credentials email (falls through to email send below)
-          const portalUrl2 = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.autonexai.org'
+
+          // Upsert portal_users so the greeting + dashboard work correctly
+          await admin.from('portal_users').upsert({
+            user_id: existingUser.id,
+            client_id,
+            name: clientDisplayName,
+            email,
+            portal_role,
+            invited_by: caller.id,
+          }, { onConflict: 'user_id' })
+
+          // Resend credentials email
+          const portalUrl2 = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'
           try {
             const { Resend } = await import('resend')
             const resend2 = new Resend(process.env.RESEND_API_KEY)
@@ -161,7 +172,7 @@ export async function POST(request: NextRequest) {
             message: 'Credentials reset and resent to existing user',
             user_id: existingUser.id,
             email,
-            portal_url: `${process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.autonexai.org'}/login`,
+            portal_url: `${process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'}/login`,
             resent: true,
           }, { status: 200 })
         }
