@@ -58,25 +58,19 @@ export default function FilesPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('files')
-      .select('*')
-      .eq('client_id', id)
-      .order('created_at', { ascending: false })
-    if (error) {
-      toast({ variant: 'destructive', title: 'Failed to load files', description: error.message })
+    try {
+      const res = await fetch(`/api/files?client_id=${id}`)
+      const data = await res.json()
+      setFiles(Array.isArray(data) ? data : [])
+    } catch {
+      toast({ variant: 'destructive', title: 'Failed to load files' })
     }
-    setFiles((data as FileItem[]) ?? [])
     setLoading(false)
-  }, [supabase, id])
+  }, [id]) // eslint-disable-line
 
   useEffect(() => {
     load()
-    const ch = supabase.channel('files-' + id)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'files', filter: `client_id=eq.${id}` }, load)
-      .subscribe()
-    return () => { supabase.removeChannel(ch) }
-  }, [load, supabase, id])
+  }, [load])
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
@@ -94,102 +88,74 @@ export default function FilesPage() {
 
     for (const file of fileArr) {
       setUploadProgress(`Uploading ${file.name}…`)
-      // Sanitize file name — replace spaces and special chars
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-      const path = `clients/${id}/${Date.now()}-${safeName}`
+      const form = new FormData()
+      form.append('file', file)
+      form.append('client_id', id)
+      form.append('uploader_name', uploaderName)
+      form.append('uploader_type', 'team')
+      form.append('is_deliverable', 'false')
 
-      // 1. Upload to storage
-      const { error: uploadErr } = await supabase.storage
-        .from('files')
-        .upload(path, file, { upsert: false })
-
-      if (uploadErr) {
-        console.error('Storage upload error:', uploadErr)
-        // Try with upsert:true as fallback
-        const { error: uploadErr2 } = await supabase.storage
-          .from('files')
-          .upload(path, file, { upsert: true })
-
-        if (uploadErr2) {
-          failCount++
-          toast({
-            variant: 'destructive',
-            title: `Failed to upload ${file.name}`,
-            description: uploadErr2.message,
-          })
-          continue
-        }
-      }
-
-      // 2. Register record in DB via API (bypasses RLS)
-      const res = await fetch('/api/files', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: id,
-          uploaded_by: user?.id,
-          uploader_name: uploaderName,
-          uploader_type: 'team',
-          file_name: file.name,
-          file_size: file.size,
-          file_type: file.type || 'application/octet-stream',
-          storage_path: path,
-          is_deliverable: false,
-        }),
-      })
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        console.error('DB insert error:', err)
-        failCount++
-        toast({
-          variant: 'destructive',
-          title: `Failed to save ${file.name}`,
-          description: err.error || 'Database error',
-        })
-      } else {
+      const res = await fetch('/api/files/upload', { method: 'POST', body: form })
+      if (res.ok) {
         successCount++
+      } else {
+        const err = await res.json().catch(() => ({}))
+        failCount++
+        toast({ variant: 'destructive', title: `Failed to upload ${file.name}`, description: err.error || 'Upload failed' })
       }
     }
 
     setUploading(false)
     setUploadProgress('')
     e.target.value = ''
-
     if (successCount > 0) {
-      toast({ title: `✅ ${successCount} file${successCount > 1 ? 's' : ''} uploaded successfully!` })
+      toast({ title: `✅ ${successCount} file${successCount > 1 ? 's' : ''} uploaded!` })
+      load()
     }
-    if (failCount === 0) load()
   }
 
   const setApproval = async (fileId: string, status: string) => {
-    await supabase.from('files').update({ approval_status: status, is_deliverable: true }).eq('id', fileId)
+    await fetch(`/api/files/${fileId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approval_status: status, is_deliverable: true }),
+    })
     load()
   }
 
   const markDeliverable = async (fileId: string, v: boolean) => {
-    await supabase.from('files').update({ is_deliverable: v, approval_status: v ? 'pending' : null }).eq('id', fileId)
+    await fetch(`/api/files/${fileId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_deliverable: v, approval_status: v ? 'pending' : null }),
+    })
     load()
   }
 
   const deleteFile = async (f: FileItem) => {
     if (!confirm(`Delete "${f.file_name}"? This cannot be undone.`)) return
-    await supabase.storage.from('files').remove([f.storage_path])
-    await supabase.from('files').delete().eq('id', f.id)
-    toast({ title: '🗑️ File deleted' })
-    load()
+    const res = await fetch(`/api/files/${f.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast({ title: '🗑️ File deleted' })
+      load()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      toast({ variant: 'destructive', title: 'Delete failed', description: err.error })
+    }
   }
 
   const download = async (f: FileItem) => {
-    const { data } = await supabase.storage.from('files').createSignedUrl(f.storage_path, 60)
-    if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+    const res = await fetch(`/api/files/${f.id}?expires=60`)
+    const d = await res.json()
+    if (d.url) window.open(d.url, '_blank')
     else toast({ variant: 'destructive', title: 'Could not generate download link' })
   }
 
   const copyLink = async (f: FileItem) => {
-    const { data } = await supabase.storage.from('files').createSignedUrl(f.storage_path, 3600)
-    if (data?.signedUrl) {
-      await navigator.clipboard.writeText(data.signedUrl)
+    const res = await fetch(`/api/files/${f.id}?expires=3600`)
+    const d = await res.json()
+    if (d.url) {
+      await navigator.clipboard.writeText(d.url)
       toast({ title: '🔗 Link copied! Valid for 1 hour.' })
     }
   }
