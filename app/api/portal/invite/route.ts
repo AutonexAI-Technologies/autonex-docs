@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient, createServerSupabaseClient } from '@/lib/supabaseServer'
 import { Resend } from 'resend'
-import { getLogoDataUri } from '@/lib/pdf/logo'
 import crypto from 'crypto'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -27,8 +26,8 @@ function buildCredentialsEmail({ clientDisplayName, email, password, client, por
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <!-- Logo Header -->
         <tr><td style="background:linear-gradient(135deg,#0a1628,#1a3566);border-radius:16px 16px 0 0;padding:28px 40px;text-align:center;">
-          ${getLogoDataUri() ? `<img src="${getLogoDataUri()}" alt="Autonex AI" style="height:52px;object-fit:contain;display:block;margin:0 auto 8px;" />` : `<span style="font-size:26px;font-weight:900;color:#fff;font-family:Arial;">Autonex</span><span style="background:#fff;color:#1a3566;font-size:17px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;">AI</span>`}
-          <div style="font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Client Portal</div>
+          <span style="font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="display:inline-block;background:#ffffff;color:#1a3566;font-size:16px;font-weight:900;border-radius:5px;padding:3px 9px;margin-left:6px;font-family:Arial,sans-serif;vertical-align:middle;line-height:1.4;">AI</span>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;margin-top:10px;">Client Portal</div>
         </td></tr>
         <!-- Blue accent bar -->
         <tr><td style="background:linear-gradient(90deg,#3B82F6,#0060FF);height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>

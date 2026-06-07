@@ -1,5 +1,6 @@
 import QRCode from 'qrcode'
 import { Client } from '@/types'
+import { LOGO_IMG_TAG } from './logo'
 
 interface InvoiceData {
   invoice_number?: string
@@ -57,14 +58,6 @@ export async function generateInvoiceHTML(client: Client, invoice?: InvoiceData,
     width: 80, margin: 1,
     color: { dark: '#0A0F1E', light: '#FFFFFF' },
   })
-
-  // Inline SVG logo
-  const logo = `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="38" viewBox="0 0 150 38">
-    <rect x="0" y="5" width="28" height="28" rx="6" fill="#0060FF"/>
-    <text x="8" y="25" font-size="17" font-weight="900" font-family="Arial" fill="#FFFFFF">A</text>
-    <text x="34" y="25" font-size="18" font-weight="800" font-family="Arial,sans-serif" fill="white" letter-spacing="-0.5">Autonex</text>
-    <text x="112" y="25" font-size="18" font-weight="800" font-family="Arial,sans-serif" fill="#60A5FA" letter-spacing="-0.5"> AI</text>
-  </svg>`
 
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
@@ -171,7 +164,7 @@ ${isPaid ? '<div class="watermark">PAID</div>' : isOverdue ? '<div class="waterm
 
 <!-- HEADER -->
 <div class="header">
-  <div>${logo}</div>
+  <div>${LOGO_IMG_TAG(36)}</div>
   <div class="header-right">
     <div class="inv-word">INVOICE</div>
     <div class="inv-num">${invoiceNum}</div>
