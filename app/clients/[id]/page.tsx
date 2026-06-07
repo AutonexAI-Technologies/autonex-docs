@@ -74,6 +74,19 @@ export default function ClientDetailPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [sendingInvite, setSendingInvite] = useState(false)
   const [inviteSent, setInviteSent] = useState(false)
+  const [proposalOpen, setProposalOpen] = useState(false)
+  const [generatingProposal, setGeneratingProposal] = useState(false)
+  const [proposalForm, setProposalForm] = useState({
+    title: '',
+    overview: '',
+    deliverables: ['', '', ''],
+    timeline_weeks: 4,
+    total_fee: 0,
+    deposit_fee: 0,
+    gst_enabled: false,
+    validity_days: 14,
+    notes: '',
+  })
 
   useEffect(() => {
     async function fetchClient() {
@@ -116,6 +129,48 @@ export default function ClientDetailPage() {
     }
     setGeneratingAll(false)
     toast({ title: '📦 All 4 PDFs downloaded!' })
+  }
+
+  async function handleGenerateProposal() {
+    if (!client) return
+    setGeneratingProposal(true)
+    try {
+      const filledDeliverables = proposalForm.deliverables.filter(d => d.trim())
+      if (!proposalForm.title || !proposalForm.overview || filledDeliverables.length === 0) {
+        toast({ variant: 'destructive', title: 'Please fill in title, overview, and at least one deliverable' })
+        setGeneratingProposal(false)
+        return
+      }
+      const total = proposalForm.total_fee || client.total_fee
+      const deposit = proposalForm.deposit_fee || Math.round(total * 0.5)
+      const gstAmount = proposalForm.gst_enabled ? Math.round(total * 0.18) : 0
+      const res = await fetch('/api/generate/proposal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientId: client.id,
+          proposal: {
+            ...proposalForm,
+            deliverables: filledDeliverables,
+            total_fee: total,
+            deposit_fee: deposit,
+            gst_amount: gstAmount,
+          },
+        }),
+      })
+      if (!res.ok) throw new Error('Generation failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `proposal-${client.name.replace(/\s+/g, '-').toLowerCase()}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast({ title: '📊 Proposal PDF downloaded!' })
+    } catch {
+      toast({ variant: 'destructive', title: 'Proposal generation failed' })
+    }
+    setGeneratingProposal(false)
   }
 
   async function handleSendPortalInvite() {
@@ -340,6 +395,147 @@ export default function ClientDetailPage() {
               {DOCUMENTS.map((doc, i) => (
                 <DocumentCard key={doc.id} doc={doc} client={client} index={i} />
               ))}
+            </div>
+
+            {/* PROPOSAL GENERATOR */}
+            <div className="mt-8">
+              <button
+                onClick={() => setProposalOpen(p => !p)}
+                className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 transition-colors text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-slate-800 font-semibold text-sm">Proposal / Quotation Generator</p>
+                    <p className="text-slate-400 text-xs mt-0.5">Create a branded PDF proposal for {client.name}</p>
+                  </div>
+                </div>
+                <span className="text-blue-600 text-xs font-semibold">{proposalOpen ? 'Close ↑' : 'Open ↓'}</span>
+              </button>
+
+              {proposalOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 p-6 rounded-2xl border border-slate-200 bg-white space-y-4"
+                >
+                  {/* Title */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Proposal Title *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. AI Sales Agent System — Custom Build"
+                      value={proposalForm.title}
+                      onChange={e => setProposalForm(p => ({ ...p, title: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900"
+                    />
+                  </div>
+
+                  {/* Overview */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Project Overview *</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Briefly describe what this project involves and the value it delivers..."
+                      value={proposalForm.overview}
+                      onChange={e => setProposalForm(p => ({ ...p, overview: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900 resize-none"
+                    />
+                  </div>
+
+                  {/* Deliverables */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-600">Deliverables *</label>
+                      <button
+                        onClick={() => setProposalForm(p => ({ ...p, deliverables: [...p.deliverables, ''] }))}
+                        className="text-xs text-blue-600 hover:underline"
+                      >+ Add row</button>
+                    </div>
+                    <div className="space-y-2">
+                      {proposalForm.deliverables.map((d, i) => (
+                        <div key={i} className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder={`Deliverable ${i + 1}`}
+                            value={d}
+                            onChange={e => {
+                              const arr = [...proposalForm.deliverables]
+                              arr[i] = e.target.value
+                              setProposalForm(p => ({ ...p, deliverables: arr }))
+                            }}
+                            className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900"
+                          />
+                          {proposalForm.deliverables.length > 1 && (
+                            <button
+                              onClick={() => setProposalForm(p => ({ ...p, deliverables: p.deliverables.filter((_, j) => j !== i) }))}
+                              className="px-2 text-red-400 hover:text-red-600 text-lg"
+                            >×</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Numeric fields */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Total Fee (₹)</label>
+                      <input type="number" placeholder={client.total_fee.toString()}
+                        value={proposalForm.total_fee || ''}
+                        onChange={e => setProposalForm(p => ({ ...p, total_fee: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Timeline (weeks)</label>
+                      <input type="number" min={1} max={52}
+                        value={proposalForm.timeline_weeks}
+                        onChange={e => setProposalForm(p => ({ ...p, timeline_weeks: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Valid (days)</label>
+                      <input type="number" min={1} max={60}
+                        value={proposalForm.validity_days}
+                        onChange={e => setProposalForm(p => ({ ...p, validity_days: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900"
+                      />
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 mb-1.5 cursor-pointer">
+                        <input type="checkbox" checked={proposalForm.gst_enabled}
+                          onChange={e => setProposalForm(p => ({ ...p, gst_enabled: e.target.checked }))}
+                          className="rounded"
+                        />
+                        Add GST (18%)
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Additional Notes</label>
+                    <input type="text"
+                      placeholder="e.g. Price negotiable for 6-month retainer commitment"
+                      value={proposalForm.notes}
+                      onChange={e => setProposalForm(p => ({ ...p, notes: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 text-slate-900"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleGenerateProposal}
+                    disabled={generatingProposal}
+                    className="w-full anx-gradient text-white h-10 rounded-xl text-sm font-semibold gap-2"
+                  >
+                    {generatingProposal ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating Proposal...</> : <><Sparkles className="w-4 h-4" /> Generate Proposal PDF</>}
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </>
         )}
