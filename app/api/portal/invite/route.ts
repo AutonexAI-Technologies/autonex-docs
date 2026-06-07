@@ -20,24 +20,19 @@ function buildCredentialsEmail({ clientDisplayName, email, password, client, por
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f4fa;font-family:'Inter',system-ui,sans-serif;">
+<body style="margin:0;padding:0;background:#f0f4fa;font-family:Arial,system-ui,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4fa;min-height:100vh;">
     <tr><td align="center" style="padding:40px 20px;">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-        <!-- Logo -->
-        <tr><td style="padding-bottom:28px;text-align:center;">
-          <div style="display:inline-flex;align-items:center;gap:10px;">
-            <div style="width:40px;height:40px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;">
-              <span style="color:#fff;font-weight:800;font-size:18px;">A</span>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:800;color:#1D4ED8;">Autonex AI</div>
-              <div style="font-size:11px;color:#64748b;margin-top:1px;">Client Portal</div>
-            </div>
-          </div>
+        <!-- Logo Header -->
+        <tr><td style="background:linear-gradient(135deg,#0a1628,#1a3566);border-radius:16px 16px 0 0;padding:32px 40px;text-align:center;">
+          <span style="font-size:26px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:-0.5px;">Autonex</span><span style="background:#ffffff;color:#1a3566;font-size:17px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;font-family:Arial,sans-serif;vertical-align:middle;">AI</span>
+          <div style="font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;margin-top:8px;">Client Portal</div>
         </td></tr>
+        <!-- Blue accent bar -->
+        <tr><td style="background:linear-gradient(90deg,#3B82F6,#0060FF);height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>
         <!-- Card -->
-        <tr><td style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;box-shadow:0 4px 16px rgba(15,23,42,0.06);">
+        <tr><td style="background:#fff;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 20px 20px;padding:40px;box-shadow:0 4px 16px rgba(15,23,42,0.06);">
           <h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0 0 8px;">Welcome to your Portal! 🎉</h1>
           <p style="color:#64748b;font-size:15px;margin:0 0 24px;line-height:1.6;">
             Hi <strong style="color:#0f172a;">${clientDisplayName}</strong>, your Autonex AI Client Portal is ready.

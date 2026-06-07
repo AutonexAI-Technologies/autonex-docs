@@ -291,23 +291,23 @@ function buildCredentialsEmail({
     </p>
 
     <!-- Credentials Box -->
-    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:16px;padding:28px;margin:0 0 24px;">
-      <p style="margin:0 0 16px;font-size:13px;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:1.5px;">
+    <div style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:16px;padding:28px;margin:0 0 24px;">
+      <p style="margin:0 0 16px;font-size:13px;font-weight:800;color:#1d4ed8;text-transform:uppercase;letter-spacing:1.5px;">
         🔐 Your Login Credentials
       </p>
       <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="padding:10px 0;font-size:14px;color:#166534;width:100px;font-weight:600;">Email</td>
+          <td style="padding:10px 0;font-size:14px;color:#1d4ed8;width:100px;font-weight:600;">Email</td>
           <td style="padding:10px 0;font-size:15px;color:#0a1628;font-weight:700;">${email}</td>
         </tr>
         <tr>
-          <td style="padding:10px 0;font-size:14px;color:#166534;font-weight:600;">Password</td>
+          <td style="padding:10px 0;font-size:14px;color:#1d4ed8;font-weight:600;">Password</td>
           <td style="padding:10px 0;">
-            <code style="background:#dcfce7;padding:6px 14px;border-radius:8px;font-size:16px;font-weight:800;color:#0a1628;letter-spacing:1px;border:1px solid #86efac;">${password}</code>
+            <code style="background:#dbeafe;padding:6px 14px;border-radius:8px;font-size:16px;font-weight:800;color:#0a1628;letter-spacing:1px;border:1px solid #bfdbfe;">${password}</code>
           </td>
         </tr>
         <tr>
-          <td style="padding:10px 0;font-size:14px;color:#166534;font-weight:600;">Role</td>
+          <td style="padding:10px 0;font-size:14px;color:#1d4ed8;font-weight:600;">Role</td>
           <td style="padding:10px 0;font-size:15px;color:#2563eb;font-weight:700;">${roleDisplay}</td>
         </tr>
       </table>

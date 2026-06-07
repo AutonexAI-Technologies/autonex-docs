@@ -446,9 +446,12 @@ export default function InvoicesPage() {
     return matchSearch && matchFilter
   })
 
-  const totalPaid = invoices.filter(i => i.status === 'Paid').reduce((s, i) => s + i.total, 0)
-  const pendingAmt = invoices.filter(i => i.status === 'Pending').reduce((s, i) => s + i.total, 0)
-  const overdueCount = invoices.filter(i => i.status === 'Overdue').length
+  const totalPaid = invoices.filter(i => i.status === 'Paid').reduce((s, i) => s + (i.total || 0), 0)
+  const pendingAmt = invoices.filter(i => i.status === 'Pending').reduce((s, i) => s + (i.total || 0), 0)
+  const overdueCount = invoices.filter(i =>
+    i.status === 'Overdue' ||
+    (i.status === 'Pending' && i.due_date && isPast(new Date(i.due_date)))
+  ).length
 
   return (
     <>
@@ -483,7 +486,7 @@ export default function InvoicesPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {[
-          { label: 'Total Paid',      value: `₹${totalPaid.toLocaleString('en-IN')}`,  color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: '✅' },
+          { label: 'Total Paid',      value: `₹${totalPaid.toLocaleString('en-IN')}`,  color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: '✅' },
             { label: 'Pending Amount', value: `₹${pendingAmt.toLocaleString('en-IN')}`, color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200',   icon: '⏳' },
             { label: 'Overdue',        value: `${overdueCount} invoice${overdueCount !== 1 ? 's' : ''}`, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: '🔴' },
           ].map((s, i) => (
