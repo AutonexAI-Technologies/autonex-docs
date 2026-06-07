@@ -243,8 +243,13 @@ function NewInvoicePanel({
                 <button
                   type="button"
                   onClick={() => setGstEnabled(p => !p)}
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                    gstEnabled ? 'bg-blue-500' : 'bg-slate-300'
+                  }`}
                 >
-                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${gstEnabled ? 'left-5.5 left-[22px]' : 'left-0.5'}`} />
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 ${
+                    gstEnabled ? 'left-[26px]' : 'left-0.5'
+                  }`} />
                 </button>
               </div>
 
@@ -276,8 +281,9 @@ function NewInvoicePanel({
                 <input
                   type="date"
                   value={dueDate}
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={e => setDueDate(e.target.value)}
-                  className={`${inputCls} [color-scheme:dark]`}
+                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm cursor-pointer"
                 />
               </div>
 
