@@ -12,7 +12,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   try {
     const admin = createAdminSupabaseClient()
 
-    // Fetch invoice + client
     const { data: invoice, error: invErr } = await admin
       .from('invoices')
       .select('*, clients(*)')
@@ -28,7 +27,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: 'Client email not found' }, { status: 400 })
     }
 
-    // Generate PDF
     const html = await generateInvoiceHTML(client, invoice, PORTAL_URL)
     const pdfBuffer = await generatePDF(html)
 
@@ -38,74 +36,119 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       ? new Date(invoice.due_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
       : 'Within 15 days'
 
-    // Send email with PDF attachment
+    // Status color — no green
+    const statusColor =
+      invoice.status === 'Paid' ? '#0060FF'
+      : invoice.status === 'Overdue' ? '#DC2626'
+      : invoice.status === 'Cancelled' ? '#6B7280'
+      : '#D97706'
+
     const { data: emailData, error: emailErr } = await resend.emails.send({
       from: FROM,
       to: [client.email],
       subject: `Invoice ${invoiceNum} from Autonex AI — ${totalFormatted}`,
-      html: `
-<!DOCTYPE html>
+      html: `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#F4F6FB;padding:32px 16px;color:#1a1a2e}
-.wrap{max-width:540px;margin:0 auto}
-.header{background:#0A0F1E;border-radius:16px 16px 0 0;padding:28px 32px;text-align:center}
-.logo-text{font-size:22px;font-weight:900;color:white;letter-spacing:-0.5px}
-.logo-text span{color:#00D4AA}
-.body{background:white;padding:32px;border-radius:0 0 16px 16px;border:1px solid #E4E9F8}
-.greeting{font-size:18px;font-weight:700;color:#0A0F1E;margin-bottom:8px}
-.sub{font-size:14px;color:#555;line-height:1.7;margin-bottom:24px}
-.amount-box{background:#F6F8FF;border:1px solid #E4E9F8;border-left:4px solid #0060FF;border-radius:10px;padding:18px 22px;margin-bottom:24px}
-.amount-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#0060FF;font-weight:700;margin-bottom:6px}
-.amount-val{font-size:28px;font-weight:900;color:#0060FF}
-.amount-sub{font-size:12px;color:#888;margin-top:4px}
-.details{background:#F9FAFF;border-radius:10px;padding:16px 20px;margin-bottom:24px}
-.detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F0F3FA;font-size:13px}
-.detail-row:last-child{border-bottom:none}
-.detail-row span{color:#666}
-.detail-row strong{color:#0A0F1E}
-.cta{display:block;text-align:center;background:#0060FF;color:white;font-size:14px;font-weight:700;padding:14px 28px;border-radius:10px;text-decoration:none;margin-bottom:20px}
-.note{font-size:12px;color:#888;line-height:1.7;text-align:center;margin-bottom:24px}
-.footer{text-align:center;font-size:11px;color:#aaa;margin-top:24px;line-height:1.8}
-</style>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
 </head>
-<body><div class="wrap">
-<div class="header">
-  <div class="logo-text">Autonex<span> AI</span></div>
-  <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px">autonexai.org</div>
-</div>
-<div class="body">
-  <div class="greeting">Hi ${client.name.split(' ')[0]} 👋</div>
-  <p class="sub">Your invoice from Autonex AI is ready. Please find the attached PDF and review the details below.</p>
+<body style="margin:0;padding:0;background:#F0F4FB;font-family:Arial,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F0F4FB;padding:32px 16px">
+  <tr><td align="center">
+  <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%">
 
-  <div class="amount-box">
-    <div class="amount-label">Amount Due</div>
-    <div class="amount-val">${totalFormatted}</div>
-    <div class="amount-sub">Due by: ${dueDate}</div>
-  </div>
+    <!-- HEADER -->
+    <tr>
+      <td style="background:#1A3566;border-radius:16px 16px 0 0;padding:28px 36px;text-align:center">
+        <span style="font-size:24px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:-0.5px">Autonex</span><span style="background:#ffffff;color:#1A3566;font-size:16px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;font-family:Arial,sans-serif;vertical-align:middle">AI</span>
+        <br/>
+        <span style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:6px;display:inline-block">autonexai.org</span>
+      </td>
+    </tr>
 
-  <div class="details">
-    <div class="detail-row"><span>Invoice No.</span><strong style="color:#0060FF;font-family:monospace">${invoiceNum}</strong></div>
-    <div class="detail-row"><span>Service</span><strong>${client.service || 'Professional Services'}</strong></div>
-    ${invoice.gst_enabled ? `<div class="detail-row"><span>GST (18%)</span><strong>₹${(invoice.gst_amount || 0).toLocaleString('en-IN')}</strong></div>` : ''}
-    <div class="detail-row"><span>Status</span><strong style="color:${invoice.status === 'Paid' ? '#10b981' : '#f59e0b'}">${invoice.status}</strong></div>
-  </div>
+    <!-- BLUE ACCENT BAR -->
+    <tr><td style="background:linear-gradient(90deg,#3B82F6,#0060FF);height:4px;font-size:0;line-height:0">&nbsp;</td></tr>
 
-  <a href="${PORTAL_URL}/invoices" class="cta">View Invoice in Portal →</a>
+    <!-- BODY -->
+    <tr>
+      <td style="background:#ffffff;padding:36px;border:1px solid #E2E8F0;border-top:none;border-radius:0 0 16px 16px">
 
-  <p class="note">
-    The PDF invoice is attached to this email.<br/>
-    Payment via Bank Transfer or UPI — details on the invoice.<br/>
-    Questions? Reply to this email or write to <strong>hello@autonexai.org</strong>
-  </p>
-</div>
-<div class="footer">
-  Autonex AI Technologies · Hyderabad, Telangana<br/>
-  <a href="${PORTAL_URL}" style="color:#0060FF;text-decoration:none">autonexai.org</a>
-</div>
-</div></body></html>`,
+        <!-- Greeting -->
+        <p style="font-size:19px;font-weight:700;color:#0A1628;margin:0 0 8px">Hi ${client.name.split(' ')[0]} 👋</p>
+        <p style="font-size:14px;color:#556080;line-height:1.7;margin:0 0 28px">Your invoice from Autonex AI is ready. The PDF is attached — review the details below.</p>
+
+        <!-- Amount Box -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F6F8FF;border:1px solid #E4E9F8;border-left:4px solid #0060FF;border-radius:10px;margin-bottom:24px">
+          <tr>
+            <td style="padding:18px 22px">
+              <p style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#0060FF;font-weight:700;margin:0 0 6px">Amount Due</p>
+              <p style="font-size:30px;font-weight:900;color:#0060FF;margin:0">${totalFormatted}</p>
+              <p style="font-size:12px;color:#888;margin:5px 0 0">Due by: ${dueDate}</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Details Table -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F9FAFF;border-radius:10px;margin-bottom:24px">
+          <tr>
+            <td style="padding:16px 20px">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666">Invoice No.</td>
+                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0060FF;font-family:monospace;text-align:right">${invoiceNum}</td>
+                </tr>
+                <tr>
+                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666">Service</td>
+                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0A1628;text-align:right">${client.service || 'Professional Services'}</td>
+                </tr>
+                ${invoice.gst_enabled ? `<tr>
+                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666">GST (18%)</td>
+                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0A1628;text-align:right">₹${(invoice.gst_amount || 0).toLocaleString('en-IN')}</td>
+                </tr>` : ''}
+                <tr>
+                  <td style="padding:7px 0;font-size:13px;color:#666">Status</td>
+                  <td style="padding:7px 0;font-size:13px;font-weight:700;color:${statusColor};text-align:right">${invoice.status}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- CTA Button -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+          <tr>
+            <td align="center">
+              <a href="${PORTAL_URL}/invoices" style="display:inline-block;background:#0060FF;color:#ffffff;font-size:14px;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none">View Invoice in Portal →</a>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Note -->
+        <p style="font-size:12px;color:#888;line-height:1.7;text-align:center;margin:0">
+          PDF invoice is attached to this email.<br/>
+          Payment via Bank Transfer or UPI — details on the invoice.<br/>
+          Questions? Reply here or write to <strong>hello@autonexai.org</strong>
+        </p>
+
+      </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+      <td style="text-align:center;padding:20px 0">
+        <p style="font-size:11px;color:#94A3B8;margin:0;line-height:1.8">
+          Autonex AI Technologies · Hyderabad, Telangana<br/>
+          <a href="${PORTAL_URL}" style="color:#0060FF;text-decoration:none">autonexai.org</a>
+        </p>
+      </td>
+    </tr>
+
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>`,
       attachments: [
         {
           filename: `${invoiceNum}-${client.name.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`,

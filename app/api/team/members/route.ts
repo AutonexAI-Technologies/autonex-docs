@@ -271,9 +271,11 @@ function buildCredentialsEmail({
 <div style="max-width:600px;margin:32px auto;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.14);">
 
   <!-- Header -->
-  <div style="background:linear-gradient(135deg,#0a1628,#1a3a6b);padding:40px;text-align:center;">
-    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;">Autonex AI</div>
-    <div style="font-size:10px;color:#60a5fa;letter-spacing:4px;text-transform:uppercase;margin-top:6px;">Internal Operations Platform</div>
+  <div style="background:linear-gradient(135deg,#0a1628,#1a3566);padding:40px;text-align:center;">
+    <div style="margin-bottom:4px;">
+      <span style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="background:#fff;color:#1a3566;font-size:18px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;font-family:Arial,sans-serif;vertical-align:middle;">AI</span>
+    </div>
+    <div style="font-size:10px;color:#93c5fd;letter-spacing:4px;text-transform:uppercase;margin-top:8px;">Internal Operations Platform</div>
     <div style="margin-top:20px;font-size:40px;">🎉</div>
   </div>
 

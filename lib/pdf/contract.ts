@@ -29,11 +29,11 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 /* HEADER */
 .header{background:#0A0F1E;padding:26px 44px;display:flex;align-items:center;justify-content:space-between}
 .doc-title h1{font-size:26px;font-weight:900;color:#fff;letter-spacing:-1px;text-align:right}
-.doc-title p{font-size:10px;color:#00D4AA;letter-spacing:2px;text-transform:uppercase;margin-top:4px;text-align:right}
+.doc-title p{font-size:10px;color:#60A5FA;letter-spacing:2px;text-transform:uppercase;margin-top:4px;text-align:right}
 .doc-title .ref{font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;text-align:right;font-family:monospace}
 
 /* BAR */
-.bar{height:4px;background:linear-gradient(90deg,#00D4AA 0%,#0060FF 100%)}
+.bar{height:4px;background:linear-gradient(90deg,#60A5FA 0%,#0060FF 100%)}
 
 /* META STRIP */
 .meta{background:#F6F8FF;border-bottom:1px solid #E4E9F8;padding:14px 44px;display:flex;justify-content:space-between;align-items:center}
@@ -46,9 +46,9 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 /* PARTIES */
 .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #E4E9F8}
 .party-box{background:#F9FAFF;border-radius:12px;padding:16px 20px;border-left:3px solid #0060FF}
-.party-box.client{border-left-color:#00D4AA}
+.party-box.client{border-left-color:#60A5FA}
 .party-box h3{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#0060FF;font-weight:700;margin-bottom:10px}
-.party-box.client h3{color:#00D4AA}
+.party-box.client h3{color:#60A5FA}
 .party-box .name{font-size:15px;font-weight:800;color:#0A0F1E;margin-bottom:6px}
 .party-box p{font-size:11px;color:#555;margin-bottom:2px}
 
@@ -62,11 +62,11 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .tbl th{background:#0A0F1E;color:#fff;padding:9px 14px;font-size:10px;text-align:left;letter-spacing:.5px}
 .tbl td{padding:9px 14px;font-size:12px;border-bottom:1px solid #F0F3FA;color:#1a1a2e}
 .tbl tr:last-child td{background:#F6F8FF;font-weight:700;border-bottom:none}
-.teal{color:#00D4AA;font-weight:700}
+.teal{color:#60A5FA;font-weight:700}
 
 /* CLAUSE */
 .clause{margin-bottom:16px;padding-left:12px;border-left:2px solid #E4E9F8}
-.clause-num{display:inline-block;background:#0A0F1E;color:#00D4AA;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:5px;letter-spacing:.5px}
+.clause-num{display:inline-block;background:#0A0F1E;color:#60A5FA;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:5px;letter-spacing:.5px}
 .clause h4{font-size:13px;font-weight:700;color:#0A0F1E;margin-bottom:4px}
 .clause p{font-size:12px;color:#555;line-height:1.7}
 
@@ -94,7 +94,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 /* DARK FOOTER */
 .dark-footer{background:#0A0F1E;padding:12px 44px;display:flex;justify-content:space-between;align-items:center}
 .dark-footer p{font-size:10px;color:rgba(255,255,255,0.4)}
-.dark-footer .hi{color:#00D4AA}
+.dark-footer .hi{color:#60A5FA}
 </style></head>
 <body><div class="page">
 

@@ -345,6 +345,7 @@ export default function InvoicesPage() {
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
 
   async function load() {
@@ -418,6 +419,21 @@ export default function InvoicesPage() {
       toast({ variant: 'destructive', title: 'Send failed', description: err.error })
     }
     setSendingId(null)
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm('Delete this invoice permanently? This cannot be undone.')) return
+    setDeletingId(id)
+    // Optimistic remove
+    setInvoices(prev => prev.filter(inv => inv.id !== id))
+    const res = await fetch(`/api/invoices/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast({ title: '🗑️ Invoice deleted.' })
+    } else {
+      toast({ variant: 'destructive', title: 'Delete failed' })
+      load() // restore if failed
+    }
+    setDeletingId(null)
   }
 
   const filtered = invoices.filter(inv => {
@@ -635,7 +651,7 @@ export default function InvoicesPage() {
                           <button
                             onClick={() => handleMarkPaid(inv.id)}
                             disabled={markingPaid === inv.id}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition-colors disabled:opacity-50"
                           >
                             {markingPaid === inv.id
                               ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -643,6 +659,17 @@ export default function InvoicesPage() {
                             Mark Paid
                           </button>
                         )}
+                        {/* Delete */}
+                        <button
+                          onClick={() => handleDelete(inv.id)}
+                          disabled={deletingId === inv.id}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors disabled:opacity-50"
+                          title="Delete invoice"
+                        >
+                          {deletingId === inv.id
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : <Trash2 className="w-3 h-3" />}
+                        </button>
                       </div>
                     </div>
                   </motion.div>

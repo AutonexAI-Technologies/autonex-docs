@@ -38,8 +38,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = await createServerSupabaseClient()
-  const { error } = await supabase.from('invoices').update({ status: 'Cancelled' }).eq('id', params.id)
+  const supabase = createAdminSupabaseClient()
+  const { error } = await supabase.from('invoices').delete().eq('id', params.id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }

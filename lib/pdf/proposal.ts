@@ -61,21 +61,21 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .header{background:#0A0F1E;padding:26px 44px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
 .doc-right{text-align:right}
 .doc-word{font-size:26px;font-weight:900;color:#fff;letter-spacing:-1px}
-.doc-sub{font-size:10px;color:#00D4AA;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.doc-sub{font-size:10px;color:#60A5FA;letter-spacing:2px;text-transform:uppercase;margin-top:4px}
 .doc-ref{font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;font-family:monospace}
 
 /* GRADIENT BAR */
-.bar{height:4px;background:linear-gradient(90deg,#00D4AA 0%,#0060FF 60%,#7c3aed 100%);position:relative;z-index:1}
+.bar{height:4px;background:linear-gradient(90deg,#3B82F6 0%,#0060FF 60%,#7c3aed 100%);position:relative;z-index:1}
 
 /* HERO BANNER */
 .hero{background:linear-gradient(135deg,#0A0F1E 0%,#0d1f4a 100%);padding:36px 44px;position:relative;z-index:1}
-.hero-label{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:#00D4AA;font-weight:700;margin-bottom:10px}
+.hero-label{font-size:9px;text-transform:uppercase;letter-spacing:3px;color:#60A5FA;font-weight:700;margin-bottom:10px}
 .hero-title{font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.2;margin-bottom:12px;max-width:500px}
 .hero-meta{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap}
 .hero-tag{font-size:11px;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:6px}
 .hero-tag strong{color:#fff;font-weight:700}
-.valid-badge{position:absolute;right:44px;top:36px;background:rgba(0,212,170,0.15);border:1px solid rgba(0,212,170,0.4);border-radius:10px;padding:10px 16px;text-align:center}
-.valid-badge span{font-size:9px;color:#00D4AA;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;display:block;margin-bottom:3px}
+.valid-badge{position:absolute;right:44px;top:36px;background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.4);border-radius:10px;padding:10px 16px;text-align:center}
+.valid-badge span{font-size:9px;color:#60A5FA;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;display:block;margin-bottom:3px}
 .valid-badge strong{font-size:12px;color:#fff}
 
 /* BODY */
@@ -85,10 +85,10 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
 .party{padding:14px 18px;border-radius:12px;border:1px solid #E4E9F8;background:#F9FAFF}
 .party.from{border-left:3px solid #0060FF}
-.party.to{border-left:3px solid #00D4AA}
+.party.to{border-left:3px solid #60A5FA}
 .party-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px}
 .party.from .party-lbl{color:#0060FF}
-.party.to .party-lbl{color:#00D4AA}
+.party.to .party-lbl{color:#60A5FA}
 .party-name{font-size:14px;font-weight:800;color:#0A0F1E;margin-bottom:4px}
 .party p{font-size:11px;color:#555;margin-bottom:2px}
 
@@ -123,7 +123,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .price-table .sub-row td{background:#F6F8FF;font-size:11.5px;color:#555;padding:8px 14px}
 .price-table .gst-row td{background:#F6F8FF;font-size:11.5px;color:#555;padding:8px 14px}
 .price-table .total-row td{background:#0A0F1E;color:#fff;font-size:14px;font-weight:800;padding:12px 14px}
-.price-table .total-row td.r{color:#00D4AA;font-size:18px}
+.price-table .total-row td.r{color:#60A5FA;font-size:18px}
 
 /* PAYMENT SCHEDULE */
 .pay-sched{display:flex;gap:10px;margin-bottom:20px;page-break-inside:avoid;flex-wrap:wrap}
@@ -151,7 +151,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 /* DARK FOOTER */
 .dark-footer{background:#0A0F1E;padding:12px 44px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
 .dark-footer p{font-size:10px;color:rgba(255,255,255,0.4)}
-.dark-footer .hi{color:#00D4AA}
+.dark-footer .hi{color:#60A5FA}
 </style></head>
 <body><div class="page">
 
@@ -254,9 +254,9 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
   <div class="cta-section">
     <div class="cta-left">
       <h3>Ready to move forward?</h3>
-      <p>This proposal is valid until <strong style="color:#00D4AA">${validUntil}</strong>.<br/>
+      <p>This proposal is valid until <strong style="color:#60A5FA">${validUntil}</strong>.<br/>
       Reply to this proposal or contact us to get started immediately.<br/>
-      <span style="color:#00D4AA">hello@autonexai.org</span> · autonexai.org</p>
+      <span style="color:#60A5FA">hello@autonexai.org</span> · autonexai.org</p>
     </div>
     <div class="cta-right">
       <img src="${qrDataUri}" width="72" height="72" alt="QR"/>
