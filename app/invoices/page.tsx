@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus, Search, Receipt, CheckCircle, Clock, AlertCircle, Ban,
   Loader2, X, Trash2, CheckCheck, ChevronDown, Info,
+  Download, Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -336,6 +337,8 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<PaymentStatus | 'All'>('All')
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
+  const [sendingId, setSendingId] = useState<string | null>(null)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
 
   async function load() {
@@ -350,6 +353,10 @@ export default function InvoicesPage() {
 
   async function handleMarkPaid(id: string) {
     setMarkingPaid(id)
+    // Optimistic update — instant UI change
+    setInvoices(prev => prev.map(inv =>
+      inv.id === id ? { ...inv, status: 'Paid' as any } : inv
+    ))
     const res = await fetch(`/api/invoices/${id}/mark-paid`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -357,11 +364,48 @@ export default function InvoicesPage() {
     })
     if (res.ok) {
       toast({ title: '✅ Invoice marked as paid!' })
-      load()
     } else {
+      // Revert on failure
       toast({ variant: 'destructive', title: 'Failed to update' })
+      load()
     }
     setMarkingPaid(null)
+  }
+
+  async function handleDownload(inv: Invoice) {
+    setDownloadingId(inv.id)
+    try {
+      const clientId = (inv as any).clients?.id || (inv as any).client_id
+      const res = await fetch('/api/generate/invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId, invoiceId: inv.id }),
+      })
+      if (!res.ok) throw new Error('PDF generation failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${inv.invoice_number}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast({ variant: 'destructive', title: 'PDF download failed' })
+    }
+    setDownloadingId(null)
+  }
+
+  async function handleSendEmail(inv: Invoice) {
+    setSendingId(inv.id)
+    const res = await fetch(`/api/invoices/${inv.id}/send-email`, { method: 'POST' })
+    if (res.ok) {
+      const d = await res.json()
+      toast({ title: `📧 Invoice sent to ${d.email || 'client'}!` })
+    } else {
+      const err = await res.json().catch(() => ({}))
+      toast({ variant: 'destructive', title: 'Send failed', description: err.error })
+    }
+    setSendingId(null)
   }
 
   const filtered = invoices.filter(inv => {
@@ -552,17 +596,38 @@ export default function InvoicesPage() {
                           : '—'}
                       </span>
                       <div className="hidden md:flex items-center gap-1">
+                        {/* Download PDF */}
+                        <button
+                          onClick={() => handleDownload(inv)}
+                          disabled={downloadingId === inv.id}
+                          title="Download PDF"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                        >
+                          {downloadingId === inv.id
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : <Download className="w-3.5 h-3.5" />}
+                        </button>
+                        {/* Send email */}
+                        <button
+                          onClick={() => handleSendEmail(inv)}
+                          disabled={sendingId === inv.id}
+                          title="Send invoice to client"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:opacity-50"
+                        >
+                          {sendingId === inv.id
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : <Send className="w-3.5 h-3.5" />}
+                        </button>
+                        {/* Mark paid */}
                         {(inv.status === 'Pending' || isOverdue) && (
                           <button
                             onClick={() => handleMarkPaid(inv.id)}
                             disabled={markingPaid === inv.id}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition-colors disabled:opacity-50"
                           >
-                            {markingPaid === inv.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <CheckCheck className="w-3 h-3" />
-                            )}
+                            {markingPaid === inv.id
+                              ? <Loader2 className="w-3 h-3 animate-spin" />
+                              : <CheckCheck className="w-3 h-3" />}
                             Paid
                           </button>
                         )}
