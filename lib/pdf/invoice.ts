@@ -3,8 +3,9 @@ import { Client } from '@/types'
 
 interface InvoiceData {
   invoice_number?: string
-  line_items?: Array<{ description: string; quantity: number; rate: number; amount: number }>
-  total_amount?: number
+  line_items?: Array<{ description: string; quantity: number; rate: number; amount: number }> | string
+  total_amount?: number  // legacy — prefer total
+  total?: number
   gst_amount?: number
   gst_enabled?: boolean
   due_date?: string
@@ -29,19 +30,25 @@ export async function generateInvoiceHTML(client: Client, invoice?: InvoiceData,
   }
   const isOverdue = !isPaid && dueDateRaw && dueDateRaw < new Date()
 
-  const lineItems: Array<{ description: string; quantity: number; rate: number; amount: number }> =
-    invoice?.line_items?.length
-      ? invoice.line_items
-      : [{
-          description: client.service || 'Professional Services',
-          quantity: 1,
-          rate: client.deposit_fee || client.total_fee * 0.5,
-          amount: client.deposit_fee || client.total_fee * 0.5,
-        }]
+  // line_items can be a JSON string (from DB) or already an array
+  const rawItems = invoice?.line_items
+  const parsedItems: Array<{ description: string; quantity: number; rate: number; amount: number }> =
+    typeof rawItems === 'string'
+      ? (() => { try { return JSON.parse(rawItems) } catch { return [] } })()
+      : Array.isArray(rawItems) ? rawItems : []
+
+  const lineItems = parsedItems.length
+    ? parsedItems
+    : [{
+        description: client.service || 'Professional Services',
+        quantity: 1,
+        rate: client.deposit_fee || client.total_fee * 0.5,
+        amount: client.deposit_fee || client.total_fee * 0.5,
+      }]
 
   const subtotal = lineItems.reduce((s, r) => s + (r.amount || r.quantity * r.rate), 0)
   const gstAmount = invoice?.gst_amount || 0
-  const total = invoice?.total_amount || subtotal + gstAmount
+  const total = invoice?.total || subtotal + gstAmount
   const gstEnabled = invoice?.gst_enabled || gstAmount > 0
 
   // QR code → links to client portal invoices page

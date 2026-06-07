@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   const {
     client_id, line_items, gst_enabled, due_date, notes,
-    is_retainer_invoice, retainer_period, deposit_amount,
+    is_retainer_invoice, retainer_period,
   } = body
 
   if (!client_id || !line_items?.length) {
@@ -74,12 +74,11 @@ export async function POST(req: NextRequest) {
     .insert([{
       invoice_number,
       client_id,
-      line_items: JSON.stringify(line_items),
+      line_items,          // JSONB column — pass array directly, no stringify
       subtotal,
       gst_enabled: !!gst_enabled,
       gst_amount,
       total,
-      deposit_amount: deposit_amount || Math.round(total * 0.5),
       status: 'Pending',
       due_date: due_date || null,
       notes: notes || null,
