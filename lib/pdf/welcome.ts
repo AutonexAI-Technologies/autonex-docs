@@ -1,10 +1,17 @@
+import QRCode from 'qrcode'
 import { LOGO_IMG_TAG } from './logo'
 import { Client } from '@/types'
 
-export function generateWelcomeHTML(client: Client): string {
+export async function generateWelcomeHTML(client: Client, portalUrl?: string): Promise<string> {
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   const firstName = client.name.split(' ')[0]
   const deposit = (client.deposit_fee || client.total_fee * 0.5).toLocaleString('en-IN')
+
+  const qrUrl = portalUrl || 'https://autonex-docs-8x12.vercel.app'
+  const qrDataUri = await QRCode.toDataURL(`${qrUrl}/dashboard`, {
+    width: 70, margin: 1,
+    color: { dark: '#0A0F1E', light: '#FFFFFF' },
+  })
 
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
@@ -119,10 +126,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;font-
   </div>
 </div>
 
-<div class="footer">
-  <p>Confidential onboarding document for ${client.name}</p>
-  <p><span style="color:#00D4AA;font-weight:600">autonexai.org</span> · hello@autonexai.org</p>
-</div>
+  <div class="footer">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="${qrDataUri}" width="46" height="46" alt="QR" style="border-radius:5px"/>
+      <p>Scan to access your portal: <span style="color:#00D4AA;font-weight:600">${qrUrl}/dashboard</span></p>
+    </div>
+    <p><span style="color:#00D4AA;font-weight:600">autonexai.org</span> · hello@autonexai.org</p>
+  </div>
 
 </div></body></html>`
 }

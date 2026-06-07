@@ -1,9 +1,16 @@
+import QRCode from 'qrcode'
 import { LOGO_IMG_TAG } from './logo'
 import { Client } from '@/types'
 
-export function generateThankyouHTML(client: Client): string {
+export async function generateThankyouHTML(client: Client, portalUrl?: string): Promise<string> {
   const completionDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   const firstName = client.name.split(' ')[0]
+
+  const qrUrl = portalUrl || 'https://autonex-docs-8x12.vercel.app'
+  const qrDataUri = await QRCode.toDataURL(`${qrUrl}/dashboard`, {
+    width: 70, margin: 1,
+    color: { dark: '#0A0F1E', light: '#FFFFFF' },
+  })
 
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/>
