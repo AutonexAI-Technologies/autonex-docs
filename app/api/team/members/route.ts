@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
+import { getLogoDataUri } from '@/lib/pdf/logo'
 
 // ─── GET /api/team/members ───────────────────────────────────────────────────
 export async function GET() {
@@ -271,12 +272,10 @@ function buildCredentialsEmail({
 <div style="max-width:600px;margin:32px auto;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.14);">
 
   <!-- Header -->
-  <div style="background:linear-gradient(135deg,#0a1628,#1a3566);padding:40px;text-align:center;">
-    <div style="margin-bottom:4px;">
-      <span style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="background:#fff;color:#1a3566;font-size:18px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;font-family:Arial,sans-serif;vertical-align:middle;">AI</span>
-    </div>
-    <div style="font-size:10px;color:#93c5fd;letter-spacing:4px;text-transform:uppercase;margin-top:8px;">Internal Operations Platform</div>
-    <div style="margin-top:20px;font-size:40px;">🎉</div>
+  <div style="background:linear-gradient(135deg,#0a1628,#1a3566);border-radius:16px 16px 0 0;padding:28px 40px;text-align:center;">
+    ${getLogoDataUri() ? `<img src="${getLogoDataUri()}" alt="Autonex AI" style="height:52px;object-fit:contain;display:block;margin:0 auto 10px;" />` : `<span style="font-size:26px;font-weight:900;color:#fff;font-family:Arial;">Autonex</span><span style="background:#fff;color:#1a3566;font-size:17px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;">AI</span>`}
+    <div style="font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Internal Operations Platform</div>
+    <div style="margin-top:16px;font-size:36px;">🎉</div>
   </div>
 
   <!-- Body -->
