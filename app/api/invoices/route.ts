@@ -90,20 +90,26 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (error) {
+    // Log full error so we can debug in terminal
+    console.error('[POST /api/invoices] Supabase error:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    })
+
     if (
       error.message.includes('relation') ||
       error.message.includes('does not exist') ||
-      error.message.includes('schema cache')
+      error.message.includes('schema cache') ||
+      error.code === '42P01'  // undefined_table postgres code
     ) {
       return NextResponse.json(
-        {
-          error:
-            'The invoices table does not exist yet. Please run the migration SQL in your Supabase dashboard.',
-        },
+        { error: 'invoices table missing — run NOTIFY pgrst, \'reload schema\'; in Supabase SQL editor' },
         { status: 503 }
       )
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: error.message, code: error.code, hint: error.hint }, { status: 500 })
   }
 
   return NextResponse.json(data, { status: 201 })
