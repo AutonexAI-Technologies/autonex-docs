@@ -53,8 +53,8 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .party-box p{font-size:11px;color:#555;margin-bottom:2px}
 
 /* SECTION */
-.sec{display:flex;align-items:center;gap:8px;margin:18px 0 10px}
-.sec span{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#0060FF;font-weight:700;white-space:nowrap}
+.sec{display:flex;align-items:center;gap:8px;margin:18px 0 10px;page-break-inside:avoid;page-break-after:avoid}
+.sec span{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#0060FF;font-weight:700;white-space:nowrap;word-spacing:0}
 .sec::after{content:'';flex:1;height:1px;background:#E4E9F8}
 
 /* PROJECT TABLE */

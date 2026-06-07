@@ -109,8 +109,8 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a2e;fo
 .party .gstin{font-size:10px;color:#0060FF;font-weight:700;margin-top:6px}
 
 /* SECTION HEADING */
-.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;margin-top:22px}
-.sec-head span{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#0060FF;font-weight:700;white-space:nowrap}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;margin-top:22px;page-break-inside:avoid;page-break-after:avoid}
+.sec-head span{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#0060FF;font-weight:700;white-space:nowrap;word-spacing:0}
 .sec-head::after{content:'';flex:1;height:1px;background:#E4E9F8}
 
 /* TABLE */

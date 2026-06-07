@@ -93,8 +93,8 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .party p{font-size:11px;color:#555;margin-bottom:2px}
 
 /* SECTION */
-.sec{display:flex;align-items:center;gap:8px;margin:20px 0 12px}
-.sec span{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#0060FF;font-weight:700;white-space:nowrap}
+.sec{display:flex;align-items:center;gap:8px;margin:20px 0 12px;page-break-inside:avoid;page-break-after:avoid}
+.sec span{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#0060FF;font-weight:700;white-space:nowrap;word-spacing:0}
 .sec::after{content:'';flex:1;height:1px;background:#E4E9F8}
 
 /* OVERVIEW */
@@ -126,9 +126,9 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .price-table .total-row td.r{color:#00D4AA;font-size:18px}
 
 /* PAYMENT SCHEDULE */
-.pay-sched{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px}
-.pay-card{background:#F9FAFF;border:1px solid #E4E9F8;border-radius:10px;padding:14px 16px}
-.pay-card .idx{font-size:9px;color:#0060FF;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.pay-sched{display:flex;gap:10px;margin-bottom:20px;page-break-inside:avoid;flex-wrap:wrap}
+.pay-card{flex:1;min-width:130px;background:#F9FAFF;border:1px solid #E4E9F8;border-radius:10px;padding:14px 16px;page-break-inside:avoid}
+.pay-card .idx{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#0060FF;font-weight:700;margin-bottom:6px}
 .pay-card .amt{font-size:18px;font-weight:900;color:#0060FF;line-height:1.1;margin-bottom:4px}
 .pay-card .mil{font-size:11px;font-weight:700;color:#0A0F1E;margin-bottom:2px}
 .pay-card .when{font-size:10px;color:#888}

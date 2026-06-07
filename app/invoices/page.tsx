@@ -375,13 +375,18 @@ export default function InvoicesPage() {
   async function handleDownload(inv: Invoice) {
     setDownloadingId(inv.id)
     try {
-      const clientId = (inv as any).clients?.id || (inv as any).client_id
+      // client_id is always present on invoice row (from * select)
+      const clientId = (inv as any).client_id
+      if (!clientId) throw new Error('No client_id on invoice')
       const res = await fetch('/api/generate/invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clientId, invoiceId: inv.id }),
       })
-      if (!res.ok) throw new Error('PDF generation failed')
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(errBody.error || 'PDF generation failed')
+      }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -389,8 +394,9 @@ export default function InvoicesPage() {
       a.download = `${inv.invoice_number}.pdf`
       a.click()
       URL.revokeObjectURL(url)
-    } catch {
-      toast({ variant: 'destructive', title: 'PDF download failed' })
+      toast({ title: '📄 Invoice PDF downloaded!' })
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'PDF download failed', description: e?.message })
     }
     setDownloadingId(null)
   }
@@ -595,28 +601,28 @@ export default function InvoicesPage() {
                           ? format(new Date(inv.due_date), 'dd MMM yyyy')
                           : '—'}
                       </span>
-                      <div className="hidden md:flex items-center gap-1">
-                        {/* Download PDF */}
+                      <div className="hidden md:flex items-center gap-2">
+                        {/* Download PDF — labelled button */}
                         <button
                           onClick={() => handleDownload(inv)}
                           disabled={downloadingId === inv.id}
-                          title="Download PDF"
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-600 text-xs font-semibold hover:bg-blue-100 transition-colors disabled:opacity-50"
                         >
                           {downloadingId === inv.id
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : <Download className="w-3.5 h-3.5" />}
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : <Download className="w-3 h-3" />}
+                          PDF
                         </button>
-                        {/* Send email */}
+                        {/* Send email — labelled button */}
                         <button
                           onClick={() => handleSendEmail(inv)}
                           disabled={sendingId === inv.id}
-                          title="Send invoice to client"
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-50 border border-violet-200 text-violet-600 text-xs font-semibold hover:bg-violet-100 transition-colors disabled:opacity-50"
                         >
                           {sendingId === inv.id
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : <Send className="w-3.5 h-3.5" />}
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : <Send className="w-3 h-3" />}
+                          Email
                         </button>
                         {/* Mark paid */}
                         {(inv.status === 'Pending' || isOverdue) && (
@@ -628,7 +634,7 @@ export default function InvoicesPage() {
                             {markingPaid === inv.id
                               ? <Loader2 className="w-3 h-3 animate-spin" />
                               : <CheckCheck className="w-3 h-3" />}
-                            Paid
+                            Mark Paid
                           </button>
                         )}
                       </div>
