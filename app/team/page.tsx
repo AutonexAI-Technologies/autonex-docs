@@ -117,14 +117,22 @@ function getCapacityBadge(capacity?: { active_projects: number; status: string }
 
 // ── Team Card ──────────────────────────────────────────────────────────────────
 
-function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
-  team: Team; allMembers: Member[]; canManage: boolean; onDelete: (id: string) => void; onRefresh: () => void
+function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh }: {
+  team: Team
+  allMembers: Member[]
+  allClients: {id:string;name:string;company?:string}[]
+  canManage: boolean
+  onDelete: (id: string) => void
+  onRefresh: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const [addingMember, setAddingMember] = useState(false)
+  const [addingClient, setAddingClient] = useState(false)
   const [selectedMemberId, setSelectedMemberId] = useState('')
+  const [selectedClientId, setSelectedClientId] = useState('')
   const [selectedRole, setSelectedRole] = useState<string>('junior')
   const [saving, setSaving] = useState(false)
+  const [savingClient, setSavingClient] = useState(false)
   const { toast } = useToast()
 
   const memberIds = team.team_memberships.map(m => m.team_members.id)
@@ -153,6 +161,26 @@ function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
       toast({ variant: 'destructive', title: 'Error', description: d.error })
     }
     setSaving(false)
+  }
+
+  const assignClient = async () => {
+    if (!selectedClientId || savingClient) return
+    setSavingClient(true)
+    const res = await fetch(`/api/clients/${selectedClientId}/assignments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team_ids: [team.id] }),
+    })
+    if (res.ok) {
+      onRefresh()
+      setAddingClient(false)
+      setSelectedClientId('')
+      toast({ title: 'Client assigned!', description: `Team assigned to client. Chat threads created.` })
+    } else {
+      const d = await res.json()
+      toast({ variant: 'destructive', title: 'Error', description: d.error })
+    }
+    setSavingClient(false)
   }
 
   const removeMember = async (memberId: string) => {
@@ -262,6 +290,36 @@ function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
                   )}
                 </AnimatePresence>
               )}
+              {/* Assign Client */}
+              {canManage && (
+                <AnimatePresence>
+                  {addingClient ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-2 border-t border-slate-100 space-y-2">
+                      <p className="text-[10px] text-slate-500 font-semibold uppercase">Assign Client</p>
+                      <select value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)}
+                        className="w-full h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:border-emerald-400">
+                        <option value="">Select client…</option>
+                        {allClients.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
+                        ))}
+                      </select>
+                      <div className="flex gap-2">
+                        <button onClick={assignClient} disabled={!selectedClientId || savingClient}
+                          className="flex-1 h-7 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium disabled:opacity-40 flex items-center justify-center gap-1">
+                          {savingClient ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Assign
+                        </button>
+                        <button onClick={() => { setAddingClient(false); setSelectedClientId('') }}
+                          className="px-3 h-7 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Cancel</button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <button onClick={() => setAddingClient(true)}
+                      className="w-full flex items-center justify-center gap-1.5 h-7 rounded-lg border border-dashed border-emerald-300 text-xs text-emerald-500 hover:text-emerald-700 hover:border-emerald-500 transition-colors">
+                      <Plus className="w-3 h-3" />Assign Client
+                    </button>
+                  )}
+                </AnimatePresence>
+              )}
             </div>
           </motion.div>
         )}
@@ -279,6 +337,7 @@ export default function TeamPage() {
 
   const [members, setMembers]         = useState<Member[]>([])
   const [teams, setTeams]             = useState<Team[]>([])
+  const [allClients, setAllClients]   = useState<{id:string;name:string;company?:string}[]>([])
   const [departments, setDepartments] = useState<any[]>([])
   const [loading, setLoading]         = useState(true)
   const [teamsLoading, setTeamsLoading] = useState(true)
@@ -302,22 +361,9 @@ export default function TeamPage() {
 
   const loadTeams = useCallback(async () => {
     setTeamsLoading(true)
-    const [tRes, aRes] = await Promise.all([
-      fetch('/api/teams'),
-      fetch('/api/clients/[id]/assignments').catch(() => null),
-    ])
-    const tData = await tRes.json()
-    if (!Array.isArray(tData)) { setTeamsLoading(false); return }
-
-    // Get client counts per team
-    const enriched = await Promise.all(tData.map(async (t: Team) => {
-      try {
-        const cRes = await fetch(`/api/clients/assignments/count?team_id=${t.id}`).catch(() => null)
-        const count = cRes?.ok ? (await cRes.json()).count ?? 0 : 0
-        return { ...t, client_count: count }
-      } catch { return { ...t, client_count: 0 } }
-    }))
-    setTeams(enriched)
+    const res = await fetch('/api/teams')
+    const data = await res.json()
+    if (Array.isArray(data)) setTeams(data) // client_count already included from API
     setTeamsLoading(false)
   }, [])
 
@@ -325,6 +371,7 @@ export default function TeamPage() {
     loadMembers()
     loadTeams()
     fetch('/api/team/departments').then(r => r.json()).then(d => setDepartments(Array.isArray(d) ? d : [])).catch(() => {})
+    fetch('/api/clients').then(r => r.json()).then(d => setAllClients(Array.isArray(d) ? d : [])).catch(() => {})
     const t = setInterval(loadMembers, 20_000)
     return () => clearInterval(t)
   }, [loadMembers, loadTeams])
@@ -675,7 +722,7 @@ export default function TeamPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {deptTeams.map(t => (
-                        <TeamCard key={t.id} team={t} allMembers={members} canManage={canManage} onDelete={deleteTeam} onRefresh={loadTeams} />
+                        <TeamCard key={t.id} team={t} allMembers={members} allClients={allClients} canManage={canManage} onDelete={deleteTeam} onRefresh={loadTeams} />
                       ))}
                     </div>
                   </div>
@@ -690,7 +737,7 @@ export default function TeamPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {unassigned.map(t => (
-                        <TeamCard key={t.id} team={t} allMembers={members} canManage={canManage} onDelete={deleteTeam} onRefresh={loadTeams} />
+                        <TeamCard key={t.id} team={t} allMembers={members} allClients={allClients} canManage={canManage} onDelete={deleteTeam} onRefresh={loadTeams} />
                       ))}
                     </div>
                   </div>
