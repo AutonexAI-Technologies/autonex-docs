@@ -8,7 +8,14 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     .from('client_assignments')
     .select(`
       id, brief, assigned_by, assigned_at,
-      teams ( id, name, color, department_id, departments ( name ) )
+      teams (
+        id, name, color, department_id,
+        departments ( name ),
+        team_memberships (
+          id, role, is_lead,
+          team_members ( id, name, email, roles ( name ) )
+        )
+      )
     `)
     .eq('client_id', params.id)
     .order('assigned_at', { ascending: false })
