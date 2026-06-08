@@ -4,17 +4,15 @@ import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 // GET /api/clients/[id]/assignments — list teams assigned to this client
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   const admin = createAdminSupabaseClient()
+
+  // First: simple query that works even without SQL migration (no role column needed)
   const { data, error } = await admin
     .from('client_assignments')
     .select(`
       id, brief, assigned_by, assigned_at,
       teams (
         id, name, color, department_id,
-        departments ( name ),
-        team_memberships (
-          id, role, is_lead,
-          team_members ( id, name, email, roles ( name ) )
-        )
+        departments ( name )
       )
     `)
     .eq('client_id', params.id)
@@ -26,7 +24,18 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-  return NextResponse.json(data ?? [])
+
+  // Second: enrich each assignment with team members (safe — handles missing role column)
+  const enriched = await Promise.all((data ?? []).map(async (a: any) => {
+    if (!a.teams?.id) return a
+    const { data: members } = await admin
+      .from('team_memberships')
+      .select(`id, is_lead, team_members ( id, name, email )`)
+      .eq('team_id', a.teams.id)
+    return { ...a, teams: { ...a.teams, team_memberships: members ?? [] } }
+  }))
+
+  return NextResponse.json(enriched)
 }
 
 // POST /api/clients/[id]/assignments — assign teams to client
@@ -55,23 +64,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { data: teams }  = await admin.from('teams').select('id, name').in('id', team_ids)
   const teamNames = teams?.map((t: any) => t.name).join(', ') || ''
 
-  // 3. For each team: call assign_team_to_client RPC
-  //    This creates chat threads (client + internal) and adds ALL members
+  // 3. Try RPC for thread creation (graceful — won't fail if SQL not yet run)
   const threadResults: any[] = []
   for (const tid of team_ids) {
-    const { data: rpcData, error: rpcErr } = await admin
-      .rpc('assign_team_to_client', {
-        p_client_id: params.id,
-        p_team_id: tid,
-      })
+    try {
+      const { data: rpcData, error: rpcErr } = await admin
+        .rpc('assign_team_to_client', { p_client_id: params.id, p_team_id: tid })
+      if (!rpcErr) threadResults.push(rpcData)
+    } catch (_) { /* RPC not yet created — skip */ }
 
-    if (rpcErr) {
-      console.warn('[assignments] RPC assign_team_to_client error:', rpcErr.message)
-    } else {
-      threadResults.push(rpcData)
-    }
-
-    // 4. Update team_member_capacity: increment active_projects for all members
+    // Upsert capacity (safe)
     const { data: memberships } = await admin
       .from('team_memberships')
       .select('team_member_id')
@@ -79,19 +81,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     if (memberships?.length) {
       for (const m of memberships) {
-        // Ensure capacity row exists (upsert with default active_projects=1)
-        await admin
-          .from('team_member_capacity')
-          .upsert({
-            user_id: m.team_member_id,
-            active_projects: 1,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'user_id' })
+        await admin.from('team_member_capacity').upsert({
+          user_id: m.team_member_id,
+          active_projects: 1,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
       }
     }
   }
 
-  // 5. Activity log
+  // 4. Activity log
   await admin.from('activity_logs').insert([{
     user_name: assigned_by || 'Admin',
     action: `Assigned ${client?.name || 'client'} to ${teamNames}`,
@@ -99,11 +98,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     entity_name: client?.name || params.id,
   }])
 
-  return NextResponse.json({
-    success: true,
-    count: team_ids.length,
-    threads: threadResults,
-  })
+  return NextResponse.json({ success: true, count: team_ids.length, threads: threadResults })
 }
 
 // DELETE /api/clients/[id]/assignments — remove a team assignment
@@ -120,17 +115,17 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Remove thread members for this client+team when unassigned
-  const { data: threads } = await admin
-    .from('chat_threads')
-    .select('id')
-    .eq('client_id', params.id)
-    .eq('team_id', team_id)
-
-  if (threads?.length) {
-    const threadIds = threads.map((t: any) => t.id)
-    await admin.from('chat_thread_members').delete().in('thread_id', threadIds)
-  }
+  // Remove thread members when unassigned (safe)
+  try {
+    const { data: threads } = await admin
+      .from('chat_threads')
+      .select('id')
+      .eq('client_id', params.id)
+      .eq('team_id', team_id)
+    if (threads?.length) {
+      await admin.from('chat_thread_members').delete().in('thread_id', threads.map((t: any) => t.id))
+    }
+  } catch (_) { /* tables may not exist yet */ }
 
   return NextResponse.json({ success: true })
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
-// GET /api/teams — list all teams with department + member count
+// GET /api/teams — list all teams with department + member count + client count
 export async function GET() {
   const admin = createAdminSupabaseClient()
   const { data, error } = await admin
@@ -13,7 +13,8 @@ export async function GET() {
       team_memberships (
         id, is_lead,
         team_members ( id, name, email, role_id, roles ( name ) )
-      )
+      ),
+      client_assignments ( id )
     `)
     .order('created_at', { ascending: true })
 
@@ -23,7 +24,14 @@ export async function GET() {
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
-  return NextResponse.json(data ?? [])
+
+  // Attach client_count as a number for convenience
+  const enriched = (data ?? []).map((t: any) => ({
+    ...t,
+    client_count: t.client_assignments?.length ?? 0,
+  }))
+
+  return NextResponse.json(enriched)
 }
 
 // POST /api/teams — create a new team
