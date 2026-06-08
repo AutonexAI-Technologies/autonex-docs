@@ -82,6 +82,39 @@ function RemoveModal({ member, onConfirm, onCancel, loading }: {
   )
 }
 
+// ── Role config ───────────────────────────────────────────────────────────────
+const TEAM_ROLES = [
+  { value: 'head',   label: 'Head',   color: 'bg-amber-50 text-amber-700 border-amber-200',  dot: 'bg-amber-400' },
+  { value: 'senior', label: 'Senior', color: 'bg-blue-50 text-blue-700 border-blue-200',     dot: 'bg-blue-400' },
+  { value: 'junior', label: 'Junior', color: 'bg-violet-50 text-violet-700 border-violet-200', dot: 'bg-violet-400' },
+  { value: 'intern', label: 'Intern', color: 'bg-slate-50 text-slate-600 border-slate-200',  dot: 'bg-slate-400' },
+]
+
+function getRoleBadge(role?: string | null, isLead?: boolean) {
+  const r = role || (isLead ? 'head' : 'member')
+  const cfg = TEAM_ROLES.find(x => x.value === r)
+  if (!cfg) return null
+  return (
+    <span className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 border rounded-md shrink-0 font-medium ${cfg.color}`}>
+      {r === 'head' && <Crown className="w-2.5 h-2.5" />}
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  )
+}
+
+function getCapacityBadge(capacity?: { active_projects: number; status: string } | null) {
+  if (!capacity) return null
+  const { active_projects, status } = capacity
+  const dot = status === 'available' ? 'bg-green-400' : status === 'busy' ? 'bg-amber-400' : 'bg-slate-300'
+  return (
+    <span className="flex items-center gap-1 text-[10px] text-slate-400">
+      <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />
+      {active_projects} proj
+    </span>
+  )
+}
+
 // ── Team Card ──────────────────────────────────────────────────────────────────
 
 function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
@@ -90,7 +123,7 @@ function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
   const [expanded, setExpanded] = useState(false)
   const [addingMember, setAddingMember] = useState(false)
   const [selectedMemberId, setSelectedMemberId] = useState('')
-  const [isLead, setIsLead] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<string>('junior')
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
 
@@ -103,10 +136,22 @@ function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
     const res = await fetch(`/api/teams/${team.id}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ team_member_id: selectedMemberId, is_lead: isLead }),
+      body: JSON.stringify({
+        team_member_id: selectedMemberId,
+        role: selectedRole,
+        is_lead: selectedRole === 'head',
+      }),
     })
-    if (res.ok) { onRefresh(); setAddingMember(false); setSelectedMemberId(''); setIsLead(false) }
-    else { const d = await res.json(); toast({ variant: 'destructive', title: 'Error', description: d.error }) }
+    if (res.ok) {
+      onRefresh()
+      setAddingMember(false)
+      setSelectedMemberId('')
+      setSelectedRole('junior')
+      toast({ title: 'Member added', description: `Added as ${selectedRole}` })
+    } else {
+      const d = await res.json()
+      toast({ variant: 'destructive', title: 'Error', description: d.error })
+    }
     setSaving(false)
   }
 
@@ -162,11 +207,10 @@ function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
                       <p className="text-xs font-medium text-slate-900 truncate">{tm.team_members.name}</p>
                       <p className="text-[10px] text-slate-400 truncate">{tm.team_members.email}</p>
                     </div>
-                    {tm.is_lead && (
-                      <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-md shrink-0">
-                        <Crown className="w-2.5 h-2.5" />Lead
-                      </span>
-                    )}
+                    {/* Role badge */}
+                    {getRoleBadge((tm as any).role, tm.is_lead)}
+                    {/* Capacity */}
+                    {getCapacityBadge((tm.team_members as any).team_member_capacity?.[0] ?? null)}
                     {canManage && (
                       <button onClick={() => removeMember(tm.team_members.id)}
                         className="p-1 rounded text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
@@ -184,21 +228,30 @@ function TeamCard({ team, allMembers, canManage, onDelete, onRefresh }: {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-2 border-t border-slate-100 space-y-2">
                       <select value={selectedMemberId} onChange={e => setSelectedMemberId(e.target.value)}
                         className="w-full h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:border-blue-400">
-                        <option value="">Select team member…</option>
+                        <option value="">Select member…</option>
                         {available.map(m => <option key={m.id} value={m.id}>{m.name} · {m.role_name || 'No role'}</option>)}
                       </select>
-                      <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
-                        <input type="checkbox" checked={isLead} onChange={e => setIsLead(e.target.checked)}
-                          className="rounded border-slate-300 text-amber-500" />
-                        <Crown className="w-3 h-3 text-amber-500" /> Set as Team Lead
-                      </label>
+                      {/* Role picker */}
+                      <div className="flex gap-1.5">
+                        {TEAM_ROLES.map(r => (
+                          <button key={r.value}
+                            onClick={() => setSelectedRole(r.value)}
+                            className={`flex-1 h-7 rounded-lg border text-[10px] font-semibold transition-all ${
+                              selectedRole === r.value
+                                ? r.color + ' border-current shadow-sm'
+                                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
+                            }`}>
+                            {r.value === 'head' && '👑 '}{r.label}
+                          </button>
+                        ))}
+                      </div>
                       <div className="flex gap-2">
                         <button onClick={addMember} disabled={!selectedMemberId || saving}
                           className="flex-1 h-7 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium disabled:opacity-40 flex items-center justify-center gap-1">
-                          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Add
+                          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Add as {selectedRole}
                         </button>
-                        <button onClick={() => { setAddingMember(false); setSelectedMemberId('') }}
-                          className="flex-1 h-7 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Cancel</button>
+                        <button onClick={() => { setAddingMember(false); setSelectedMemberId(''); setSelectedRole('junior') }}
+                          className="px-3 h-7 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Cancel</button>
                       </div>
                     </motion.div>
                   ) : (
