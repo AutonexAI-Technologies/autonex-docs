@@ -181,23 +181,32 @@ export async function POST(request: NextRequest) {
 
 
     // Create portal_user record
-    await admin.from('portal_users').insert({
+    // NOTE: invited_by references portal_users(id), NOT auth.users(id).
+    // The CRM admin has no portal_users row, so we must pass null.
+    const { error: puError } = await admin.from('portal_users').insert({
       user_id: authData.user.id,
       client_id,
       name: clientDisplayName,
       email,
       portal_role,
-      invited_by: caller.id,
+      invited_by: null,   // admin is not a portal user
     })
 
-    // Also create invite record for tracking (mark as accepted immediately)
+    if (puError) {
+      // Auth user was created — clean it up to avoid orphan accounts
+      await admin.auth.admin.deleteUser(authData.user.id)
+      console.error('[portal_users insert failed]', puError)
+      return NextResponse.json({ error: 'Failed to create portal user record: ' + puError.message }, { status: 500 })
+    }
+
+    // Track invite for auditing (mark as accepted immediately)
     await admin.from('portal_invites').insert({
       client_id,
       email,
       portal_role,
-      invited_by: caller.id,
+      invited_by: null,   // admin is not a portal user
       accepted: true,
-    })
+    }).then(() => {}) // non-critical — don't block on failure
 
     const portalUrl = 'https://autonex-docs-8x12.vercel.app'
 
