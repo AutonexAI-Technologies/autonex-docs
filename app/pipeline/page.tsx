@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import {
   Users, Briefcase, FileText, CheckCircle2,
-  TrendingUp, Zap, Eye, Building2, Trash2,
+  TrendingUp, Zap, Eye, Building2,
   Plus, ExternalLink, X, Search, ChevronDown, Filter,
 } from 'lucide-react'
 import { useUserRole } from '@/lib/useUserRole'
@@ -90,9 +90,11 @@ function ClientCard({ client, onDragStart, onDelete, viewOnly }: {
             <ExternalLink className="w-3 h-3 text-blue-500" />
           </Link>
           {!viewOnly && (
-            <button onClick={e => { e.stopPropagation(); onDelete(client.id) }}
-              className="p-1 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
-              <Trash2 className="w-3 h-3" />
+            <button
+              onClick={e => { e.stopPropagation(); onDelete(client.id) }}
+              title="Remove from pipeline"
+              className="p-1 rounded-md hover:bg-amber-50 text-slate-300 hover:text-amber-500 transition-colors">
+              <X className="w-3 h-3" />
             </button>
           )}
         </div>
@@ -343,11 +345,13 @@ export default function PipelinePage() {
     setSaving(false)
   }
 
+  // Remove from pipeline only — does NOT delete the client from the CRM.
+  // Client stays in the Clients list and can be re-added to the pipeline at any time.
   const handleDelete = async (clientId: string) => {
     if (viewOnly) return
-    if (!confirm('Delete this client permanently? This cannot be undone.')) return
+    if (!confirm('Remove this client from the pipeline? The client record will NOT be deleted — they can be re-added any time.')) return
     setClients(prev => prev.filter(c => c.id !== clientId))
-    await supabase.from('clients').delete().eq('id', clientId)
+    await supabase.from('clients').update({ status: null }).eq('id', clientId)
   }
 
   const handleMoveToStage = async (clientId: string, stage: PipelineStatus) => {

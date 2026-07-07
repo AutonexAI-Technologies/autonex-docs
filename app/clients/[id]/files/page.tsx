@@ -182,14 +182,16 @@ export default function FilesPage() {
     }
   }
 
-  const download = async (f: FileItem) => {
-    const res = await fetch(`/api/files/${f.id}?expires=60`)
-    const d = await res.json()
-    if (d.url) window.open(d.url, '_blank')
-    else toast({ variant: 'destructive', title: 'Could not generate download link' })
+  const download = (f: FileItem) => {
+    // Use proxy endpoint — Supabase URL never exposed in browser
+    const a = document.createElement('a')
+    a.href = `/api/files/${f.id}/download`
+    a.download = f.file_name
+    a.click()
   }
 
   const copyLink = async (f: FileItem) => {
+    // Signed URL for sharing — still valid for 1 hour
     const res = await fetch(`/api/files/${f.id}?expires=3600`)
     const d = await res.json()
     if (d.url) {
