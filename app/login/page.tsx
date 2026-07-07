@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Lock, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Lock, Mail, ShieldCheck, Eye, EyeOff, AlertTriangle } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function LoginPage() {
@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const errorParam = searchParams.get('error')
   const { toast } = useToast()
   const supabase = createClient()
 
@@ -103,6 +105,16 @@ export default function LoginPage() {
         >
           <h2 className="text-lg font-semibold mb-1" style={{ color: '#f1f5f9' }}>Internal Operations</h2>
           <p className="text-xs mb-6" style={{ color: 'rgba(148,163,184,0.6)' }}>Invite-only access. Sign in to your workspace.</p>
+
+          {errorParam === 'access_denied' && (
+            <div className="mb-5 p-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs flex gap-2 items-start leading-relaxed">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-semibold block mb-0.5">Access Denied</strong>
+                Your account is deactivated or has been removed from this CRM workspace.
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}

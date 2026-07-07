@@ -62,17 +62,46 @@ export async function middleware(request: NextRequest) {
     if (email) {
       const { data: member } = await supabase
         .from('team_members')
-        .select('roles(name)')
+        .select('status, roles(name)')
         .eq('email', email)
-        .single()
+        .maybeSingle()
 
-      const roleName: string | null = (member as any)?.roles?.name ?? null
+      // Block inactive team members
+      if (member?.status === 'inactive') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        url.searchParams.set('error', 'access_denied')
+        const res = NextResponse.redirect(url)
+        request.cookies.getAll().forEach(cookie => {
+          if (cookie.name.includes('supabase') || cookie.name.startsWith('sb-')) {
+            res.cookies.delete(cookie.name)
+          }
+        })
+        return res
+      }
 
-      // If NO team_members record exists → user is likely the original admin/founder
-      // Grant full access (they created the platform, they see everything)
+      // If NO team_members record exists, check if DB is empty or if this is a deleted user
       if (!member) {
+        const { count } = await supabase
+          .from('team_members')
+          .select('*', { count: 'exact', head: true })
+
+        if (count && count > 0) {
+          const url = request.nextUrl.clone()
+          url.pathname = '/login'
+          url.searchParams.set('error', 'access_denied')
+          const res = NextResponse.redirect(url)
+          request.cookies.getAll().forEach(cookie => {
+            if (cookie.name.includes('supabase') || cookie.name.startsWith('sb-')) {
+              res.cookies.delete(cookie.name)
+            }
+          })
+          return res
+        }
         return supabaseResponse
       }
+
+      const roleName: string | null = (member as any)?.roles?.name ?? null
 
       // If role IS found but doesn't have access → redirect to dashboard
       if (roleName && !canAccess(roleName, pathname)) {
@@ -84,7 +113,6 @@ export async function middleware(request: NextRequest) {
 
       // If member exists but has no role assigned yet → send to dashboard (safe fallback)
       if (member && !roleName && pathname !== '/dashboard') {
-        // Allow – they at least have a team record, let them see what they can
         return supabaseResponse
       }
     }
