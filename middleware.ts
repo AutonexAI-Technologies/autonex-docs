@@ -36,10 +36,60 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/change-password')
   )
 
-  // ── NEVER interfere with API routes ────────────────────────────────────
-  // API security is handled by the admin client (service role key).
-  // Middleware redirecting API requests was breaking data sync for invited users.
+  // ── Secure API routes ──────────────────────────────────────────────────
   if (pathname.startsWith('/api')) {
+    const method = request.method
+    const isPublicGetInvite = pathname === '/api/portal/invite' && method === 'GET'
+    const isPublicAccept = pathname.startsWith('/api/portal/accept')
+    
+    // Check cron auth for invoice generator
+    const cronSecret = process.env.CRON_SECRET
+    const authHeader = request.headers.get('authorization')
+    const isCron = pathname === '/api/retainers/generate-invoices' &&
+      (authHeader === `Bearer ${cronSecret}` || !cronSecret || process.env.NODE_ENV === 'development')
+
+    const isPublicApi = isPublicGetInvite || isPublicAccept || isCron
+
+    if (!user && !isPublicApi) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized: Authentication required' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (user && !isPublicApi) {
+      const email = user.email?.toLowerCase()
+      if (email) {
+        const { data: member } = await supabase
+          .from('team_members')
+          .select('status')
+          .eq('email', email)
+          .maybeSingle()
+
+        // Block inactive users from making API calls
+        if (member?.status === 'inactive') {
+          return new NextResponse(
+            JSON.stringify({ error: 'Deactivated: Your account has been deactivated' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Block deleted users from making API calls (if team has other active members)
+        if (!member) {
+          const { count } = await supabase
+            .from('team_members')
+            .select('*', { count: 'exact', head: true })
+
+          if (count && count > 0) {
+            return new NextResponse(
+              JSON.stringify({ error: 'Forbidden: Access denied' }),
+              { status: 403, headers: { 'Content-Type': 'application/json' } }
+            )
+          }
+        }
+      }
+    }
+
     return supabaseResponse
   }
 
