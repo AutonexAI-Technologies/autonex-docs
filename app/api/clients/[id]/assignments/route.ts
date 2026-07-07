@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
@@ -58,49 +59,84 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       .from('team_memberships').select('team_member_id').eq('team_id', teamId)
     const memberIds = memberships?.map((m: any) => m.team_member_id) ?? []
 
-    // 3. Create client-facing thread: "ClientName — TeamName"
-    const { data: clientThread } = await admin
-      .from('chat_threads')
-      .insert({
-        client_id: params.id,
-        team_id: teamId,
-        name: `${clientName} — ${teamName}`,
-        department: 'general',
-        type: 'team',
-        thread_type: 'client',
-      })
-      .select('id')
-      .single()
+    // 3. Create client-facing thread (or fetch existing)
+    let clientThreadId: string | null = null
+    {
+      // Try insert, ignore conflict
+      const { data: ct } = await admin
+        .from('chat_threads')
+        .insert({
+          client_id: params.id,
+          team_id: teamId,
+          team_name: teamName,
+          name: `${teamName} · Client Chat`,
+          department: teamName.toLowerCase(),
+          thread_type: 'client',
+        })
+        .select('id')
+        .maybeSingle()
+      if (ct?.id) {
+        clientThreadId = ct.id
+      } else {
+        // Already exists — fetch it
+        const { data: existing } = await admin
+          .from('chat_threads')
+          .select('id')
+          .eq('client_id', params.id)
+          .eq('team_id', teamId)
+          .eq('thread_type', 'client')
+          .maybeSingle()
+        clientThreadId = existing?.id || null
+      }
+    }
 
-    // 4. Create internal thread: "Internal — ClientName — TeamName"
-    const { data: internalThread } = await admin
-      .from('chat_threads')
-      .insert({
-        client_id: params.id,
-        team_id: teamId,
-        name: `Internal — ${clientName} — ${teamName}`,
-        department: 'general',
-        type: 'team',
-        thread_type: 'internal',
-      })
-      .select('id')
-      .single()
+    // 4. Create internal thread (or fetch existing)
+    let internalThreadId: string | null = null
+    {
+      const { data: it } = await admin
+        .from('chat_threads')
+        .insert({
+          client_id: params.id,
+          team_id: teamId,
+          team_name: teamName,
+          name: `${teamName} · Internal`,
+          department: teamName.toLowerCase(),
+          thread_type: 'internal',
+        })
+        .select('id')
+        .maybeSingle()
+      if (it?.id) {
+        internalThreadId = it.id
+      } else {
+        const { data: existing } = await admin
+          .from('chat_threads')
+          .select('id')
+          .eq('client_id', params.id)
+          .eq('team_id', teamId)
+          .eq('thread_type', 'internal')
+          .maybeSingle()
+        internalThreadId = existing?.id || null
+      }
+    }
+
+    const clientThread  = clientThreadId   ? { id: clientThreadId }   : null
+    const internalThread = internalThreadId ? { id: internalThreadId } : null
 
     // 5. Add all team members to both threads
     for (const memberId of memberIds) {
       if (clientThread?.id) {
-        try { await admin.from('chat_thread_members').insert({ thread_id: clientThread.id, user_id: memberId }) } catch (_) {}
+        try { await admin.from('chat_thread_members').insert({ thread_id: clientThread.id, user_id: memberId }) } catch (_) { }
       }
       if (internalThread?.id) {
-        try { await admin.from('chat_thread_members').insert({ thread_id: internalThread.id, user_id: memberId }) } catch (_) {}
+        try { await admin.from('chat_thread_members').insert({ thread_id: internalThread.id, user_id: memberId }) } catch (_) { }
       }
       try {
         await admin.from('team_member_capacity')
           .upsert({ user_id: memberId, active_projects: 1, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-      } catch (_) {}
+      } catch (_) { }
     }
 
-    results.push({ teamId, teamName, clientThreadId: clientThread?.id, internalThreadId: internalThread?.id })
+    results.push({ teamId, teamName, clientThreadId, internalThreadId })
   }
 
   // Activity log
@@ -111,7 +147,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       entity_type: 'assignment',
       entity_name: clientName,
     }])
-  } catch (_) {}
+  } catch (_) { }
 
   return NextResponse.json({ success: true, results })
 }
@@ -127,8 +163,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     .from('chat_threads').select('id').eq('client_id', params.id).eq('team_id', team_id)
   if (threads?.length) {
     for (const t of threads) {
-      try { await admin.from('chat_thread_members').delete().eq('thread_id', t.id) } catch (_) {}
-      try { await admin.from('chat_threads').delete().eq('id', t.id) } catch (_) {}
+      try { await admin.from('chat_thread_members').delete().eq('thread_id', t.id) } catch (_) { }
+      try { await admin.from('chat_threads').delete().eq('id', t.id) } catch (_) { }
     }
   }
 

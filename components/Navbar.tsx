@@ -22,7 +22,7 @@ export default function Navbar() {
   return (
     <nav className="border-b border-white/10 bg-[#0A0F1E]/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        
+
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center group-hover:bg-teal-500/30 transition-colors">

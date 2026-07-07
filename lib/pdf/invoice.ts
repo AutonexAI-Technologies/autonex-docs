@@ -29,7 +29,7 @@ export async function generateInvoiceHTML(client: Client, invoice?: InvoiceData,
     dueDateRaw = new Date(invoice.due_date)
     dueDate = dueDateRaw.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
   }
-  const isOverdue = !isPaid && dueDateRaw && dueDateRaw < new Date()
+  const isOverdue = invoice?.status === 'Overdue' || (!isPaid && dueDateRaw && dueDateRaw < new Date())
 
   // line_items can be a JSON string (from DB) or already an array
   const rawItems = invoice?.line_items
@@ -68,7 +68,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#ffffff;color:#1a1a2e;fo
 .page{max-width:794px;margin:0 auto;min-height:1123px;display:flex;flex-direction:column;position:relative;overflow:hidden}
 
 /* PAID watermark */
-.watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:96px;font-weight:900;color:rgba(16,185,129,0.08);letter-spacing:8px;white-space:nowrap;pointer-events:none;z-index:0;font-family:Arial}
+.watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:96px;font-weight:900;color:rgba(239,68,68,0.08);letter-spacing:8px;white-space:nowrap;pointer-events:none;z-index:0;font-family:Arial}
 .watermark.overdue{color:rgba(239,68,68,0.08)}
 
 /* HEADER */

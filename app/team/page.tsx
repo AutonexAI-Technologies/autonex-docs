@@ -43,17 +43,17 @@ interface Team {
 }
 
 const ROLE_ACCESS: Record<string, { label: string; color: string }> = {
-  'Founder':           { label: 'Full Access',    color: 'text-violet-400' },
-  'Managing Director': { label: 'Full Access',    color: 'text-blue-400'   },
-  'Head':              { label: 'Dept. Access',   color: 'text-emerald-400' },
-  'Senior':            { label: 'Read + Write',   color: 'text-teal-400'   },
-  'Junior':            { label: 'Read + Limited', color: 'text-amber-400'  },
-  'Intern':            { label: 'Read Only',      color: 'text-slate-400'  },
+  'Founder': { label: 'Full Access', color: 'text-violet-400' },
+  'Managing Director': { label: 'Full Access', color: 'text-blue-400' },
+  'Head': { label: 'Dept. Access', color: 'text-emerald-400' },
+  'Senior': { label: 'Read + Write', color: 'text-teal-400' },
+  'Junior': { label: 'Read + Limited', color: 'text-amber-400' },
+  'Intern': { label: 'Read Only', color: 'text-slate-400' },
 }
 const statusBadge: Record<string, string> = {
   active: 'badge badge-green', invited: 'badge badge-yellow', inactive: 'badge badge-slate',
 }
-const TEAM_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899','#6366f1']
+const TEAM_COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#6366f1']
 
 // ── Remove member modal ────────────────────────────────────────────────────────
 
@@ -84,10 +84,10 @@ function RemoveModal({ member, onConfirm, onCancel, loading }: {
 
 // ── Role config ───────────────────────────────────────────────────────────────
 const TEAM_ROLES = [
-  { value: 'head',   label: 'Head',   color: 'bg-amber-50 text-amber-700 border-amber-200',  dot: 'bg-amber-400' },
-  { value: 'senior', label: 'Senior', color: 'bg-blue-50 text-blue-700 border-blue-200',     dot: 'bg-blue-400' },
+  { value: 'head', label: 'Head', color: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-400' },
+  { value: 'senior', label: 'Senior', color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-400' },
   { value: 'junior', label: 'Junior', color: 'bg-violet-50 text-violet-700 border-violet-200', dot: 'bg-violet-400' },
-  { value: 'intern', label: 'Intern', color: 'bg-slate-50 text-slate-600 border-slate-200',  dot: 'bg-slate-400' },
+  { value: 'intern', label: 'Intern', color: 'bg-slate-50 text-slate-600 border-slate-200', dot: 'bg-slate-400' },
 ]
 
 function getRoleBadge(role?: string | null, isLead?: boolean) {
@@ -120,7 +120,7 @@ function getCapacityBadge(capacity?: { active_projects: number; status: string }
 function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh }: {
   team: Team
   allMembers: Member[]
-  allClients: {id:string;name:string;company?:string}[]
+  allClients: { id: string; name: string; company?: string }[]
   canManage: boolean
   onDelete: (id: string) => void
   onRefresh: () => void
@@ -264,11 +264,10 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                         {TEAM_ROLES.map(r => (
                           <button key={r.value}
                             onClick={() => setSelectedRole(r.value)}
-                            className={`flex-1 h-7 rounded-lg border text-[10px] font-semibold transition-all ${
-                              selectedRole === r.value
+                            className={`flex-1 h-7 rounded-lg border text-[10px] font-semibold transition-all ${selectedRole === r.value
                                 ? r.color + ' border-current shadow-sm'
                                 : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
-                            }`}>
+                              }`}>
                             {r.value === 'head' && '👑 '}{r.label}
                           </button>
                         ))}
@@ -335,22 +334,22 @@ export default function TeamPage() {
   const { role_name, isAdmin } = useUserRole()
   const canManage = isAdmin || role_name === 'Founder' || role_name === 'Managing Director' || role_name === 'Head'
 
-  const [members, setMembers]         = useState<Member[]>([])
-  const [teams, setTeams]             = useState<Team[]>([])
-  const [allClients, setAllClients]   = useState<{id:string;name:string;company?:string}[]>([])
+  const [members, setMembers] = useState<Member[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
+  const [allClients, setAllClients] = useState<{ id: string; name: string; company?: string }[]>([])
   const [departments, setDepartments] = useState<any[]>([])
-  const [loading, setLoading]         = useState(true)
+  const [loading, setLoading] = useState(true)
   const [teamsLoading, setTeamsLoading] = useState(true)
-  const [showInvite, setShowInvite]   = useState(false)
+  const [showInvite, setShowInvite] = useState(false)
   const [showNewTeam, setShowNewTeam] = useState(false)
-  const [inviting, setInviting]       = useState(false)
+  const [inviting, setInviting] = useState(false)
   const [creatingTeam, setCreatingTeam] = useState(false)
-  const [form, setForm]               = useState({ email: '', name: '', role_id: '' })
-  const [teamForm, setTeamForm]       = useState({ name: '', department_id: '', color: TEAM_COLORS[0], description: '' })
+  const [form, setForm] = useState({ email: '', name: '', role_id: '' })
+  const [teamForm, setTeamForm] = useState({ name: '', department_id: '', color: TEAM_COLORS[0], description: '' })
   const [removeTarget, setRemoveTarget] = useState<Member | null>(null)
-  const [removing, setRemoving]       = useState(false)
+  const [removing, setRemoving] = useState(false)
   const [linkLoading, setLinkLoading] = useState<string | null>(null)
-  const [activeTab, setActiveTab]     = useState<'members' | 'teams'>('members')
+  const [activeTab, setActiveTab] = useState<'members' | 'teams'>('members')
 
   const loadMembers = useCallback(async () => {
     const res = await fetch('/api/team/members')
@@ -370,8 +369,8 @@ export default function TeamPage() {
   useEffect(() => {
     loadMembers()
     loadTeams()
-    fetch('/api/team/departments').then(r => r.json()).then(d => setDepartments(Array.isArray(d) ? d : [])).catch(() => {})
-    fetch('/api/clients').then(r => r.json()).then(d => setAllClients(Array.isArray(d) ? d : [])).catch(() => {})
+    fetch('/api/team/departments').then(r => r.json()).then(d => setDepartments(Array.isArray(d) ? d : [])).catch(() => { })
+    fetch('/api/clients').then(r => r.json()).then(d => setAllClients(Array.isArray(d) ? d : [])).catch(() => { })
     const t = setInterval(loadMembers, 20_000)
     return () => clearInterval(t)
   }, [loadMembers, loadTeams])
@@ -429,7 +428,7 @@ export default function TeamPage() {
     setRemoving(false)
   }
 
-  const active  = members.filter(m => m.status === 'active').length
+  const active = members.filter(m => m.status === 'active').length
   const invited = members.filter(m => m.status === 'invited').length
   const inputCls = 'w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-blue-500 transition-colors'
 
@@ -639,10 +638,9 @@ export default function TeamPage() {
                     <motion.div key={m.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
                       <div className="hidden md:grid items-center px-6 py-4 hover:bg-slate-50 transition-colors" style={{ gridTemplateColumns: '2fr 1fr 1fr 0.8fr 1fr 1fr' }}>
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
-                            m.status === 'invited' ? 'bg-amber-50 border border-amber-200 text-amber-600'
-                            : m.status === 'inactive' ? 'bg-slate-100 border border-slate-200 text-slate-400'
-                            : 'bg-blue-50 border border-blue-200 text-blue-600'}`}>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${m.status === 'invited' ? 'bg-amber-50 border border-amber-200 text-amber-600'
+                              : m.status === 'inactive' ? 'bg-slate-100 border border-slate-200 text-slate-400'
+                                : 'bg-blue-50 border border-blue-200 text-blue-600'}`}>
                             {m.name.charAt(0).toUpperCase()}
                           </div>
                           <div>

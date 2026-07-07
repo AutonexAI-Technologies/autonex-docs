@@ -40,6 +40,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;font-
 .summary-table td{padding:10px 14px;font-size:12px;border-bottom:1px solid #f0f0f0}
 .summary-table tr:nth-child(even) td{background:#fafbff}
 .teal{color:#60A5FA;font-weight:700}
+.blue{color:#60A5FA;font-weight:700}
 .checklist{margin-bottom:28px}
 .check-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;padding:10px 14px;background:#f8f9ff;border-radius:8px}
 .check-icon{width:22px;height:22px;background:#60A5FA;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:white;font-weight:700}
@@ -89,7 +90,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;font-
     <tbody>
       <tr><td>Client Name</td><td><strong>${client.name}</strong></td></tr>
       <tr><td>Service Delivered</td><td>${client.service}</td></tr>
-      <tr><td>Total Project Value</td><td class="teal">₹${client.total_fee.toLocaleString('en-IN')}</td></tr>
+      <tr><td>Total Project Value</td><td class="blue">₹${client.total_fee.toLocaleString('en-IN')}</td></tr>
       <tr><td>Completion Date</td><td>${completionDate}</td></tr>
       <tr><td>Status</td><td><span style="color:#60A5FA;font-weight:700">✓ Successfully Completed</span></td></tr>
     </tbody>

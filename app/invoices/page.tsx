@@ -56,6 +56,7 @@ function NewInvoicePanel({
   const [dueDate, setDueDate] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [status, setStatus] = useState<PaymentStatus>('Pending')
 
   useEffect(() => {
     if (open) {
@@ -109,6 +110,7 @@ function NewInvoicePanel({
         due_date: dueDate || null,
         notes: notes || null,
         is_retainer_invoice: false,
+        status: status,
       }),
     })
     const data = await res.json()
@@ -243,13 +245,11 @@ function NewInvoicePanel({
                 <button
                   type="button"
                   onClick={() => setGstEnabled(p => !p)}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
-                    gstEnabled ? 'bg-blue-500' : 'bg-slate-300'
-                  }`}
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${gstEnabled ? 'bg-blue-500' : 'bg-slate-300'
+                    }`}
                 >
-                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 ${
-                    gstEnabled ? 'left-[26px]' : 'left-0.5'
-                  }`} />
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 ${gstEnabled ? 'left-[26px]' : 'left-0.5'
+                    }`} />
                 </button>
               </div>
 
@@ -287,6 +287,21 @@ function NewInvoicePanel({
                 />
               </div>
 
+              {/* Status */}
+              <div>
+                <label className="text-slate-400 text-xs mb-1.5 block">Status</label>
+                <select
+                  value={status}
+                  onChange={e => setStatus(e.target.value as PaymentStatus)}
+                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm cursor-pointer"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Overdue">Overdue</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
               {/* Notes */}
               <div>
                 <label className="text-slate-400 text-xs mb-1.5 block">Notes (optional)</label>
@@ -307,7 +322,7 @@ function NewInvoicePanel({
             </form>
 
             {/* Footer */}
-              <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-slate-50">
+            <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-slate-50">
               <Button
                 type="button"
                 onClick={onClose}
@@ -486,9 +501,9 @@ export default function InvoicesPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {[
-          { label: 'Total Paid',      value: `₹${totalPaid.toLocaleString('en-IN')}`,  color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: '✅' },
-            { label: 'Pending Amount', value: `₹${pendingAmt.toLocaleString('en-IN')}`, color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200',   icon: '⏳' },
-            { label: 'Overdue',        value: `${overdueCount} invoice${overdueCount !== 1 ? 's' : ''}`, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: '🔴' },
+            { label: 'Total Paid', value: `₹${totalPaid.toLocaleString('en-IN')}`, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: '✅' },
+            { label: 'Pending Amount', value: `₹${pendingAmt.toLocaleString('en-IN')}`, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: '⏳' },
+            { label: 'Overdue', value: `${overdueCount} invoice${overdueCount !== 1 ? 's' : ''}`, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: '🔴' },
           ].map((s, i) => (
             <motion.div
               key={s.label}
@@ -514,11 +529,10 @@ export default function InvoicesPage() {
             <button
               key={s}
               onClick={() => setFilter(s as any)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                filter === s
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${filter === s
                   ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                   : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600'
-              }`}
+                }`}
             >
               {s}
               {s !== 'All' && (
@@ -614,9 +628,8 @@ export default function InvoicesPage() {
                         )}
                       </div>
                       <span
-                        className={`hidden md:inline-flex ${
-                          isOverdue ? 'badge badge-red' : statusStyle[inv.status]
-                        }`}
+                        className={`hidden md:inline-flex ${isOverdue ? 'badge badge-red' : statusStyle[inv.status]
+                          }`}
                       >
                         <StatusIcon className="w-3 h-3" />
                         {isOverdue ? 'Overdue' : inv.status}

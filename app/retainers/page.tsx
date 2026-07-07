@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RefreshCw, Loader2, AlertTriangle, IndianRupee, Calendar, PlayCircle, PauseCircle, XCircle } from 'lucide-react'
+import { RefreshCw, Loader2, AlertTriangle, IndianRupee, Calendar, PlayCircle, PauseCircle, XCircle, Zap, ToggleLeft, ToggleRight } from 'lucide-react'
 import { Retainer, RetainerStatus } from '@/types'
 import { format, differenceInDays, isPast } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
@@ -40,6 +40,25 @@ export default function RetainersPage() {
     }
   }
 
+  async function toggleAutoInvoice(id: string, current: boolean) {
+    const res = await fetch(`/api/retainers/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auto_invoice: !current }),
+    })
+    if (res.ok) {
+      toast({ title: !current ? '🤖 Auto-invoice enabled' : '⏸ Auto-invoice disabled' })
+      load()
+    }
+  }
+
+  async function runAutoInvoice() {
+    const res = await fetch('/api/retainers/generate-invoices', { method: 'POST' })
+    const data = await res.json()
+    toast({ title: `✅ ${data.message || 'Invoices generated'}` })
+    load()
+  }
+
   const active = retainers.filter(r => r.status === 'Active')
   const totalMonthly = active.reduce((s, r) => s + r.amount, 0)
   const dueSoon = active.filter(r => {
@@ -62,6 +81,13 @@ export default function RetainersPage() {
             {active.length} active · ₹{totalMonthly.toLocaleString('en-IN')}/mo recurring
           </p>
         </div>
+        <button
+          onClick={runAutoInvoice}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
+        >
+          <Zap className="w-3.5 h-3.5" />
+          Run Auto-Invoice
+        </button>
       </motion.div>
 
       {/* Alerts */}
@@ -117,12 +143,13 @@ export default function RetainersPage() {
         transition={{ delay: 0.2 }}
         className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
       >
-        <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
+        <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
           <span>Client</span>
           <span>Amount</span>
           <span>Cycle</span>
           <span>Status</span>
           <span>Next Billing</span>
+          <span>Auto-Invoice</span>
           <span className="w-24" />
         </div>
 
@@ -153,7 +180,7 @@ export default function RetainersPage() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.04 }}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-slate-50 transition-colors group">
+                  <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-slate-50 transition-colors group">
                     <div>
                       <p className="text-white text-sm font-medium">{clientName}</p>
                       <p className="text-slate-500 text-xs">{(r as any).clients?.email}</p>
@@ -167,6 +194,23 @@ export default function RetainersPage() {
                       <p className={`text-xs font-medium ${isOverdue ? 'text-red-400' : isDue ? 'text-amber-400' : 'text-slate-300'}`}>
                         {isOverdue ? '⚠️ Overdue' : isDue ? `⏰ ${daysUntil}d left` : format(new Date(r.next_billing_date), 'dd MMM yyyy')}
                       </p>
+                    </div>
+
+                    {/* Auto-Invoice Toggle */}
+                    <div className="hidden md:flex items-center">
+                      <button
+                        onClick={() => toggleAutoInvoice(r.id, !!(r as any).auto_invoice)}
+                        title={(r as any).auto_invoice ? 'Disable auto-invoice' : 'Enable auto-invoice'}
+                        className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-all ${
+                          (r as any).auto_invoice
+                            ? 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100'
+                            : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600'
+                        }`}
+                      >
+                        {(r as any).auto_invoice
+                          ? <><ToggleRight className="w-3.5 h-3.5" /> On</>
+                          : <><ToggleLeft className="w-3.5 h-3.5" /> Off</>}
+                      </button>
                     </div>
 
                     {/* Actions */}

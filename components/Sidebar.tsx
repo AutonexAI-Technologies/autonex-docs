@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useUserRole, clearRoleCache } from '@/lib/useUserRole'
 import { canAccess, ROLE_COLOR } from '@/lib/roleAccess'
 import {
@@ -45,7 +45,7 @@ const navItems = [
   { href: '/settings',       label: 'Settings',        icon: Settings },
 ]
 
-function NavItem({ item, active, onClick }: { item: typeof navItems[0]; active: boolean; onClick?: () => void }) {
+function NavItem({ item, active, onClick, badge }: { item: typeof navItems[0]; active: boolean; onClick?: () => void; badge?: number }) {
   return (
     <Link href={item.href} onClick={onClick}>
       <motion.div
@@ -54,7 +54,13 @@ function NavItem({ item, active, onClick }: { item: typeof navItems[0]; active: 
       >
         <item.icon className={`w-4 h-4 shrink-0 ${active ? 'text-white/90' : 'text-slate-400'}`} />
         <span className="flex-1">{item.label}</span>
-        {active && <ChevronRight className="w-3.5 h-3.5 text-white/50" />}
+        {badge && badge > 0 ? (
+          <span className="min-w-[18px] h-4.5 px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        ) : active ? (
+          <ChevronRight className="w-3.5 h-3.5 text-white/50" />
+        ) : null}
       </motion.div>
     </Link>
   )
@@ -64,7 +70,28 @@ export default function Sidebar() {
   const pathname  = usePathname()
   const router    = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [unreadMessages, setUnreadMessages] = useState(0)
   const { role_name, department_name, loading, isAdmin } = useUserRole()
+  const supabase = createClient()
+
+  const loadUnread = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('chat_threads')
+        .select('unread_count')
+      const total = (data ?? []).reduce((s: number, t: any) => s + (t.unread_count ?? 0), 0)
+      setUnreadMessages(total)
+    } catch {}
+  }, [supabase])
+
+  useEffect(() => {
+    loadUnread()
+    const channel = supabase
+      .channel('sidebar-unread')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_threads' }, loadUnread)
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase, loadUnread])
 
   async function handleSignOut() {
     clearRoleCache()
@@ -87,12 +114,16 @@ export default function Sidebar() {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-4 pt-5 pb-4 border-b border-white/5">
-        <Link href="/dashboard" className="flex items-center group">
+        <Link href="/dashboard" className="flex items-center gap-2.5 group">
           <img
             src="/logo.png"
             alt="Autonex AI"
-            className="h-8 object-contain max-w-[160px] group-hover:opacity-80 transition-opacity"
+            className="h-8 w-auto object-contain"
           />
+          <div>
+            <p className="text-sm font-bold text-white">Autonex AI</p>
+            <p className="text-[10px] text-slate-500">Operations Control</p>
+          </div>
         </Link>
       </div>
 
@@ -113,7 +144,8 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto scrollbar-thin">
         {visibleNavItems.map((item) => {
           const active = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
-          return <NavItem key={item.href} item={item} active={active} onClick={() => setMobileOpen(false)} />
+          const badge = item.href === '/messages' ? unreadMessages : undefined
+          return <NavItem key={item.href} item={item} active={active} badge={badge} onClick={() => setMobileOpen(false)} />
         })}
       </nav>
 

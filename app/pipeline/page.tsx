@@ -31,12 +31,12 @@ interface PipelineClient {
 // ── Column Config ─────────────────────────────────────────────────────────────
 
 const COLUMNS = [
-  { key: 'lead' as PipelineStatus,            label: 'Lead',            icon: Users,        color: 'text-slate-600',   bg: 'bg-slate-100',   border: 'border-slate-200'  },
-  { key: 'proposal_sent' as PipelineStatus,   label: 'Proposal Sent',   icon: FileText,     color: 'text-violet-600',  bg: 'bg-violet-50',   border: 'border-violet-200' },
-  { key: 'contract_signed' as PipelineStatus, label: 'Contract Signed', icon: CheckCircle2, color: 'text-blue-600',    bg: 'bg-blue-50',     border: 'border-blue-200'   },
-  { key: 'active' as PipelineStatus,          label: 'Active',          icon: Zap,          color: 'text-emerald-600', bg: 'bg-emerald-50',  border: 'border-emerald-200'},
-  { key: 'review' as PipelineStatus,          label: 'In Review',       icon: Eye,          color: 'text-amber-600',   bg: 'bg-amber-50',    border: 'border-amber-200'  },
-  { key: 'completed' as PipelineStatus,       label: 'Completed',       icon: TrendingUp,   color: 'text-teal-600',    bg: 'bg-teal-50',     border: 'border-teal-200'   },
+  { key: 'lead' as PipelineStatus, label: 'Lead', icon: Users, color: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-200' },
+  { key: 'proposal_sent' as PipelineStatus, label: 'Proposal Sent', icon: FileText, color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-200' },
+  { key: 'contract_signed' as PipelineStatus, label: 'Contract Signed', icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+  { key: 'active' as PipelineStatus, label: 'Active', icon: Zap, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  { key: 'review' as PipelineStatus, label: 'In Review', icon: Eye, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+  { key: 'completed' as PipelineStatus, label: 'Completed', icon: TrendingUp, color: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-200' },
 ]
 
 function serviceInitials(service: string) {
@@ -123,9 +123,8 @@ function KanbanColumn({ col, clients, onDragStart, onDrop, isOver, onDragOver, o
   const Icon = col.icon
   return (
     <div
-      className={`flex flex-col min-w-[260px] w-[260px] shrink-0 rounded-2xl border transition-all duration-200 ${
-        isOver && !viewOnly ? 'border-blue-400 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-slate-200 bg-slate-50'
-      }`}
+      className={`flex flex-col min-w-[260px] w-[260px] shrink-0 rounded-2xl border transition-all duration-200 ${isOver && !viewOnly ? 'border-blue-400 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-slate-200 bg-slate-50'
+        }`}
       onDragOver={e => { if (!viewOnly) { e.preventDefault(); onDragOver() } }}
       onDrop={e => { if (!viewOnly) { e.preventDefault(); onDrop(col.key) } }}
     >
@@ -318,10 +317,29 @@ export default function PipelinePage() {
   const handleDrop = async (newStatus: PipelineStatus) => {
     if (!draggingId || saving || viewOnly) return
     const prev = clients
+    const movedClient = clients.find(c => c.id === draggingId)
     setClients(p => p.map(c => c.id === draggingId ? { ...c, status: newStatus } : c))
     setDraggingId(null); setOverColumn(null); setSaving(true)
     const { error } = await supabase.from('clients').update({ status: newStatus }).eq('id', draggingId)
-    if (error) setClients(prev)
+    if (error) { setClients(prev) }
+    else if (movedClient) {
+      const stageName = COLUMNS.find(c => c.key === newStatus)?.label ?? newStatus
+      try {
+        await supabase.from('notifications').insert({
+          title: 'Pipeline Stage Updated',
+          message: `${movedClient.name} moved to ${stageName}`,
+          type: 'success', read: false,
+        })
+        await supabase.from('activity_logs').insert({
+          user_name: 'Team',
+          action: `moved to ${stageName}`,
+          entity_type: 'client',
+          entity_id: movedClient.id,
+          entity_name: movedClient.name,
+          metadata: { from: movedClient.status, to: newStatus },
+        })
+      } catch {}
+    }
     setSaving(false)
   }
 
@@ -334,8 +352,29 @@ export default function PipelinePage() {
 
   const handleMoveToStage = async (clientId: string, stage: PipelineStatus) => {
     setSaving(true)
+    const movedClient = clients.find(c => c.id === clientId)
     const { error } = await supabase.from('clients').update({ status: stage }).eq('id', clientId)
-    if (!error) setClients(prev => prev.map(c => c.id === clientId ? { ...c, status: stage } : c))
+    if (!error) {
+      setClients(prev => prev.map(c => c.id === clientId ? { ...c, status: stage } : c))
+      if (movedClient) {
+        const stageName = COLUMNS.find(c => c.key === stage)?.label ?? stage
+        try {
+          await supabase.from('notifications').insert({
+            title: 'Pipeline Stage Updated',
+            message: `${movedClient.name} moved to ${stageName}`,
+            type: 'success', read: false,
+          })
+          await supabase.from('activity_logs').insert({
+            user_name: 'Team',
+            action: `moved to ${stageName}`,
+            entity_type: 'client',
+            entity_id: movedClient.id,
+            entity_name: movedClient.name,
+            metadata: { from: movedClient.status, to: stage },
+          })
+        } catch {}
+      }
+    }
     setSaving(false)
   }
 
@@ -382,9 +421,8 @@ export default function PipelinePage() {
             </div>
             {/* My Team filter */}
             <button onClick={() => setMyTeamOnly(!myTeamOnly)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
-                myTeamOnly ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-700'
-              }`}>
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${myTeamOnly ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-700'
+                }`}>
               <Filter className="w-3.5 h-3.5" />
               My Team
             </button>

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
@@ -272,7 +273,10 @@ function buildCredentialsEmail({
 
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#0a1628,#1a3566);border-radius:16px 16px 0 0;padding:28px 40px;text-align:center;">
-    <span style="font-size:28px;font-weight:900;color:#ffffff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="display:inline-block;background:#ffffff;color:#1a3566;font-size:16px;font-weight:900;border-radius:5px;padding:3px 9px;margin-left:6px;font-family:Arial,sans-serif;vertical-align:middle;line-height:1.4;">AI</span>
+    <img src="https://portal.autonexai.org/logo.png" alt="Autonex AI" width="56" height="56" style="display:block;margin:0 auto 12px;border-radius:12px" />
+    <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px">
+      <span style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="display:inline-block;background:#ffffff;color:#1a3566;font-size:15px;font-weight:900;border-radius:5px;padding:3px 9px;font-family:Arial,sans-serif;vertical-align:middle;line-height:1.4;">AI</span>
+    </div>
     <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;margin-top:10px;">Internal Operations Platform</div>
     <div style="margin-top:16px;font-size:36px;">🎉</div>
   </div>

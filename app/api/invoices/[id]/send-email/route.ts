@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 import { generateInvoiceHTML } from '@/lib/pdf/invoice'
@@ -60,10 +61,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     <!-- HEADER -->
     <tr>
-      <td style="background:#1A3566;border-radius:16px 16px 0 0;padding:28px 36px;text-align:center">
-        <span style="font-size:24px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:-0.5px">Autonex</span><span style="background:#ffffff;color:#1A3566;font-size:16px;font-weight:900;border-radius:5px;padding:2px 8px;margin-left:5px;font-family:Arial,sans-serif;vertical-align:middle">AI</span>
-        <br/>
-        <span style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:6px;display:inline-block">autonexai.org</span>
+      <td style="background:linear-gradient(135deg,#0A1628,#1A3566);border-radius:16px 16px 0 0;padding:24px 36px 22px;text-align:center">
+        <img src="https://portal.autonexai.org/logo.png" alt="Autonex AI" width="52" height="52" style="display:block;margin:0 auto 10px;border-radius:10px" />
+        <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px">
+          <span style="font-size:22px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:-0.5px">Autonex</span><span style="background:#ffffff;color:#1A3566;font-size:14px;font-weight:900;border-radius:5px;padding:2px 8px;font-family:Arial,sans-serif;vertical-align:middle">AI</span>
+        </div>
+        <div style="color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;margin-top:8px">Technologies</div>
       </td>
     </tr>
 
@@ -95,20 +98,20 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             <td style="padding:16px 20px">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666">Invoice No.</td>
-                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0060FF;font-family:monospace;text-align:right">${invoiceNum}</td>
-                </tr>
-                <tr>
-                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666">Service</td>
-                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0A1628;text-align:right">${client.service || 'Professional Services'}</td>
-                </tr>
+                   <td width="40%" style="padding:8px 0 8px;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666;text-align:left">Invoice No.</td>
+                   <td width="60%" style="padding:8px 0 8px;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0060FF;font-family:monospace;text-align:right">${invoiceNum}</td>
+                 </tr>
+                 <tr>
+                   <td width="40%" style="padding:8px 0 8px;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666;text-align:left">Service</td>
+                   <td width="60%" style="padding:8px 0 8px;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0A1628;text-align:right">${client.service || 'Professional Services'}</td>
+                 </tr>
                 ${invoice.gst_enabled ? `<tr>
-                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666">GST (18%)</td>
-                  <td style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0A1628;text-align:right">₹${(invoice.gst_amount || 0).toLocaleString('en-IN')}</td>
+                  <td width="40%" style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;color:#666;text-align:left">GST (18%)</td>
+                  <td width="60%" style="padding:7px 0;border-bottom:1px solid #EEF1F8;font-size:13px;font-weight:700;color:#0A1628;text-align:right">₹${(invoice.gst_amount || 0).toLocaleString('en-IN')}</td>
                 </tr>` : ''}
                 <tr>
-                  <td style="padding:7px 0;font-size:13px;color:#666">Status</td>
-                  <td style="padding:7px 0;font-size:13px;font-weight:700;color:${statusColor};text-align:right">${invoice.status}</td>
+                  <td width="40%" style="padding:7px 0;font-size:13px;color:#666;text-align:left">Status</td>
+                  <td width="60%" style="padding:7px 0;font-size:13px;font-weight:700;color:${statusColor};text-align:right">${invoice.status}</td>
                 </tr>
               </table>
             </td>

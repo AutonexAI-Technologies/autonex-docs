@@ -42,11 +42,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;font-
 .action-card .step{font-size:10px;color:#60A5FA;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
 .action-card h4{font-size:12px;font-weight:700;color:#0A0F1E;margin-bottom:4px}
 .action-card p{font-size:11px;color:#888}
-.tbl{width:100%;border-collapse:collapse;margin-bottom:24px}
 .tbl th{background:#0A0F1E;color:white;text-align:left;padding:9px 14px;font-size:11px}
 .tbl td{padding:9px 14px;font-size:12px;border-bottom:1px solid #f0f0f0}
 .tbl tr:nth-child(even) td{background:#fafbff}
-.teal{color:#60A5FA;font-weight:700}
+.blue{color:#60A5FA;font-weight:700}
 .contact-box{background:#0A0F1E;border-radius:12px;padding:22px 28px;display:flex;justify-content:space-between;align-items:center}
 .contact-box h4{font-size:13px;font-weight:700;color:white;margin-bottom:8px}
 .contact-item{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px}
@@ -97,10 +96,10 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;font-
   <table class="tbl" style="margin-bottom:28px">
     <thead><tr><th>Phase</th><th>Timeline</th><th>Deliverable</th></tr></thead>
     <tbody>
-      <tr><td class="teal">Week 1</td><td>Discovery & Planning</td><td>Project brief, requirements, scope confirmation</td></tr>
-      <tr><td class="teal">Week 2–3</td><td>Development</td><td>Core build, regular progress updates</td></tr>
-      <tr><td class="teal">Week 4</td><td>Testing & Refinement</td><td>QA, revisions, feedback incorporation</td></tr>
-      <tr><td class="teal">Week 5</td><td>Launch & Handover</td><td>Final delivery, documentation, training</td></tr>
+      <tr><td class="blue">Week 1</td><td>Discovery & Planning</td><td>Project brief, requirements, scope confirmation</td></tr>
+      <tr><td class="blue">Week 2–3</td><td>Development</td><td>Core build, regular progress updates</td></tr>
+      <tr><td class="blue">Week 4</td><td>Testing & Refinement</td><td>QA, revisions, feedback incorporation</td></tr>
+      <tr><td class="blue">Week 5</td><td>Launch & Handover</td><td>Final delivery, documentation, training</td></tr>
     </tbody>
   </table>
 

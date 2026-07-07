@@ -18,11 +18,11 @@ interface Thread {
 }
 
 const DEPT_CONFIG: Record<string, { icon: any; color: string; bg: string; border: string }> = {
-  general: { icon: LayoutGrid, color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/20' },
-  design:  { icon: Palette,    color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/20' },
-  tech:    { icon: Wrench,     color: 'text-teal-400',   bg: 'bg-teal-500/10',   border: 'border-teal-500/20' },
-  social:  { icon: Share2,     color: 'text-pink-400',   bg: 'bg-pink-500/10',   border: 'border-pink-500/20' },
-  billing: { icon: CreditCard, color: 'text-amber-400',  bg: 'bg-amber-500/10',  border: 'border-amber-500/20' },
+  general: { icon: LayoutGrid, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+  design: { icon: Palette, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/20' },
+  tech: { icon: Wrench, color: 'text-teal-400', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
+  social: { icon: Share2, color: 'text-pink-400', bg: 'bg-pink-500/10', border: 'border-pink-500/20' },
+  billing: { icon: CreditCard, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
 }
 
 function timeAgo(d: string | null) {

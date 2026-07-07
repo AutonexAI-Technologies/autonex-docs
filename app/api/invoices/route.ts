@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   const {
     client_id, line_items, gst_enabled, due_date, notes,
-    is_retainer_invoice, retainer_period,
+    is_retainer_invoice, retainer_period, status,
   } = body
 
   if (!client_id || !line_items?.length) {
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
       gst_enabled: !!gst_enabled,
       gst_amount,
       total,
-      status: 'Pending',
+      status: status || 'Pending',
       due_date: due_date || null,
       notes: notes || null,
       is_retainer_invoice: !!is_retainer_invoice,

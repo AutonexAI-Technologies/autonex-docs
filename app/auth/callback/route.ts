@@ -18,7 +18,8 @@ import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const type = searchParams.get('type')        // 'recovery' for password reset
+  const next = searchParams.get('next') ?? (type === 'recovery' ? '/change-password' : '/dashboard')
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || origin
   const response = NextResponse.redirect(`${origin}${next}`)
@@ -46,6 +47,11 @@ export async function GET(request: NextRequest) {
   if (sessionError || !sessionData?.user) {
     console.error('[auth/callback] Code exchange failed:', sessionError?.message)
     return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
+  }
+
+  // For password recovery, redirect immediately after session is established
+  if (type === 'recovery') {
+    return NextResponse.redirect(`${origin}/change-password`, { headers: response.headers })
   }
 
   const user  = sessionData.user

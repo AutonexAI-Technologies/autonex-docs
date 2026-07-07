@@ -62,7 +62,7 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
 .tbl th{background:#0A0F1E;color:#fff;padding:9px 14px;font-size:10px;text-align:left;letter-spacing:.5px}
 .tbl td{padding:9px 14px;font-size:12px;border-bottom:1px solid #F0F3FA;color:#1a1a2e}
 .tbl tr:last-child td{background:#F6F8FF;font-weight:700;border-bottom:none}
-.teal{color:#60A5FA;font-weight:700}
+.blue{color:#60A5FA;font-weight:700}
 
 /* CLAUSE */
 .clause{margin-bottom:16px;padding-left:12px;border-left:2px solid #E4E9F8}
@@ -143,8 +143,8 @@ body{font-family:Arial,'Segoe UI',sans-serif;background:#fff;color:#1a1a2e;font-
     <tr><th>Detail</th><th>Information</th></tr>
     <tr><td>Service</td><td>${client.service}</td></tr>
     <tr><td>Contract Date</td><td>${date}</td></tr>
-    <tr><td>Total Project Fee</td><td class="teal">₹${client.total_fee.toLocaleString('en-IN')}</td></tr>
-    <tr><td>Deposit (50% — Due on Signing)</td><td class="teal">₹${deposit.toLocaleString('en-IN')}</td></tr>
+    <tr><td>Total Project Fee</td><td class="blue">₹${client.total_fee.toLocaleString('en-IN')}</td></tr>
+    <tr><td>Deposit (50% — Due on Signing)</td><td class="blue">₹${deposit.toLocaleString('en-IN')}</td></tr>
     <tr><td>Balance (Due on Completion)</td><td>₹${remaining.toLocaleString('en-IN')}</td></tr>
   </table>
 
