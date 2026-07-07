@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
+function getPortalUrl(origin: string) {
+  if (origin.startsWith('http://localhost:')) {
+    const portMatch = origin.match(/:(\d+)$/)
+    if (portMatch) {
+      const port = parseInt(portMatch[1], 10)
+      return `http://localhost:${port + 1}`
+    }
+    return 'http://localhost:3001'
+  }
+  return process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-portal.vercel.app'
+}
+
 /**
  * GET /auth/callback
  *
@@ -49,13 +61,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
   }
 
+  const user  = sessionData.user
+  const email = user.email ?? ''
+
+  // Check if they are a team member
+  const { data: memberRow } = await supabase
+    .from('team_members')
+    .select('id, status, role_id, roles(name, departments(name))')
+    .eq('email', email.toLowerCase())
+    .maybeSingle()
+
+  // If not a team member, redirect to portal's auth callback with session tokens
+  if (!memberRow) {
+    const portalBase = getPortalUrl(origin)
+    const portalCallbackUrl = new URL(`${portalBase}/auth/callback`)
+    portalCallbackUrl.searchParams.set('access_token', sessionData.session?.access_token || '')
+    portalCallbackUrl.searchParams.set('refresh_token', sessionData.session?.refresh_token || '')
+    if (type) portalCallbackUrl.searchParams.set('type', type)
+    portalCallbackUrl.searchParams.set('next', type === 'recovery' ? '/settings' : '/dashboard')
+    
+    return NextResponse.redirect(portalCallbackUrl.toString())
+  }
+
   // For password recovery, redirect immediately after session is established
   if (type === 'recovery') {
     return NextResponse.redirect(`${origin}/change-password`, { headers: response.headers })
   }
 
-  const user  = sessionData.user
-  const email = user.email ?? ''
   const name  = (
     user.user_metadata?.full_name ||
     user.user_metadata?.invited_name ||
@@ -64,13 +96,6 @@ export async function GET(request: NextRequest) {
   )
 
   if (!email) return response
-
-  // 2. Check if they were "invited" (first-time acceptance)
-  const { data: memberRow } = await supabase
-    .from('team_members')
-    .select('id, status, role_id, roles(name, departments(name))')
-    .eq('email', email.toLowerCase())
-    .single()
 
   const wasInvited = memberRow?.status === 'invited'
   const roleName   = (memberRow as any)?.roles?.name || 'Team Member'
