@@ -73,7 +73,7 @@ export default function AnnouncementsPage() {
     // Get current user name + dept
     supabase.auth.getUser().then(({ data: { user } }: any) => {
       if (!user) return
-      supabase.from('team_members').select('name, roles(department_id)').eq('email', user.email ?? '').single()
+      supabase.from('team_members').select('name, roles(department_id)').eq('email', user.email ?? '').maybeSingle()
         .then(({ data: m }: any) => {
           if (m) {
             setUserName(m.name)

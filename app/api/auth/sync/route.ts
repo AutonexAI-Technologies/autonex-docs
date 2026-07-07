@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       .from('team_members')
       .select('id, status, name, role_id, roles(name, departments(name))')
       .eq('email', user.email.toLowerCase())
-      .single()
+      .maybeSingle()
 
     if (!member) {
       // Not a team member — still valid (could be the super admin)

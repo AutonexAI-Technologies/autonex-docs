@@ -42,7 +42,7 @@ export function useUserRole(): UserRole {
         .from('team_members')
         .select('status, roles(name, departments(name))')
         .eq('email', user.email.toLowerCase())
-        .single()
+        .maybeSingle()
 
       let result: Omit<UserRole, 'loading'>
 

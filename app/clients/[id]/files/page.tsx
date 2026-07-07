@@ -101,7 +101,7 @@ export default function FilesPage() {
 
     const { data: { user } } = await supabase.auth.getUser()
     let uploaderName = 'Team'
-    const { data: m } = await supabase.from('team_members').select('name').eq('email', user?.email ?? '').single()
+    const { data: m } = await supabase.from('team_members').select('name').eq('email', user?.email ?? '').maybeSingle()
     if (m) uploaderName = (m as any).name
 
     let successCount = 0

@@ -2,6 +2,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { canAccess, ROLE_ROUTES } from '@/lib/roleAccess'
 
+// ── Founder / Super-Admin email — always has full access ─────────────────
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'autonexai.org@gmail.com').toLowerCase()
+
 export async function middleware(request: NextRequest) {
   const supabaseUrl    = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -60,6 +63,11 @@ export async function middleware(request: NextRequest) {
     if (user && !isPublicApi) {
       const email = user.email?.toLowerCase()
       if (email) {
+        // ── Founder bypass — admin has unrestricted API access ──────────────
+        if (email === ADMIN_EMAIL) {
+          return supabaseResponse
+        }
+
         const { data: member } = await supabase
           .from('team_members')
           .select('status')
@@ -110,6 +118,11 @@ export async function middleware(request: NextRequest) {
   if (user && !isPublic && pathname !== '/dashboard') {
     const email = user.email?.toLowerCase()
     if (email) {
+      // ── Founder bypass — admin always has full page access ──────────────
+      if (email === ADMIN_EMAIL) {
+        return supabaseResponse
+      }
+
       const { data: member } = await supabase
         .from('team_members')
         .select('status, roles(name)')

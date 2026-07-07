@@ -16,7 +16,7 @@ export default function NewAnnouncementPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }: any) => {
       if (user) {
-        supabase.from('team_members').select('name').eq('email', user.email ?? '').single()
+        supabase.from('team_members').select('name').eq('email', user.email ?? '').maybeSingle()
           .then(({ data: m }: any) => { if (m) setUserName((m as any).name) })
       }
     })
