@@ -9,7 +9,7 @@ import {
   ArrowLeft, Send, Paperclip, LayoutGrid, Palette,
   Wrench, Share2, CreditCard, Building2,
   Check, CheckCheck, Lock, X, FileIcon, ImageIcon,
-  Smile,
+  Smile, Users, UserPlus, Crown, Shield, User, GraduationCap,
 } from 'lucide-react'
 
 interface Message {
@@ -42,6 +42,29 @@ const DEPT_COLOR: Record<string, string> = {
   general: 'text-blue-400', design: 'text-violet-400',
   tech: 'text-cyan-400', social: 'text-pink-400', billing: 'text-amber-400',
 }
+interface ThreadMember {
+  id: string
+  member_name: string
+  member_email: string
+  role_name: string
+}
+interface TeamMemberOption {
+  id: string
+  name: string
+  email: string
+  roles?: { name: string }
+}
+
+const ROLE_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+  Head: Crown, Senior: Shield, Junior: User, Intern: GraduationCap,
+}
+const ROLE_COLOR: Record<string, string> = {
+  Head: 'text-amber-500 bg-amber-50 border-amber-200',
+  Senior: 'text-blue-500 bg-blue-50 border-blue-200',
+  Junior: 'text-violet-500 bg-violet-50 border-violet-200',
+  Intern: 'text-slate-500 bg-slate-50 border-slate-200',
+}
+
 const REACTIONS = ['👍', '❤️', '😄', '🔥', '✅', '👀']
 
 function formatTime(dateStr: string) {
@@ -79,6 +102,11 @@ export default function ThreadPage() {
   const [uploadingFile, setUploadingFile] = useState(false)
   const [reactionTarget, setReactionTarget] = useState<string | null>(null)
   const [reactions, setReactions] = useState<Record<string, { emoji: string; count: number; reacted: boolean }[]>>({})
+  const [showMembers, setShowMembers] = useState(false)
+  const [threadMembers, setThreadMembers] = useState<ThreadMember[]>([])
+  const [teamOptions, setTeamOptions] = useState<TeamMemberOption[]>([])
+  const [addingMember, setAddingMember] = useState(false)
+  const [selectedTeamMember, setSelectedTeamMember] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -114,6 +142,41 @@ export default function ThreadPage() {
     setLoading(false)
   }, [supabase, threadId])
 
+  // Load thread members
+  const loadMembers = useCallback(async () => {
+    const [membersRes, teamRes] = await Promise.all([
+      fetch(`/api/messages/threads/${threadId}/members`),
+      supabase.from('team_members').select('id, name, email, roles(name)').eq('is_active', true),
+    ])
+    if (membersRes.ok) setThreadMembers(await membersRes.json())
+    if (teamRes.data) setTeamOptions(teamRes.data as TeamMemberOption[])
+  }, [supabase, threadId])
+
+  const addMember = async () => {
+    if (!selectedTeamMember || addingMember) return
+    const member = teamOptions.find(m => m.id === selectedTeamMember)
+    if (!member) return
+    setAddingMember(true)
+    await fetch(`/api/messages/threads/${threadId}/members`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        team_member_id: member.id,
+        member_name: member.name,
+        member_email: member.email,
+        role_name: (member.roles as any)?.name ?? 'Junior',
+      }),
+    })
+    setSelectedTeamMember('')
+    setAddingMember(false)
+    loadMembers()
+  }
+
+  const removeMember = async (email: string) => {
+    await fetch(`/api/messages/threads/${threadId}/members?email=${encodeURIComponent(email)}`, { method: 'DELETE' })
+    loadMembers()
+  }
+
   // Load reactions
   const loadReactions = useCallback(async () => {
     try {
@@ -138,6 +201,7 @@ export default function ThreadPage() {
 
   useEffect(() => { init(); loadMessages() }, [init, loadMessages])
   useEffect(() => { if (userId) loadReactions() }, [userId, loadReactions])
+  useEffect(() => { loadMembers() }, [loadMembers])
 
   // Real-time messages
   useEffect(() => {
@@ -307,11 +371,90 @@ export default function ThreadPage() {
           )}
         </div>
         {thread && (
-          <Link href={`/clients/${thread.client_id}`} className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors px-2.5 py-1 rounded-lg border border-blue-500/20 hover:border-blue-500/40">
-            View Client
-          </Link>
+          <>
+            <button
+              onClick={() => { setShowMembers(v => !v); loadMembers() }}
+              className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all ${
+                showMembers
+                  ? 'bg-blue-50 border-blue-200 text-blue-600'
+                  : 'text-slate-400 border-slate-200 hover:text-slate-600 hover:border-slate-300'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Team</span>
+              {threadMembers.length > 0 && (
+                <span className="min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
+                  {threadMembers.length}
+                </span>
+              )}
+            </button>
+            <Link href={`/clients/${thread.client_id}`} className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-lg border border-blue-500/20 hover:border-blue-500/40">
+              View Client
+            </Link>
+          </>
         )}
       </div>
+
+      {/* Team Members Panel */}
+      <AnimatePresence>
+        {showMembers && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            className="border-b border-slate-200 overflow-hidden bg-slate-50"
+          >
+            <div className="px-4 py-3">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Assigned Team Members</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {threadMembers.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No members assigned yet</p>
+                ) : threadMembers.map(m => {
+                  const RIcon = ROLE_ICON[m.role_name] ?? User
+                  const rColor = ROLE_COLOR[m.role_name] ?? 'text-slate-500 bg-slate-50 border-slate-200'
+                  return (
+                    <div key={m.id} className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] font-medium ${rColor}`}>
+                      <RIcon className="w-3 h-3" />
+                      <span>{m.member_name || m.member_email}</span>
+                      <span className="opacity-60">· {m.role_name}</span>
+                      <button onClick={() => removeMember(m.member_email)} className="ml-0.5 opacity-50 hover:opacity-100">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={selectedTeamMember}
+                  onChange={e => setSelectedTeamMember(e.target.value)}
+                  className="flex-1 h-8 px-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 outline-none focus:border-blue-300"
+                >
+                  <option value="">Add team member…</option>
+                  {teamOptions
+                    .filter(m => !threadMembers.find(tm => tm.member_email === m.email))
+                    .sort((a, b) => {
+                      const order = ['Head', 'Senior', 'Junior', 'Intern']
+                      const ai = order.indexOf((a.roles as any)?.name ?? '')
+                      const bi = order.indexOf((b.roles as any)?.name ?? '')
+                      return ai - bi
+                    })
+                    .map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} · {(m.roles as any)?.name ?? 'Member'}
+                      </option>
+                    ))
+                  }
+                </select>
+                <button
+                  onClick={addMember} disabled={!selectedTeamMember || addingMember}
+                  className="flex items-center gap-1 px-3 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-xs font-semibold transition-colors"
+                >
+                  <UserPlus className="w-3 h-3" /> Add
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scrollbar-thin">

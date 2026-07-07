@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -154,6 +155,7 @@ const FILTER_TABS = [
 
 export default function MessagesPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [threads, setThreads]   = useState<Thread[]>([])
   const [clients, setClients]   = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
@@ -245,9 +247,21 @@ export default function MessagesPage() {
         body: JSON.stringify(newThread),
       })
       const thread = await res.json()
-      setShowNewThread(false)
-      setNewThread({ client_id: '', name: '', thread_type: 'client', department: 'general' })
-      load()
+      if (thread?.id) {
+        // Optimistically add to list with client info
+        const clientInfo = clients.find((c: any) => c.id === newThread.client_id)
+        setThreads(prev => [{
+          ...thread,
+          clients: clientInfo ? { name: clientInfo.name, company: clientInfo.company ?? '' } : undefined,
+        }, ...prev])
+        setShowNewThread(false)
+        setNewThread({ client_id: '', name: '', thread_type: 'client', department: 'general' })
+        router.push(`/messages/${thread.id}`)
+      } else {
+        setShowNewThread(false)
+        setNewThread({ client_id: '', name: '', thread_type: 'client', department: 'general' })
+        load()
+      }
     } finally { setCreatingThread(false) }
   }
 
