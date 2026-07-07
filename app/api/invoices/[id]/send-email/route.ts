@@ -7,7 +7,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.FROM_EMAIL || 'Autonex AI <hello@autonexai.org>'
-const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'
+const PORTAL_URL = 'https://autonex-docs-8x12.vercel.app'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     <!-- HEADER -->
     <tr>
       <td style="background:linear-gradient(135deg,#0A1628,#1A3566);border-radius:16px 16px 0 0;padding:24px 36px 22px;text-align:center">
-        <img src="https://portal.autonexai.org/logo.png" alt="Autonex AI" width="52" height="52" style="display:block;margin:0 auto 10px;border-radius:10px" />
+        <img src="https://autonex-docs-8x12.vercel.app/logo.png" alt="Autonex AI" width="52" height="52" style="display:block;margin:0 auto 10px;border-radius:10px" />
         <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px">
           <span style="font-size:22px;font-weight:900;color:#ffffff;font-family:Arial,sans-serif;letter-spacing:-0.5px">Autonex</span><span style="background:#ffffff;color:#1A3566;font-size:14px;font-weight:900;border-radius:5px;padding:2px 8px;font-family:Arial,sans-serif;vertical-align:middle">AI</span>
         </div>

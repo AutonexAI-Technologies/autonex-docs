@@ -27,7 +27,7 @@ function buildCredentialsEmail({ clientDisplayName, email, password, client, por
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <!-- Logo Header -->
         <tr><td style="background:linear-gradient(135deg,#0a1628,#1a3566);border-radius:16px 16px 0 0;padding:24px 40px 20px;text-align:center;">
-          <img src="https://portal.autonexai.org/logo.png" alt="Autonex AI" width="52" height="52" style="display:block;margin:0 auto 10px;border-radius:10px" />
+          <img src="https://autonex-docs-8x12.vercel.app/logo.png" alt="Autonex AI" width="52" height="52" style="display:block;margin:0 auto 10px;border-radius:10px" />
           <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px">
             <span style="font-size:24px;font-weight:900;color:#ffffff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="display:inline-block;background:#ffffff;color:#1a3566;font-size:14px;font-weight:900;border-radius:5px;padding:3px 9px;font-family:Arial,sans-serif;vertical-align:middle;line-height:1.4;">AI</span>
           </div>
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
           }, { onConflict: 'user_id' })
 
           // Resend credentials email
-          const portalUrl2 = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'
+          const portalUrl2 = 'https://autonex-docs-8x12.vercel.app'
           try {
             const { Resend } = await import('resend')
             const resend2 = new Resend(process.env.RESEND_API_KEY)
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
             message: 'Credentials reset and resent to existing user',
             user_id: existingUser.id,
             email,
-            portal_url: `${process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'}/login`,
+            portal_url: 'https://autonex-docs-8x12.vercel.app/login',
             resent: true,
           }, { status: 200 })
         }
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
       accepted: true,
     })
 
-    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'
+    const portalUrl = 'https://autonex-docs-8x12.vercel.app'
 
     // Send credentials email via Resend
     try {

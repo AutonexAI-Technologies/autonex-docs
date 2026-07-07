@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   }
 
   const adminSupabase = createAdminSupabaseClient()
-  const appUrl        = process.env.NEXT_PUBLIC_APP_URL || 'https://autonex-docs-pi.vercel.app'
+  const appUrl        = 'https://autonex-docs-pi.vercel.app'
 
   // ── Resolve role + department name for email ────────────────────────────────
   let roleName = 'Team Member'
@@ -273,7 +273,7 @@ function buildCredentialsEmail({
 
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#0a1628,#1a3566);border-radius:16px 16px 0 0;padding:28px 40px;text-align:center;">
-    <img src="https://portal.autonexai.org/logo.png" alt="Autonex AI" width="56" height="56" style="display:block;margin:0 auto 12px;border-radius:12px" />
+    <img src="https://autonex-docs-8x12.vercel.app/logo.png" alt="Autonex AI" width="56" height="56" style="display:block;margin:0 auto 12px;border-radius:12px" />
     <div style="display:inline-flex;align-items:center;justify-content:center;gap:6px">
       <span style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:-1px;font-family:Arial,sans-serif;">Autonex</span><span style="display:inline-block;background:#ffffff;color:#1a3566;font-size:15px;font-weight:900;border-radius:5px;padding:3px 9px;font-family:Arial,sans-serif;vertical-align:middle;line-height:1.4;">AI</span>
     </div>
