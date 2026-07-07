@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
       accepted: true,
     })
 
-    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.autonexai.org'
+    const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-docs-8x12.vercel.app'
 
     // Send credentials email via Resend
     try {

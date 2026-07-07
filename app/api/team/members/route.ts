@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   }
 
   const adminSupabase = createAdminSupabaseClient()
-  const appUrl        = process.env.NEXT_PUBLIC_APP_URL || 'https://autonex-docs.vercel.app'
+  const appUrl        = process.env.NEXT_PUBLIC_APP_URL || 'https://autonex-docs-pi.vercel.app'
 
   // ── Resolve role + department name for email ────────────────────────────────
   let roleName = 'Team Member'
