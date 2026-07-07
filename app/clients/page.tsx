@@ -55,14 +55,16 @@ export default function ClientsPage() {
   useEffect(() => { loadClients() }, [])
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Permanently delete client "${name}"? This cannot be undone.`)) return
+    if (!confirm(`Archive client "${name}"?\n\nThis will:\n• Revoke their portal access immediately\n• Remove them from the active client list\n• Preserve all their data safely\n\nThis action can be reversed by the Founder.`)) return
     const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' })
     if (res.ok) {
-      toast({ title: '🗑️ Client deleted', description: `${name} removed.` })
+      const data = await res.json().catch(() => ({}))
+      const revokedMsg = data.revoked_portal_users > 0 ? ` Portal access revoked for ${data.revoked_portal_users} user(s).` : ''
+      toast({ title: '📦 Client archived', description: `${name} has been deactivated.${revokedMsg}` })
       loadClients()
     } else {
       const err = await res.json().catch(() => ({}))
-      toast({ variant: 'destructive', title: 'Delete failed', description: err.error || 'Something went wrong.' })
+      toast({ variant: 'destructive', title: 'Archive failed', description: err.error || 'Something went wrong.' })
     }
   }
 

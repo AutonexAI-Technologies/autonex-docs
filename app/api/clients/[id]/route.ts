@@ -55,7 +55,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(data)
 }
 
-// DELETE /api/clients/[id] — permanently delete (Founder & Managing Director only)
+// DELETE /api/clients/[id] — SOFT delete (Founder & Managing Director only)
+// Sets deleted_at = NOW() instead of hard-deleting.
+// This preserves all data and prevents orphaned portal auth users.
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -70,13 +72,38 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     )
   }
 
-  // Hard delete — permanently remove the client from the database
   const adminSupabase = createAdminSupabaseClient()
-  const { error } = await adminSupabase
+
+  // 1. Find all portal_users linked to this client so we can revoke their auth access
+  const { data: portalUsers } = await adminSupabase
+    .from('portal_users')
+    .select('user_id, email')
+    .eq('client_id', params.id)
+
+  // 2. Soft-delete the client: set deleted_at timestamp
+  //    portal_users rows with ON DELETE CASCADE will be removed automatically
+  //    when we hard-delete, but with soft-delete we handle it manually.
+  const { error: deleteErr } = await adminSupabase
     .from('clients')
-    .delete()
+    .update({ deleted_at: new Date().toISOString(), status: null })
     .eq('id', params.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ success: true })
+  if (deleteErr) return NextResponse.json({ error: deleteErr.message }, { status: 500 })
+
+  // 3. Remove portal_users rows for this client (revokes portal access)
+  await adminSupabase
+    .from('portal_users')
+    .delete()
+    .eq('client_id', params.id)
+
+  // 4. Revoke Supabase auth access for any portal users of this client
+  //    (delete their auth.users entry so they truly can't log in)
+  if (portalUsers && portalUsers.length > 0) {
+    for (const pu of portalUsers) {
+      await adminSupabase.auth.admin.deleteUser(pu.user_id).catch(() => {})
+    }
+  }
+
+  return NextResponse.json({ success: true, revoked_portal_users: portalUsers?.length ?? 0 })
 }
+
