@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   MessageSquare, Search, Lock, Users, Plus, Megaphone,
   ChevronDown, ChevronRight, Loader2, Send, X, Building2,
-  Hash, UserCircle2,
+  Hash, UserCircle2, Sparkles, RefreshCw, Zap,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
@@ -18,7 +18,7 @@ interface Thread {
   name: string
   last_message: string | null
   last_message_at: string | null
-  thread_type: string   // 'client' | 'internal' | 'system'
+  thread_type: string
   team_id: string | null
   team_name: string | null
   unread_count: number
@@ -36,110 +36,148 @@ function timeAgo(dateStr: string | null) {
   return `${Math.floor(hrs / 24)}d`
 }
 
+const DEPT_COLORS: Record<string, { bg: string; dot: string; text: string }> = {
+  general:  { bg: 'bg-blue-500/10',   dot: 'bg-blue-400',   text: 'text-blue-400' },
+  design:   { bg: 'bg-violet-500/10', dot: 'bg-violet-400', text: 'text-violet-400' },
+  tech:     { bg: 'bg-cyan-500/10',   dot: 'bg-cyan-400',   text: 'text-cyan-400' },
+  social:   { bg: 'bg-pink-500/10',   dot: 'bg-pink-400',   text: 'text-pink-400' },
+  billing:  { bg: 'bg-amber-500/10',  dot: 'bg-amber-400',  text: 'text-amber-400' },
+  internal: { bg: 'bg-purple-500/10', dot: 'bg-purple-400', text: 'text-purple-400' },
+}
+
+function getDeptStyle(dept: string, type: string) {
+  if (type === 'internal') return DEPT_COLORS.internal
+  return DEPT_COLORS[dept] || DEPT_COLORS.general
+}
+
 function ThreadRow({ t }: { t: Thread }) {
   const isInternal = t.thread_type === 'internal'
   const unread = t.unread_count ?? 0
+  const deptStyle = getDeptStyle(t.department, t.thread_type)
 
   return (
     <Link href={`/messages/${t.id}`}>
       <motion.div
-        whileHover={{ x: 2 }}
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all cursor-pointer ${
-          unread > 0
-            ? 'bg-blue-50/60 border-blue-200 shadow-sm'
-            : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
+        whileHover={{ x: 3, backgroundColor: 'rgba(255,255,255,0.06)' }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl cursor-pointer transition-all group ${
+          unread > 0 ? 'bg-white/[0.07]' : 'bg-transparent'
         }`}
       >
-        {/* Avatar */}
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-          isInternal ? 'bg-violet-50 border border-violet-200' : 'bg-blue-50 border border-blue-200'
-        }`}>
+        {/* Channel icon */}
+        <div className={`w-8 h-8 rounded-lg ${deptStyle.bg} flex items-center justify-center shrink-0 relative`}>
           {isInternal
-            ? <Lock className="w-4 h-4 text-violet-500" />
-            : <MessageSquare className="w-4 h-4 text-blue-500" />
+            ? <Lock className={`w-3.5 h-3.5 ${deptStyle.text}`} />
+            : <Hash className={`w-3.5 h-3.5 ${deptStyle.text}`} />
           }
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <p className={`text-sm font-semibold truncate ${unread > 0 ? 'text-slate-900' : 'text-slate-800'}`}>
-              {t.name || t.department}
-            </p>
-            {isInternal && (
-              <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-600 border border-violet-200">
-                Internal
-              </span>
-            )}
-          </div>
-          {t.last_message ? (
-            <p className={`text-xs truncate ${unread > 0 ? 'text-slate-700 font-medium' : 'text-slate-400'}`}>
-              {t.last_message}
-            </p>
-          ) : (
-            <p className="text-xs text-slate-300 italic">No messages yet</p>
-          )}
-        </div>
-
-        {/* Meta */}
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          {t.last_message_at && (
-            <span className="text-[10px] text-slate-400">{timeAgo(t.last_message_at)}</span>
-          )}
           {unread > 0 && (
-            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
-              {unread > 99 ? '99+' : unread}
+            <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
+              {unread > 9 ? '9+' : unread}
             </span>
           )}
         </div>
 
-        <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p className={`text-[13px] font-medium truncate leading-tight ${unread > 0 ? 'text-white font-semibold' : 'text-slate-300 group-hover:text-white'}`}>
+              {t.name || t.department}
+            </p>
+            {isInternal && (
+              <span className="shrink-0 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/20">
+                Private
+              </span>
+            )}
+          </div>
+          {t.last_message ? (
+            <p className={`text-[11px] truncate ${unread > 0 ? 'text-slate-300' : 'text-slate-500'}`}>
+              {t.last_message}
+            </p>
+          ) : (
+            <p className="text-[11px] text-slate-600 italic">No messages yet</p>
+          )}
+        </div>
+
+        {/* Time */}
+        {t.last_message_at && (
+          <span className="text-[10px] text-slate-600 shrink-0">{timeAgo(t.last_message_at)}</span>
+        )}
       </motion.div>
     </Link>
   )
 }
 
-function ClientGroup({ clientName, company, threads }: {
+function ClientGroup({ clientName, company, threads, onCreateChannels, creatingFor }: {
   clientName: string
   company: string
   threads: Thread[]
+  onCreateChannels: (clientId: string) => void
+  creatingFor: string | null
 }) {
   const [open, setOpen] = useState(true)
   const totalUnread = threads.reduce((a, t) => a + (t.unread_count ?? 0), 0)
+  const clientId = threads[0]?.client_id
+  const hasNoChannels = threads.length === 0
 
   return (
-    <div className="mb-4">
+    <div className="mb-1">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 mb-2 rounded-lg hover:bg-slate-50 transition-colors group"
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/[0.04] transition-colors group"
       >
-        <div className="w-6 h-6 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-          <Building2 className="w-3 h-3 text-slate-500" />
+        {/* Avatar */}
+        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-white">
+            {clientName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+          </span>
         </div>
+
         <div className="flex-1 min-w-0 text-left">
-          <p className="text-xs font-bold text-slate-800 truncate">{clientName}</p>
-          {company && <p className="text-[10px] text-slate-400 truncate">{company}</p>}
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate group-hover:text-slate-300">
+            {clientName}
+          </p>
+          {company && <p className="text-[10px] text-slate-600 truncate">{company}</p>}
         </div>
-        <span className="text-[10px] text-slate-400">{threads.length} thread{threads.length !== 1 ? 's' : ''}</span>
+
         {totalUnread > 0 && (
-          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center shrink-0">
             {totalUnread}
           </span>
         )}
         {open
-          ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+          ? <ChevronDown className="w-3 h-3 text-slate-600" />
+          : <ChevronRight className="w-3 h-3 text-slate-600" />
         }
       </button>
+
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="space-y-1.5 overflow-hidden pl-2"
+            className="overflow-hidden pl-2"
           >
-            {threads.map(t => <ThreadRow key={t.id} t={t} />)}
+            {threads.length === 0 ? (
+              <div className="px-3 py-3 mx-2 rounded-xl border border-dashed border-white/[0.08] bg-white/[0.02] text-center">
+                <p className="text-[11px] text-slate-500 mb-2">No channels yet</p>
+                <button
+                  onClick={() => onCreateChannels(clientId)}
+                  disabled={creatingFor === clientId}
+                  className="flex items-center gap-1.5 mx-auto px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/20 text-blue-400 text-[11px] font-semibold transition-all disabled:opacity-50"
+                >
+                  {creatingFor === clientId
+                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                    : <Sparkles className="w-3 h-3" />
+                  }
+                  {creatingFor === clientId ? 'Creating…' : 'Create Default Channels'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                {threads.map(t => <ThreadRow key={t.id} t={t} />)}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -148,9 +186,9 @@ function ClientGroup({ clientName, company, threads }: {
 }
 
 const FILTER_TABS = [
-  { id: 'all',      label: 'All Threads'  },
-  { id: 'client',   label: 'Client'       },
-  { id: 'internal', label: 'Internal'     },
+  { id: 'all',      label: 'All',      icon: MessageSquare },
+  { id: 'client',   label: 'Client',   icon: Users },
+  { id: 'internal', label: 'Internal', icon: Lock },
 ]
 
 export default function MessagesPage() {
@@ -168,6 +206,7 @@ export default function MessagesPage() {
   const [showNewThread, setShowNewThread] = useState(false)
   const [newThread, setNewThread] = useState({ client_id: '', name: '', thread_type: 'client', department: 'general' })
   const [creatingThread, setCreatingThread] = useState(false)
+  const [creatingChannelsFor, setCreatingChannelsFor] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -188,7 +227,6 @@ export default function MessagesPage() {
 
   useEffect(() => { load() }, [load])
 
-  // Realtime subscription
   useEffect(() => {
     const ch = supabase
       .channel('messages-list')
@@ -197,7 +235,23 @@ export default function MessagesPage() {
     return () => { supabase.removeChannel(ch) }
   }, [supabase, load])
 
-  // Filter threads
+  // Create default channels for a client
+  const handleCreateChannels = async (clientId: string) => {
+    setCreatingChannelsFor(clientId)
+    try {
+      const res = await fetch('/api/messages/threads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: clientId }),
+      })
+      if (res.ok) {
+        await load()
+      }
+    } finally {
+      setCreatingChannelsFor(null)
+    }
+  }
+
   const filtered = threads.filter(t => {
     const matchSearch = !search ||
       t.clients?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -210,8 +264,18 @@ export default function MessagesPage() {
     return matchSearch && matchType
   })
 
-  // Group by client
+  // Group by client (including clients with zero threads for 'all' filter)
   const grouped = new Map<string, { clientName: string; company: string; threads: Thread[] }>()
+  
+  // Add all clients first (so clients with 0 threads also appear in 'all' view)
+  if (filter === 'all' && !search) {
+    clients.forEach((c: any) => {
+      if (!grouped.has(c.id)) {
+        grouped.set(c.id, { clientName: c.name, company: c.company || '', threads: [] })
+      }
+    })
+  }
+  
   filtered.forEach(t => {
     const key = t.client_id
     const clientName = t.clients?.name || 'Unknown Client'
@@ -248,7 +312,6 @@ export default function MessagesPage() {
       })
       const thread = await res.json()
       if (thread?.id) {
-        // Optimistically add to list with client info
         const clientInfo = clients.find((c: any) => c.id === newThread.client_id)
         setThreads(prev => [{
           ...thread,
@@ -266,159 +329,250 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      {/* Header */}
-        <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold text-slate-900">Messages</h1>
-            {totalUnread > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white text-xs font-bold">
-                {totalUnread}
-              </span>
-            )}
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-72 shrink-0 flex flex-col border-r border-white/[0.06] bg-[#0d1117]/60 backdrop-blur-xl">
+        
+        {/* Sidebar Header */}
+        <div className="px-4 pt-5 pb-3 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-600/20 border border-blue-500/20 flex items-center justify-center">
+                <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
+              </div>
+              <h1 className="text-sm font-bold text-white">Messages</h1>
+              {totalUnread > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[9px] font-bold">
+                  {totalUnread}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={load}
+                className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-colors"
+                title="Refresh"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setShowNewThread(true)}
+                className="p-1.5 rounded-lg hover:bg-white/[0.06] text-slate-500 hover:text-slate-300 transition-colors"
+                title="New Thread"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
-          <p className="text-slate-500 text-sm mt-0.5">Client and internal team conversations</p>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="w-full h-8 pl-8 pr-3 rounded-lg bg-white/[0.05] border border-white/[0.07] text-[12px] text-slate-300 placeholder:text-slate-600 outline-none focus:border-blue-500/30 focus:bg-white/[0.07] transition-all"
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowNewThread(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            New Thread
-          </button>
+
+        {/* Filter tabs */}
+        <div className="flex gap-1 px-3 pt-3 pb-2">
+          {FILTER_TABS.map(tab => {
+            const count = tab.id === 'all'
+              ? threads.length
+              : threads.filter(t => tab.id === 'client'
+                  ? (t.thread_type === 'client' || !t.thread_type)
+                  : t.thread_type === tab.id
+                ).length
+            const Icon = tab.icon
+            return (
+              <button key={tab.id} onClick={() => setFilter(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                  filter === tab.id
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.04]'
+                }`}
+              >
+                <Icon className="w-3 h-3" />
+                {tab.label}
+                {count > 0 && (
+                  <span className={`text-[9px] px-1 py-0.5 rounded font-bold ${
+                    filter === tab.id ? 'bg-white/20' : 'bg-white/[0.07] text-slate-500'
+                  }`}>{count}</span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Broadcast button */}
+        <div className="px-3 pb-3">
           <button
             onClick={() => setShowBroadcast(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold hover:bg-amber-100 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 text-amber-400 text-[11px] font-semibold transition-all"
           >
             <Megaphone className="w-3.5 h-3.5" />
-            Broadcast
+            Send Broadcast
+            <Zap className="w-3 h-3 ml-auto opacity-60" />
           </button>
+        </div>
+
+        {/* Thread list */}
+        <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-thin">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+            </div>
+          ) : grouped.size === 0 ? (
+            <div className="flex flex-col items-center py-12 px-4 gap-3 text-center">
+              <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 text-slate-600" />
+              </div>
+              <p className="text-slate-500 text-[12px]">No conversations found</p>
+              {search && (
+                <button onClick={() => setSearch('')} className="text-blue-400 text-[11px] hover:underline">
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="pt-1">
+              {Array.from(grouped.entries()).map(([clientId, { clientName, company, threads: cThreads }]) => (
+                <ClientGroup
+                  key={clientId}
+                  clientName={clientName}
+                  company={company}
+                  threads={cThreads}
+                  onCreateChannels={handleCreateChannels}
+                  creatingFor={creatingChannelsFor}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Broadcast panel */}
+      {/* Main panel — empty state when no thread is selected */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#080c12] relative">
+        {/* Grid background */}
+        <div className="absolute inset-0 opacity-[0.02]"
+          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        
+        {/* Ambient glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full blur-[120px]"
+            style={{ background: 'rgba(37,99,235,0.04)' }} />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 text-center px-8"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto mb-5">
+            <MessageSquare className="w-7 h-7 text-slate-600" />
+          </div>
+          <h2 className="text-slate-400 font-semibold text-base mb-1.5">Select a conversation</h2>
+          <p className="text-slate-600 text-sm max-w-xs">
+            Choose a thread from the sidebar to view messages, or create a new thread.
+          </p>
+          <button
+            onClick={() => setShowNewThread(true)}
+            className="mt-6 flex items-center gap-2 mx-auto px-4 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/20 text-blue-400 text-sm font-semibold transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            New Thread
+          </button>
+        </motion.div>
+      </div>
+
+      {/* Broadcast modal */}
       <AnimatePresence>
         {showBroadcast && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-            className="mb-5 p-4 rounded-2xl bg-amber-50 border border-amber-200">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-amber-600" />
-                <p className="text-sm font-bold text-amber-800">Send Broadcast</p>
-              </div>
-              <button onClick={() => setShowBroadcast(false)} className="text-amber-500 hover:text-amber-700">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex gap-2 mb-3">
-              {(['all', 'clients'] as const).map(t => (
-                <button key={t} onClick={() => setBroadcastTarget(t)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                    broadcastTarget === t
-                      ? 'bg-amber-600 text-white border-amber-600'
-                      : 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50'
-                  }`}>
-                  {t === 'all' ? '📢 All Threads' : '👥 Clients Only'}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
+              className="w-full max-w-md rounded-2xl overflow-hidden"
+              style={{ background: 'rgba(13,17,23,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/20 flex items-center justify-center">
+                    <Megaphone className="w-4 h-4 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">Send Broadcast</p>
+                    <p className="text-[10px] text-slate-500">Sends to all threads in the selected scope</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowBroadcast(false)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-slate-500 hover:text-slate-300">
+                  <X className="w-4 h-4" />
                 </button>
-              ))}
-            </div>
-            <textarea
-              value={broadcastMsg}
-              onChange={e => setBroadcastMsg(e.target.value)}
-              placeholder="Type your broadcast message…"
-              rows={3}
-              className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-amber-400 resize-none mb-2"
-            />
-            <button onClick={sendBroadcast} disabled={!broadcastMsg.trim() || sending}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold disabled:opacity-50 transition-colors">
-              {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-              {sending ? 'Sending…' : 'Send Broadcast'}
-            </button>
+              </div>
+              <div className="p-5 space-y-4">
+                <div className="flex gap-2">
+                  {(['all', 'clients'] as const).map(t => (
+                    <button key={t} onClick={() => setBroadcastTarget(t)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                        broadcastTarget === t
+                          ? 'bg-amber-500 text-white border-amber-500'
+                          : 'bg-white/[0.04] text-slate-400 border-white/[0.08] hover:bg-white/[0.07]'
+                      }`}>
+                      {t === 'all' ? '📢 All Threads' : '👥 Clients Only'}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={broadcastMsg}
+                  onChange={e => setBroadcastMsg(e.target.value)}
+                  placeholder="Type your broadcast message…"
+                  rows={4}
+                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 outline-none resize-none transition-all"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                />
+                <button onClick={sendBroadcast} disabled={!broadcastMsg.trim() || sending}
+                  className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white font-semibold text-sm transition-all">
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  {sending ? 'Sending…' : 'Send Broadcast'}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search clients or threads…"
-          className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all"
-        />
-      </div>
-
-      {/* Filter tabs */}
-      <div className="flex gap-1.5 mb-5">
-        {FILTER_TABS.map(tab => {
-          const count = tab.id === 'all'
-            ? threads.length
-            : threads.filter(t => tab.id === 'client'
-                ? (t.thread_type === 'client' || !t.thread_type)
-                : t.thread_type === tab.id
-              ).length
-          return (
-            <button key={tab.id} onClick={() => setFilter(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                filter === tab.id
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:text-blue-600'
-              }`}>
-              {tab.id === 'internal' && <Lock className="w-3 h-3" />}
-              {tab.id === 'client' && <Users className="w-3 h-3" />}
-              {tab.label}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                filter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-              }`}>{count}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Content */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-        </div>
-      ) : grouped.size === 0 ? (
-        <div className="flex flex-col items-center py-20 gap-3 bg-white rounded-2xl border border-slate-200">
-          <MessageSquare className="w-10 h-10 text-slate-300" />
-          <p className="text-slate-400 text-sm">No threads found</p>
-          {search && (
-            <button onClick={() => setSearch('')} className="text-blue-500 text-xs hover:underline">Clear search</button>
-          )}
-        </div>
-      ) : (
-        <div>
-          {Array.from(grouped.entries()).map(([clientId, { clientName, company, threads: cThreads }]) => (
-            <ClientGroup key={clientId} clientName={clientName} company={company} threads={cThreads} />
-          ))}
-        </div>
-      )}
-      {/* New Thread Modal */}
+      {/* New Thread modal */}
       <AnimatePresence>
         {showNewThread && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2"><Hash className="w-4 h-4 text-blue-500" /> New Thread</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Create a new communication channel</p>
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
+              className="w-full max-w-md rounded-2xl overflow-hidden"
+              style={{ background: 'rgba(13,17,23,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600/15 border border-blue-500/20 flex items-center justify-center">
+                    <Hash className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">New Thread</p>
+                    <p className="text-[10px] text-slate-500">Create a new communication channel</p>
+                  </div>
                 </div>
-                <button onClick={() => setShowNewThread(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"><X className="w-4 h-4" /></button>
+                <button onClick={() => setShowNewThread(false)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-slate-500 hover:text-slate-300">
+                  <X className="w-4 h-4" />
+                </button>
               </div>
               <div className="p-5 space-y-4">
+                {/* Client selector */}
                 <div>
-                  <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Client</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Client</label>
                   <select
                     value={newThread.client_id}
                     onChange={e => setNewThread(p => ({ ...p, client_id: e.target.value }))}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                    className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none transition-all"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
                   >
                     <option value="">Select client…</option>
                     {clients.map((c: any) => (
@@ -426,22 +580,26 @@ export default function MessagesPage() {
                     ))}
                   </select>
                 </div>
+                {/* Thread Name */}
                 <div>
-                  <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Thread Name</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Thread Name</label>
                   <input
                     value={newThread.name}
                     onChange={e => setNewThread(p => ({ ...p, name: e.target.value }))}
                     placeholder="e.g. Design Feedback, Billing Questions…"
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                    className="w-full h-10 px-3 rounded-xl text-sm text-white placeholder:text-slate-600 outline-none transition-all"
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
                   />
                 </div>
+                {/* Department & Type */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Department</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Department</label>
                     <select
                       value={newThread.department}
                       onChange={e => setNewThread(p => ({ ...p, department: e.target.value }))}
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 outline-none focus:border-blue-300"
+                      className="w-full h-10 px-3 rounded-xl text-sm text-white outline-none transition-all"
+                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
                     >
                       {['general','design','tech','social','billing'].map(d => (
                         <option key={d} value={d}>{d.charAt(0).toUpperCase()+d.slice(1)}</option>
@@ -449,16 +607,20 @@ export default function MessagesPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block uppercase tracking-wide">Type</label>
-                    <div className="flex gap-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Type</label>
+                    <div className="flex gap-1.5">
                       {(['client','internal'] as const).map(t => (
                         <button key={t} onClick={() => setNewThread(p => ({ ...p, thread_type: t }))}
-                          className={`flex-1 h-10 rounded-xl text-xs font-semibold border transition-all ${
+                          className={`flex-1 h-10 rounded-xl text-[11px] font-semibold border transition-all ${
                             newThread.thread_type === t
-                              ? t === 'internal' ? 'bg-violet-600 text-white border-violet-600' : 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                          }`}>
-                          {t === 'internal' ? <><Lock className="w-3 h-3 inline mr-1" />Internal</> : <><UserCircle2 className="w-3 h-3 inline mr-1" />Client</>}
+                              ? t === 'internal'
+                                ? 'bg-purple-600 text-white border-purple-600'
+                                : 'bg-blue-600 text-white border-blue-600'
+                              : 'text-slate-400 border-white/[0.08] hover:bg-white/[0.05]'
+                          }`}
+                          style={newThread.thread_type !== t ? { background: 'rgba(255,255,255,0.04)' } : {}}
+                        >
+                          {t === 'internal' ? '🔒 Private' : '💬 Client'}
                         </button>
                       ))}
                     </div>
@@ -466,7 +628,7 @@ export default function MessagesPage() {
                 </div>
                 <button onClick={createThread}
                   disabled={!newThread.client_id || !newThread.name || creatingThread}
-                  className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold text-sm transition-colors">
+                  className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-semibold text-sm transition-all">
                   {creatingThread ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                   {creatingThread ? 'Creating…' : 'Create Thread'}
                 </button>

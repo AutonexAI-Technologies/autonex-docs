@@ -3,7 +3,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Megaphone, Pin, Clock, Plus, X, Loader2, Building2 } from 'lucide-react'
+import {
+  Megaphone, Pin, Clock, Plus, X, Loader2, Building2,
+  Globe, Sparkles, ChevronDown, Bell, Edit3,
+} from 'lucide-react'
 import { useUserRole } from '@/lib/useUserRole'
 
 interface Announcement {
@@ -30,6 +33,24 @@ function timeAgo(d: string) {
   return `${Math.floor(days / 30)}mo ago`
 }
 
+function AuthorAvatar({ name }: { name: string }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  const colors = [
+    'from-blue-600 to-blue-700',
+    'from-violet-600 to-violet-700',
+    'from-emerald-600 to-emerald-700',
+    'from-amber-600 to-amber-700',
+    'from-rose-600 to-rose-700',
+    'from-cyan-600 to-cyan-700',
+  ]
+  const color = colors[name.charCodeAt(0) % colors.length]
+  return (
+    <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shrink-0`}>
+      <span className="text-[11px] font-bold text-white">{initials}</span>
+    </div>
+  )
+}
+
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
@@ -39,12 +60,11 @@ export default function AnnouncementsPage() {
   const [saving, setSaving] = useState(false)
   const [userName, setUserName] = useState('Autonex AI')
   const [myDeptId, setMyDeptId] = useState<string | null>(null)
+  const [deptFilter, setDeptFilter] = useState<string>('all')
   const supabase = createClient()
   const { role_name, isAdmin } = useUserRole()
 
-  // Who can post: Founder, MD (isAdmin), Head
   const canPost = isAdmin || role_name === 'Founder' || role_name === 'Managing Director' || role_name === 'Head'
-  // Head can only post to their dept
   const isHead = role_name === 'Head' && !isAdmin
 
   const load = useCallback(async () => {
@@ -55,7 +75,6 @@ export default function AnnouncementsPage() {
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false })
 
-    // Heads/Seniors/Juniors/Interns: show company-wide + their dept
     if (myDeptId && !isAdmin && role_name !== 'Founder' && role_name !== 'Managing Director') {
       q = (q as any).or(`department_id.is.null,department_id.eq.${myDeptId}`)
     }
@@ -66,11 +85,9 @@ export default function AnnouncementsPage() {
   }, [supabase, myDeptId, isAdmin, role_name])
 
   useEffect(() => {
-    // Load departments
     supabase.from('departments').select('id, name').order('name')
       .then(({ data }: { data: any }) => setDepartments(data ?? []))
 
-    // Get current user name + dept
     supabase.auth.getUser().then(({ data: { user } }: any) => {
       if (!user) return
       supabase.from('team_members').select('name, roles(department_id)').eq('email', user.email ?? '').maybeSingle()
@@ -91,7 +108,6 @@ export default function AnnouncementsPage() {
     return () => { supabase.removeChannel(ch) }
   }, [load, supabase])
 
-  // Pre-fill dept for Heads
   useEffect(() => {
     if (isHead && myDeptId) setForm(f => ({ ...f, department_id: myDeptId }))
   }, [isHead, myDeptId])
@@ -119,128 +135,342 @@ export default function AnnouncementsPage() {
   }
 
   const del = async (id: string) => {
+    if (!confirm('Delete this announcement?')) return
     await supabase.from('announcements').delete().eq('id', id)
     setAnnouncements(prev => prev.filter(x => x.id !== id))
   }
 
+  // Dept filter
+  const filtered = deptFilter === 'all'
+    ? announcements
+    : deptFilter === 'company'
+    ? announcements.filter(a => !a.department_id)
+    : announcements.filter(a => a.department_id === deptFilter)
+
+  const pinnedList = filtered.filter(a => a.pinned)
+  const regularList = filtered.filter(a => !a.pinned)
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
-        <div>
-          <h1 className="page-header flex items-center gap-2">
-            <Megaphone className="w-5 h-5 text-blue-400" />
-            Announcements
-          </h1>
-          <p className="text-sm text-slate-500 mt-0.5">Company-wide & department updates</p>
+    <div className="flex flex-col h-full bg-[#080c12]">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-0">
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center">
+                <Megaphone className="w-4.5 h-4.5 text-amber-400" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">Announcements</h1>
+                <p className="text-xs text-slate-500">Company-wide & department updates</p>
+              </div>
+            </div>
+          </div>
+          {canPost && (
+            <button
+              onClick={() => setShowNew(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg"
+              style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', color: '#fff', boxShadow: '0 4px 16px rgba(37,99,235,0.3)' }}
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              New Announcement
+            </button>
+          )}
         </div>
-        {canPost && (
-          <button onClick={() => setShowNew(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors">
-            <Plus className="w-3.5 h-3.5" /> New
-          </button>
+
+        {/* Dept Filter Chips */}
+        {(isAdmin || role_name === 'Founder' || role_name === 'Managing Director') && (
+          <div className="flex gap-2 pb-4 overflow-x-auto scrollbar-thin">
+            {[
+              { id: 'all', label: 'All', icon: Bell },
+              { id: 'company', label: 'Company-wide', icon: Globe },
+              ...departments.map(d => ({ id: d.id, label: d.name, icon: Building2 })),
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setDeptFilter(id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap border transition-all ${
+                  deptFilter === id
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/[0.15]'
+                }`}
+                style={deptFilter !== id ? { background: 'rgba(255,255,255,0.04)' } : {}}
+              >
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            ))}
+          </div>
         )}
+
+        {/* Divider */}
+        <div className="h-px bg-white/[0.06] mb-6" />
       </div>
 
-      {/* Compose drawer */}
-      <AnimatePresence>
-        {showNew && (
-          <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
-            className="mx-6 mt-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold text-slate-900">New Announcement</p>
-              <button onClick={() => setShowNew(false)} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
-            </div>
-            <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              placeholder="Title…" className="input-dark w-full mb-2" />
-            <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-              placeholder="Write your announcement…" rows={4} className="input-dark w-full resize-none mb-3" />
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-6 pb-8 scrollbar-thin">
 
-            {/* Dept selector — Founder/MD see all, Head sees their dept only */}
-            <div className="mb-3">
-              <label className="text-xs text-slate-500 mb-1 block">Audience</label>
-              <select value={form.department_id}
-                onChange={e => setForm(f => ({ ...f, department_id: e.target.value }))}
-                disabled={isHead}
-                className="input-dark w-full text-sm">
-                <option value="">🌐 Company-wide (everyone)</option>
-                {departments.map(d => (
-                  <option key={d.id} value={d.id}>🏢 {d.name} only</option>
-                ))}
-              </select>
-              {isHead && <p className="text-[11px] text-slate-400 mt-1">Heads can only post to their department</p>}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-600">
-                <input type="checkbox" checked={form.pinned} onChange={e => setForm(f => ({ ...f, pinned: e.target.checked }))}
-                  className="rounded border-slate-300 text-blue-500" />
-                <Pin className="w-3.5 h-3.5" /> Pin to top
-              </label>
-              <button onClick={submit} disabled={!form.title.trim() || !form.content.trim() || saving}
-                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition-colors">
-                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Megaphone className="w-3.5 h-3.5" />}
-                {form.department_id ? 'Post to Dept' : 'Broadcast'}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* List */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-3 scrollbar-thin">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : announcements.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Megaphone className="w-10 h-10 text-slate-300" />
-            <p className="text-slate-500 text-sm">No announcements yet</p>
-            {canPost && <button onClick={() => setShowNew(true)} className="text-blue-600 text-xs hover:underline">Create your first one</button>}
-          </div>
-        ) : (
-          announcements.map((a, i) => (
-            <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-              className={`p-4 rounded-2xl border transition-all group ${a.pinned ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  {a.pinned && <Pin className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
-                  <h3 className="text-sm font-semibold text-slate-900 truncate">{a.title}</h3>
-                  {a.department_id && a.departments && (
-                    <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 bg-violet-50 text-violet-600 border border-violet-200 rounded-full shrink-0">
-                      <Building2 className="w-2.5 h-2.5" />{a.departments.name}
-                    </span>
-                  )}
-                  {!a.department_id && (
-                    <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full shrink-0">Company-wide</span>
-                  )}
+        {/* Compose Form */}
+        <AnimatePresence>
+          {showNew && (
+            <motion.div
+              initial={{ opacity: 0, y: -12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              className="mb-6 rounded-2xl overflow-hidden"
+              style={{ background: 'rgba(13,17,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(20px)' }}
+            >
+              {/* Compose header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.07]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/20 flex items-center justify-center">
+                    <Megaphone className="w-3.5 h-3.5 text-amber-400" />
+                  </div>
+                  <p className="text-sm font-bold text-white">New Announcement</p>
                 </div>
-                {canPost && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <button onClick={() => togglePin(a)} title={a.pinned ? 'Unpin' : 'Pin'}
-                      className={`p-1.5 rounded-lg hover:bg-slate-100 transition-colors ${a.pinned ? 'text-blue-500' : 'text-slate-400'}`}>
-                      <Pin className="w-3.5 h-3.5" />
+                <button onClick={() => setShowNew(false)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-slate-500 hover:text-slate-300 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Title */}
+                <input
+                  value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="Announcement title…"
+                  className="w-full text-base font-semibold text-white placeholder:text-slate-600 bg-transparent outline-none border-b border-white/[0.08] pb-3"
+                />
+
+                {/* Content */}
+                <textarea
+                  value={form.content}
+                  onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+                  placeholder="Write your announcement… You can use plain text."
+                  rows={5}
+                  className="w-full text-sm text-slate-300 placeholder:text-slate-600 bg-transparent outline-none resize-none leading-relaxed"
+                />
+
+                {/* Bottom controls */}
+                <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+                  <div className="flex items-center gap-3">
+                    {/* Audience */}
+                    <select
+                      value={form.department_id}
+                      onChange={e => setForm(f => ({ ...f, department_id: e.target.value }))}
+                      disabled={isHead}
+                      className="h-8 px-3 rounded-lg text-[12px] text-slate-300 outline-none border border-white/[0.09] transition-all"
+                      style={{ background: 'rgba(255,255,255,0.05)' }}
+                    >
+                      <option value="">🌐 Everyone</option>
+                      {departments.map(d => (
+                        <option key={d.id} value={d.id}>🏢 {d.name}</option>
+                      ))}
+                    </select>
+
+                    {/* Pin toggle */}
+                    <button
+                      onClick={() => setForm(f => ({ ...f, pinned: !f.pinned }))}
+                      className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-semibold border transition-all ${
+                        form.pinned
+                          ? 'bg-blue-600/20 text-blue-400 border-blue-500/30'
+                          : 'text-slate-500 border-white/[0.08] hover:text-slate-300'
+                      }`}
+                      style={!form.pinned ? { background: 'rgba(255,255,255,0.04)' } : {}}
+                    >
+                      <Pin className="w-3 h-3" />
+                      {form.pinned ? 'Pinned' : 'Pin'}
                     </button>
-                    <button onClick={() => del(a.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                  </div>
+
+                  <button
+                    onClick={submit}
+                    disabled={!form.title.trim() || !form.content.trim() || saving}
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-40"
+                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff' }}
+                  >
+                    {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                    {form.department_id ? 'Post to Department' : 'Broadcast to All'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-24 gap-4"
+          >
+            <div className="w-14 h-14 rounded-2xl border border-white/[0.08] flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <Megaphone className="w-6 h-6 text-slate-600" />
+            </div>
+            <div className="text-center">
+              <p className="text-slate-400 font-medium mb-1">No announcements yet</p>
+              <p className="text-slate-600 text-sm">Important updates will appear here.</p>
+            </div>
+            {canPost && (
+              <button onClick={() => setShowNew(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-blue-400 border border-blue-500/20 hover:bg-blue-600/10 transition-all">
+                <Plus className="w-4 h-4" />
+                Create First Announcement
+              </button>
+            )}
+          </motion.div>
+        ) : (
+          <div className="space-y-3 max-w-2xl">
+            {/* Pinned section */}
+            {pinnedList.length > 0 && (
+              <div className="mb-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Pin className="w-3 h-3 text-blue-400" />
+                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Pinned</span>
+                </div>
+                <div className="space-y-3">
+                  {pinnedList.map((a, i) => (
+                    <AnnouncementCard key={a.id} a={a} i={i} canPost={canPost} onPin={togglePin} onDelete={del} />
+                  ))}
+                </div>
+                {regularList.length > 0 && (
+                  <div className="flex items-center gap-3 my-5">
+                    <div className="flex-1 h-px bg-white/[0.06]" />
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Recent</span>
+                    <div className="flex-1 h-px bg-white/[0.06]" />
                   </div>
                 )}
               </div>
-              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap mb-3">{a.content}</p>
-              <div className="flex items-center gap-3 text-[11px] text-slate-400">
-                <span className="font-medium text-slate-600">{a.author_name}</span>
-                <span>·</span>
-                <Clock className="w-3 h-3" />
-                <span>{timeAgo(a.created_at)}</span>
-                {a.expires_at && (
-                  <><span>·</span><span className="text-amber-500">Expires {new Date(a.expires_at).toLocaleDateString('en-IN')}</span></>
-                )}
-              </div>
-            </motion.div>
-          ))
+            )}
+
+            {/* Regular */}
+            <div className="space-y-3">
+              {regularList.map((a, i) => (
+                <AnnouncementCard key={a.id} a={a} i={i + pinnedList.length} canPost={canPost} onPin={togglePin} onDelete={del} />
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>
+  )
+}
+
+function AnnouncementCard({ a, i, canPost, onPin, onDelete }: {
+  a: Announcement
+  i: number
+  canPost: boolean
+  onPin: (a: Announcement) => void
+  onDelete: (id: string) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const isLong = a.content.length > 240
+  const preview = isLong && !expanded ? a.content.slice(0, 240) + '…' : a.content
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: i * 0.04, duration: 0.3 }}
+      className={`group rounded-2xl p-5 transition-all ${
+        a.pinned
+          ? 'border border-blue-500/20'
+          : 'border border-white/[0.07] hover:border-white/[0.12]'
+      }`}
+      style={{
+        background: a.pinned
+          ? 'linear-gradient(135deg, rgba(37,99,235,0.06), rgba(37,99,235,0.02))'
+          : 'rgba(255,255,255,0.03)',
+      }}
+    >
+      {/* Card header */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <AuthorAvatar name={a.author_name} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              {a.pinned && <Pin className="w-3 h-3 text-blue-400 shrink-0" />}
+              <h3 className="text-sm font-bold text-white truncate">{a.title}</h3>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[11px] font-medium text-slate-400">{a.author_name}</span>
+              <span className="text-slate-600">·</span>
+              <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" />
+                {timeAgo(a.created_at)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Dept / scope badge */}
+          {a.department_id && a.departments ? (
+            <span className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-violet-500/20 text-violet-400 font-semibold"
+              style={{ background: 'rgba(139,92,246,0.1)' }}>
+              <Building2 className="w-2.5 h-2.5" />
+              {a.departments.name}
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-white/[0.08] text-slate-500 font-semibold"
+              style={{ background: 'rgba(255,255,255,0.04)' }}>
+              <Globe className="w-2.5 h-2.5" />
+              Company
+            </span>
+          )}
+
+          {/* Actions (hover reveal) */}
+          {canPost && (
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => onPin(a)}
+                title={a.pinned ? 'Unpin' : 'Pin to top'}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  a.pinned
+                    ? 'text-blue-400 hover:bg-blue-500/10'
+                    : 'text-slate-600 hover:text-slate-300 hover:bg-white/[0.06]'
+                }`}
+              >
+                <Pin className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => onDelete(a.id)}
+                className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap pl-11">
+        {preview}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(e => !e)}
+          className="flex items-center gap-1 mt-2 ml-11 text-[11px] text-blue-400 hover:text-blue-300 font-medium transition-colors"
+        >
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          {expanded ? 'Show less' : 'Read more'}
+        </button>
+      )}
+
+      {/* Expiry */}
+      {a.expires_at && (
+        <div className="flex items-center gap-1.5 mt-3 pl-11">
+          <span className="text-[10px] px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-semibold">
+            ⏰ Expires {new Date(a.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </span>
+        </div>
+      )}
+    </motion.div>
   )
 }
