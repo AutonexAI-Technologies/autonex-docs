@@ -17,7 +17,7 @@ function CustomTooltip({ active, payload, label, prefix = '₹' }: any) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
-      {label && <p className="text-slate-500 mb-1">{label}</p>}
+      {label && <p className="text-[var(--text-tertiary)] mb-1">{label}</p>}
       {payload.map((p: any) => (
         <p key={p.name} className="font-semibold" style={{ color: p.color }}>
           {p.name}: {prefix}{typeof p.value === 'number' ? p.value.toLocaleString('en-IN') : p.value}
@@ -109,7 +109,7 @@ export default function ReportsPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between flex-wrap gap-4 mb-8">
         <div>
           <h1 className="page-header">Reports &amp; Analytics</h1>
-          <p className="text-slate-400 text-sm mt-1">Revenue breakdown, service analysis, and invoice tracking</p>
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">Revenue breakdown, service analysis, and invoice tracking</p>
         </div>
         <Button onClick={exportCSV} variant="outline" className="border-slate-200 text-slate-300 hover:text-white hover:bg-slate-50 gap-2 h-10 px-4 rounded-xl">
           <Download className="w-4 h-4" />
@@ -134,15 +134,15 @@ export default function ReportsPage() {
               <motion.div key={s.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
                 className={`stat-card border ${s.border}`}>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-slate-400 text-xs">{s.label}</p>
+                  <p className="text-[var(--text-tertiary)] text-xs">{s.label}</p>
                   <div className={`w-8 h-8 rounded-xl ${s.bg} border ${s.border} flex items-center justify-center`}>
                     <s.icon className={`w-3.5 h-3.5 ${s.color}`} />
                   </div>
                 </div>
                 <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <ArrowUpRight className="w-3 h-3 text-slate-500" />
-                  <p className="text-[11px] text-slate-500">{s.trend}</p>
+                  <ArrowUpRight className="w-3 h-3 text-[var(--text-tertiary)]" />
+                  <p className="text-[11px] text-[var(--text-tertiary)]">{s.trend}</p>
                 </div>
               </motion.div>
             ))}
@@ -155,12 +155,12 @@ export default function ReportsPage() {
               className="rounded-2xl border border-slate-200 bg-white p-6">
               <div className="flex items-center gap-2 mb-5">
                 <TrendingUp className="w-4 h-4 text-blue-400" />
-                <h2 className="text-slate-800 font-semibold text-sm">Revenue Collected (Last 6 Months)</h2>
+                <h2 className="text-[var(--text-primary)] font-semibold text-sm">Revenue Collected (Last 6 Months)</h2>
               </div>
               {monthlyRevenue.every(m => m.revenue === 0) ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <BarChart3 className="w-8 h-8 text-slate-200 mb-3" />
-                  <p className="text-slate-400 text-sm">No paid invoices yet</p>
+                  <p className="text-[var(--text-tertiary)] text-sm">No paid invoices yet</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={180}>
@@ -180,12 +180,12 @@ export default function ReportsPage() {
               className="rounded-2xl border border-slate-200 bg-white p-6">
               <div className="flex items-center gap-2 mb-5">
                 <PieChart className="w-4 h-4 text-violet-400" />
-                <h2 className="text-slate-800 font-semibold text-sm">Revenue by Service</h2>
+                <h2 className="text-[var(--text-primary)] font-semibold text-sm">Revenue by Service</h2>
               </div>
               {serviceData.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <BarChart3 className="w-8 h-8 text-slate-200 mb-3" />
-                  <p className="text-slate-400 text-sm">No client data yet</p>
+                  <p className="text-[var(--text-tertiary)] text-sm">No client data yet</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={180}>
@@ -210,12 +210,12 @@ export default function ReportsPage() {
               className="rounded-2xl border border-slate-200 bg-white p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Users className="w-4 h-4 text-blue-400" />
-                <h2 className="text-slate-800 font-semibold text-sm">Client Status Distribution</h2>
+                <h2 className="text-[var(--text-primary)] font-semibold text-sm">Client Status Distribution</h2>
               </div>
               {clients.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Users className="w-8 h-8 text-slate-200 mb-3" />
-                  <p className="text-slate-400 text-sm">No clients yet</p>
+                  <p className="text-[var(--text-tertiary)] text-sm">No clients yet</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-6">
@@ -233,9 +233,9 @@ export default function ReportsPage() {
                       <div key={entry.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-2.5 h-2.5 rounded-full" style={{ background: STATUS_COLORS[entry.name] ?? '#94A3B8' }} />
-                          <span className="text-xs text-slate-600">{entry.name}</span>
+                          <span className="text-xs text-[var(--text-secondary)]">{entry.name}</span>
                         </div>
-                        <span className="text-xs font-semibold text-slate-800">{entry.value}</span>
+                        <span className="text-xs font-semibold text-[var(--text-primary)]">{entry.value}</span>
                       </div>
                     ))}
                   </div>
@@ -248,12 +248,12 @@ export default function ReportsPage() {
               className="rounded-2xl border border-slate-200 bg-white p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Activity className="w-4 h-4 text-amber-400" />
-                <h2 className="text-slate-800 font-semibold text-sm">Invoice Status Breakdown</h2>
+                <h2 className="text-[var(--text-primary)] font-semibold text-sm">Invoice Status Breakdown</h2>
               </div>
               {invoices.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Activity className="w-8 h-8 text-slate-200 mb-3" />
-                  <p className="text-slate-400 text-sm">No invoices yet</p>
+                  <p className="text-[var(--text-tertiary)] text-sm">No invoices yet</p>
                 </div>
               ) : (
                 <div className="flex items-center gap-6">
@@ -273,9 +273,9 @@ export default function ReportsPage() {
                         <div key={entry.name} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-2.5 h-2.5 rounded-full" style={{ background: (invColors as any)[entry.name] }} />
-                            <span className="text-xs text-slate-600">{entry.name} ({entry.value})</span>
+                            <span className="text-xs text-[var(--text-secondary)]">{entry.name} ({entry.value})</span>
                           </div>
-                          <span className="text-xs font-semibold text-slate-800">₹{(total / 1000).toFixed(0)}K</span>
+                          <span className="text-xs font-semibold text-[var(--text-primary)]">₹{(total / 1000).toFixed(0)}K</span>
                         </div>
                       )
                     })}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
-import { Bell, X, CheckCheck, Info, AlertTriangle, CheckCircle2, Zap } from 'lucide-react'
+import { Bell, X, CheckCheck, Info, AlertTriangle, CheckCircle2, Zap, Search } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -21,14 +21,15 @@ const pageTitles: Record<string, string> = {
   '/settings':     'Settings',
   '/messages':     'Messages',
   '/pipeline':     'Pipeline',
+  '/announcements':'Announcements',
 }
 
-function NotifIcon({ type }: { type: string }) {
-  if (type === 'success') return <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
-  if (type === 'warning') return <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-  if (type === 'error')   return <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-  if (type === 'message') return <Zap className="w-3.5 h-3.5 text-violet-400" />
-  return <Info className="w-3.5 h-3.5 text-slate-400" />
+const NOTIF_ICON: Record<string, { icon: any; bg: string; color: string }> = {
+  success: { icon: CheckCircle2, bg: 'rgba(48,209,88,0.1)',   color: '#30D158' },
+  warning: { icon: AlertTriangle,bg: 'rgba(255,159,10,0.1)',  color: '#FF9F0A' },
+  error:   { icon: AlertTriangle,bg: 'rgba(255,59,48,0.1)',   color: '#FF3B30' },
+  message: { icon: Zap,          bg: 'rgba(0,113,227,0.1)',   color: '#0071E3' },
+  info:    { icon: Info,         bg: 'rgba(0,113,227,0.08)',  color: '#0071E3' },
 }
 
 function timeAgo(dateStr: string) {
@@ -43,7 +44,14 @@ function timeAgo(dateStr: string) {
 
 export default function TopBar() {
   const pathname = usePathname()
-  const title = pageTitles[pathname] ?? 'Autonex AI'
+
+  // Derive page title — handle dynamic routes like /clients/[id]
+  let title = pageTitles[pathname] ?? ''
+  if (!title) {
+    const segment = pathname.split('/')[1]
+    title = segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'Autonex AI'
+  }
+
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [userInitial, setUserInitial] = useState('A')
@@ -65,8 +73,7 @@ export default function TopBar() {
 
   useEffect(() => {
     loadNotifs()
-    const supabase2 = createClient()
-    supabase2.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
+    createClient().auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
       if (user) {
         const name = user.user_metadata?.full_name || user.user_metadata?.invited_name || user.email?.split('@')[0] || 'A'
         setUserName(name)
@@ -75,26 +82,18 @@ export default function TopBar() {
     })
   }, [pathname, loadNotifs])
 
-  // Real-time notification subscription
   useEffect(() => {
     const channel = supabase
       .channel('topbar-notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
-        loadNotifs()
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, () => {
-        loadNotifs()
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, loadNotifs)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, loadNotifs)
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [supabase, loadNotifs])
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
-        setBellOpen(false)
-      }
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -107,25 +106,51 @@ export default function TopBar() {
   }
 
   return (
-    <header className="h-14 border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30 flex items-center px-6 gap-4">
+    <header
+      className="h-[52px] flex items-center px-5 gap-3 sticky top-0 z-30 flex-shrink-0"
+      style={{
+        background: 'rgba(255,255,255,0.88)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
+      {/* Page title */}
       <div className="flex-1 min-w-0">
-        <h2 className="text-slate-900 font-semibold text-sm truncate">{title}</h2>
+        <h1
+          className="text-[15px] font-semibold truncate"
+          style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
+        >
+          {title}
+        </h1>
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Notification Bell */}
+      <div className="flex items-center gap-1.5">
+
+        {/* Bell */}
         <div ref={bellRef} className="relative">
           <button
+            id="topbar-notifications-btn"
             onClick={() => setBellOpen(o => !o)}
-            className="relative w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            className="relative w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+              e.currentTarget.style.color = 'var(--text-primary)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+            }}
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-[17px] h-[17px]" />
             {unreadCount > 0 && (
               <motion.span
                 key={unreadCount}
                 initial={{ scale: 0.5 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center px-1"
+                className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] rounded-full text-white text-[9px] font-bold flex items-center justify-center px-0.5"
+                style={{ background: 'var(--error)' }}
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </motion.span>
@@ -135,70 +160,127 @@ export default function TopBar() {
           <AnimatePresence>
             {bellOpen && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                initial={{ opacity: 0, scale: 0.96, y: -4 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -6 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 top-11 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/80 z-50 overflow-hidden"
+                exit={{ opacity: 0, scale: 0.96, y: -4 }}
+                transition={{ duration: 0.14, ease: [0.25, 0.1, 0.25, 1] }}
+                className="absolute right-0 top-10 w-80 rounded-xl overflow-hidden z-50"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-lg)',
+                }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: '1px solid var(--border)' }}
+                >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-900">Notifications</span>
+                    <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                      Notifications
+                    </span>
                     {unreadCount > 0 && (
-                      <span className="px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-bold">{unreadCount}</span>
+                      <span
+                        className="px-1.5 py-0.5 rounded-full text-white text-[10px] font-bold"
+                        style={{ background: 'var(--accent)' }}
+                      >
+                        {unreadCount}
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     {unreadCount > 0 && (
-                      <button onClick={markAllRead} className="text-[11px] text-blue-500 hover:text-blue-700 flex items-center gap-1 transition-colors">
-                        <CheckCheck className="w-3 h-3" /> Mark all read
+                      <button
+                        onClick={markAllRead}
+                        className="text-[11px] flex items-center gap-1 transition-colors"
+                        style={{ color: 'var(--accent)' }}
+                        onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+                        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        <CheckCheck className="w-3 h-3" /> Mark read
                       </button>
                     )}
-                    <button onClick={() => setBellOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    <button
+                      onClick={() => setBellOpen(false)}
+                      className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+                      style={{ color: 'var(--text-tertiary)' }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                        e.currentTarget.style.color = 'var(--text-primary)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = 'var(--text-tertiary)'
+                      }}
+                    >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                {/* Notification list */}
-                <div className="max-h-80 overflow-y-auto scrollbar-thin">
+                {/* List */}
+                <div className="max-h-72 overflow-y-auto scrollbar-thin">
                   {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 gap-2">
-                      <Bell className="w-7 h-7 text-slate-200" />
-                      <p className="text-slate-400 text-xs">No notifications yet</p>
+                      <Bell className="w-6 h-6" style={{ color: 'var(--text-tertiary)' }} />
+                      <p className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>No notifications yet</p>
                     </div>
                   ) : (
-                    notifications.map((n, i) => (
-                      <motion.div
-                        key={n.id}
-                        initial={{ opacity: 0, x: -4 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.03 }}
-                        className={`flex items-start gap-3 px-4 py-3 border-b border-slate-50 last:border-0 transition-colors hover:bg-slate-50/80 cursor-default ${!n.read ? 'bg-blue-50/40' : ''}`}
-                      >
-                        <div className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                          !n.read ? 'bg-blue-100' : 'bg-slate-100'
-                        }`}>
-                          <NotifIcon type={n.type} />
+                    notifications.map((n, i) => {
+                      const cfg = NOTIF_ICON[n.type] ?? NOTIF_ICON.info
+                      const IconC = cfg.icon
+                      return (
+                        <div
+                          key={n.id}
+                          className="flex items-start gap-3 px-4 py-3"
+                          style={{
+                            borderBottom: i < notifications.length - 1 ? '1px solid var(--divider)' : 'none',
+                            background: !n.read ? 'rgba(0,113,227,0.03)' : 'transparent',
+                          }}
+                        >
+                          <div
+                            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                            style={{ background: cfg.bg }}
+                          >
+                            <IconC className="w-3.5 h-3.5" style={{ color: cfg.color }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="text-[12px] font-medium truncate"
+                              style={{ color: 'var(--text-primary)' }}
+                            >
+                              {n.title}
+                            </p>
+                            <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+                              {n.message}
+                            </p>
+                            <p className="text-[10px] mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                              {timeAgo(n.created_at)}
+                            </p>
+                          </div>
+                          {!n.read && (
+                            <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: 'var(--accent)' }} />
+                          )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-semibold truncate ${!n.read ? 'text-slate-900' : 'text-slate-700'}`}>{n.title}</p>
-                          <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">{n.message}</p>
-                          <p className="text-[10px] text-slate-400 mt-1">{timeAgo(n.created_at)}</p>
-                        </div>
-                        {!n.read && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
-                        )}
-                      </motion.div>
-                    ))
+                      )
+                    })
                   )}
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/60">
-                  <Link href="/notifications" onClick={() => setBellOpen(false)}
-                    className="text-[11px] text-blue-500 hover:text-blue-700 transition-colors font-medium">
+                <div
+                  className="px-4 py-2.5"
+                  style={{ borderTop: '1px solid var(--border)', background: 'var(--surface-2)' }}
+                >
+                  <Link
+                    href="/notifications"
+                    onClick={() => setBellOpen(false)}
+                    className="text-[11px] font-medium transition-opacity"
+                    style={{ color: 'var(--accent)' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  >
                     View all notifications →
                   </Link>
                 </div>
@@ -207,10 +289,11 @@ export default function TopBar() {
           </AnimatePresence>
         </div>
 
-        {/* User avatar */}
+        {/* Avatar */}
         <div
           title={userName}
-          className="w-8 h-8 rounded-xl anx-gradient flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-blue-500/20 cursor-default"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-[12px] cursor-default select-none flex-shrink-0"
+          style={{ background: 'var(--accent)', letterSpacing: '0' }}
         >
           {userInitial}
         </div>

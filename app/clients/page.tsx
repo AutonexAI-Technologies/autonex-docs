@@ -91,7 +91,7 @@ export default function ClientsPage() {
       >
         <div>
           <h1 className="page-header">Client Management</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">
             {clients.length} clients total · {activeCount} active
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function ClientsPage() {
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
               statusFilter === s
                 ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                : 'bg-white text-[var(--text-secondary)] border-slate-200 hover:border-blue-300 hover:text-blue-600'
             }`}
           >
             {s}
@@ -132,12 +132,12 @@ export default function ClientsPage() {
         ))}
 
         <div className="ml-auto relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-tertiary)]" />
           <Input
             placeholder="Search clients…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 w-64 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-xl focus:border-blue-500 shadow-sm"
+            className="pl-9 h-9 w-64 bg-white border-slate-200 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm rounded-xl focus:border-blue-500 shadow-sm"
           />
         </div>
       </motion.div>
@@ -150,7 +150,7 @@ export default function ClientsPage() {
         className="rounded-2xl border border-[#E8EDF5] bg-white overflow-hidden shadow-sm"
       >
         {/* Column headers */}
-        <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-100 text-xs text-slate-500 font-semibold uppercase tracking-wider bg-slate-50">
+        <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-100 text-xs text-[var(--text-tertiary)] font-semibold uppercase tracking-wider bg-slate-50">
           <span>Client</span>
           <span>Service</span>
           <span>Status</span>
@@ -168,8 +168,8 @@ export default function ClientsPage() {
             <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4">
               <Users className="w-6 h-6 text-blue-500" />
             </div>
-            <p className="text-slate-900 font-semibold">No clients found</p>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-[var(--text-primary)] font-semibold">No clients found</p>
+            <p className="text-[var(--text-tertiary)] text-sm mt-1">
               {search ? 'Try a different search term' : 'Add your first client to get started'}
             </p>
             {!search && (
@@ -200,13 +200,13 @@ export default function ClientsPage() {
                         {client.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-slate-900 text-sm font-semibold truncate">{client.name}</p>
-                        <p className="text-slate-500 text-xs truncate flex items-center gap-1">
+                        <p className="text-[var(--text-primary)] text-sm font-semibold truncate">{client.name}</p>
+                        <p className="text-[var(--text-tertiary)] text-xs truncate flex items-center gap-1">
                           <Mail className="w-2.5 h-2.5 shrink-0" />
                           {client.email}
                         </p>
                         {client.company && (
-                          <p className="text-slate-400 text-xs truncate flex items-center gap-1">
+                          <p className="text-[var(--text-tertiary)] text-xs truncate flex items-center gap-1">
                             <Building2 className="w-2.5 h-2.5 shrink-0" />
                             {client.company}
                           </p>
@@ -214,7 +214,7 @@ export default function ClientsPage() {
                       </div>
                     </Link>
 
-                    <span className="hidden md:block text-slate-600 text-xs truncate max-w-[180px]">
+                    <span className="hidden md:block text-[var(--text-secondary)] text-xs truncate max-w-[180px]">
                       {client.service}
                     </span>
 
@@ -226,7 +226,7 @@ export default function ClientsPage() {
                       {client.project_type === 'retainer' ? '🔄 Retainer' : '⚡ One-time'}
                     </span>
 
-                    <span className="hidden md:block text-slate-900 font-bold text-sm">
+                    <span className="hidden md:block text-[var(--text-primary)] font-bold text-sm">
                       ₹{(client.total_fee || 0).toLocaleString('en-IN')}
                     </span>
 
@@ -256,10 +256,10 @@ export default function ClientsPage() {
         {/* Footer */}
         {filtered.length > 0 && (
           <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-            <p className="text-slate-500 text-xs">
+            <p className="text-[var(--text-tertiary)] text-xs">
               Showing {filtered.length} of {clients.length} clients
             </p>
-            <p className="text-slate-400 text-xs">Click a client to view details →</p>
+            <p className="text-[var(--text-tertiary)] text-xs">Click a client to view details →</p>
           </div>
         )}
       </motion.div>

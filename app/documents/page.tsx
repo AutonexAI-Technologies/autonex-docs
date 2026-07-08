@@ -69,21 +69,21 @@ export default function DocumentsPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between flex-wrap gap-4 mb-8">
         <div>
           <h1 className="page-header">Documents</h1>
-          <p className="text-slate-400 text-sm mt-1">Contract · Welcome · Invoice · Thank You — generate, download, and send as PDF</p>
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">Contract · Welcome · Invoice · Thank You — generate, download, and send as PDF</p>
         </div>
         <div className="relative">
           <Input
             placeholder="Search clients..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-56 h-9 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-xl focus:border-blue-500/50"
+            className="w-56 h-9 bg-slate-50 border-slate-200 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm rounded-xl focus:border-blue-500/50"
           />
         </div>
       </motion.div>
 
       {/* Indian law notice */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-        className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-500/15 bg-blue-500/5 text-slate-400 text-xs"
+        className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-500/15 bg-blue-500/5 text-[var(--text-tertiary)] text-xs"
       >
         <span className="text-base">⚖️</span>
         <span>All documents are governed by <strong className="text-blue-400">Indian Contract Act, 1872</strong> · IT Act 2000 · Arbitration &amp; Conciliation Act, 1996 · Jurisdiction: Hyderabad, Telangana, India</span>
@@ -96,10 +96,10 @@ export default function DocumentsPage() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
-            <FileText className="w-6 h-6 text-slate-600" />
+            <FileText className="w-6 h-6 text-[var(--text-secondary)]" />
           </div>
           <p className="text-white font-medium">No clients found</p>
-          <p className="text-slate-500 text-sm mt-1">Add a client first to generate documents</p>
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">Add a client first to generate documents</p>
           <Link href="/clients/new">
             <Button className="mt-4 anx-gradient text-white text-sm font-medium gap-2 px-4 py-2 rounded-xl hover:opacity-90">
               Add Client →
@@ -123,7 +123,7 @@ export default function DocumentsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-semibold text-sm">{client.name}</p>
-                  <p className="text-slate-500 text-xs">{client.service} · {client.email}</p>
+                  <p className="text-[var(--text-tertiary)] text-xs">{client.service} · {client.email}</p>
                 </div>
                 <Link href={`/clients/${client.id}`} className="text-blue-400 text-xs hover:text-blue-300 transition-colors">
                   View client →
@@ -141,7 +141,7 @@ export default function DocumentsPage() {
                         <span className="text-lg">{doc.icon}</span>
                         <div className="min-w-0">
                           <p className="text-white text-xs font-medium truncate">{doc.title}</p>
-                          <p className="text-slate-500 text-[10px] truncate">{doc.description}</p>
+                          <p className="text-[var(--text-tertiary)] text-[10px] truncate">{doc.description}</p>
                         </div>
                       </div>
                       <button

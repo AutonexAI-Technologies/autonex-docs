@@ -124,7 +124,7 @@ function NewInvoicePanel({
     setSaving(false)
   }
 
-  const inputCls = 'h-9 px-3 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 w-full placeholder:text-slate-400 shadow-sm'
+  const inputCls = 'h-9 px-3 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 w-full placeholder:text-[var(--text-tertiary)] shadow-sm'
 
   return (
     <AnimatePresence>
@@ -149,12 +149,12 @@ function NewInvoicePanel({
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
               <div>
-                <h2 className="text-slate-900 font-bold text-base">New Invoice</h2>
-                <p className="text-slate-400 text-xs mt-0.5">Auto-assigned ANX-XXX number</p>
+                <h2 className="text-[var(--text-primary)] font-bold text-base">New Invoice</h2>
+                <p className="text-[var(--text-tertiary)] text-xs mt-0.5">Auto-assigned ANX-XXX number</p>
               </div>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -164,7 +164,7 @@ function NewInvoicePanel({
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto scrollbar-thin px-6 py-5 space-y-5 bg-white">
               {/* Client selector */}
               <div>
-                <label className="text-slate-600 text-xs font-medium mb-1.5 block">Client <span className="text-blue-600">*</span></label>
+                <label className="text-[var(--text-secondary)] text-xs font-medium mb-1.5 block">Client <span className="text-blue-600">*</span></label>
                 <select
                   value={clientId}
                   onChange={e => setClientId(e.target.value)}
@@ -181,7 +181,7 @@ function NewInvoicePanel({
               {/* Line items */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-slate-600 text-xs font-medium mb-1.5 block">Line Items</label>
+                  <label className="text-[var(--text-secondary)] text-xs font-medium mb-1.5 block">Line Items</label>
                   <button
                     type="button"
                     onClick={addLine}
@@ -192,7 +192,7 @@ function NewInvoicePanel({
                 </div>
 
                 {/* Column labels */}
-                <div className="grid grid-cols-[1fr_60px_80px_28px] gap-2 mb-1.5 text-[10px] text-slate-600 uppercase tracking-wider px-1">
+                <div className="grid grid-cols-[1fr_60px_80px_28px] gap-2 mb-1.5 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider px-1">
                   <span>Description</span>
                   <span>Qty</span>
                   <span>Rate (₹)</span>
@@ -239,8 +239,8 @@ function NewInvoicePanel({
               {/* GST toggle */}
               <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-blue-100 bg-blue-50">
                 <div>
-                  <p className="text-slate-900 text-sm font-medium">GST 18%</p>
-                  <p className="text-slate-500 text-xs">Goods &amp; Services Tax</p>
+                  <p className="text-[var(--text-primary)] text-sm font-medium">GST 18%</p>
+                  <p className="text-[var(--text-tertiary)] text-xs">Goods &amp; Services Tax</p>
                 </div>
                 <button
                   type="button"
@@ -256,20 +256,20 @@ function NewInvoicePanel({
               {/* Totals */}
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Subtotal</span>
-                  <span className="text-slate-900 font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
+                  <span className="text-[var(--text-tertiary)]">Subtotal</span>
+                  <span className="text-[var(--text-primary)] font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 {gstEnabled && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">GST (18%)</span>
-                    <span className="text-slate-700">₹{gstAmount.toLocaleString('en-IN')}</span>
+                    <span className="text-[var(--text-tertiary)]">GST (18%)</span>
+                    <span className="text-[var(--text-secondary)]">₹{gstAmount.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-base font-bold pt-2 border-t border-slate-200">
-                  <span className="text-slate-900">Total</span>
+                  <span className="text-[var(--text-primary)]">Total</span>
                   <span className="text-blue-600">₹{total.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-xs text-slate-400">
+                <div className="flex justify-between text-xs text-[var(--text-tertiary)]">
                   <span>50% Deposit</span>
                   <span>₹{Math.round(total * 0.5).toLocaleString('en-IN')}</span>
                 </div>
@@ -277,23 +277,23 @@ function NewInvoicePanel({
 
               {/* Due date */}
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Due Date</label>
+                <label className="text-[var(--text-tertiary)] text-xs mb-1.5 block">Due Date</label>
                 <input
                   type="date"
                   value={dueDate}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={e => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm cursor-pointer"
+                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm cursor-pointer"
                 />
               </div>
 
               {/* Status */}
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Status</label>
+                <label className="text-[var(--text-tertiary)] text-xs mb-1.5 block">Status</label>
                 <select
                   value={status}
                   onChange={e => setStatus(e.target.value as PaymentStatus)}
-                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm cursor-pointer"
+                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-sm cursor-pointer"
                 >
                   <option value="Pending">Pending</option>
                   <option value="Paid">Paid</option>
@@ -304,18 +304,18 @@ function NewInvoicePanel({
 
               {/* Notes */}
               <div>
-                <label className="text-slate-400 text-xs mb-1.5 block">Notes (optional)</label>
+                <label className="text-[var(--text-tertiary)] text-xs mb-1.5 block">Notes (optional)</label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Any additional notes..."
                   rows={2}
-                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 resize-none placeholder:text-slate-400 shadow-sm"
+                  className="w-full px-3 py-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 resize-none placeholder:text-[var(--text-tertiary)] shadow-sm"
                 />
               </div>
 
               {/* Indian law note */}
-              <div className="flex items-start gap-2 text-xs text-slate-600 px-1">
+              <div className="flex items-start gap-2 text-xs text-[var(--text-secondary)] px-1">
                 <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <span>Late payment interest of 1.5%/month applies after due date as per Indian law.</span>
               </div>
@@ -327,7 +327,7 @@ function NewInvoicePanel({
                 type="button"
                 onClick={onClose}
                 variant="ghost"
-                className="flex-1 h-10 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
+                className="flex-1 h-10 border border-slate-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-100 rounded-xl"
               >
                 Cancel
               </Button>
@@ -485,7 +485,7 @@ export default function InvoicesPage() {
         >
           <div>
             <h1 className="page-header">Invoice Management</h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-[var(--text-tertiary)] text-sm mt-1">
               {invoices.length} invoices · ANX-XXX auto-numbering · GST compliant
             </p>
           </div>
@@ -512,7 +512,7 @@ export default function InvoicesPage() {
               transition={{ delay: i * 0.07 }}
               className={`stat-card border ${s.border} ${s.bg} transition-all hover:shadow-md`}
             >
-              <p className="text-slate-500 text-sm mb-1 flex items-center gap-1.5">{s.icon} {s.label}</p>
+              <p className="text-[var(--text-tertiary)] text-sm mb-1 flex items-center gap-1.5">{s.icon} {s.label}</p>
               <p className={`text-2xl font-bold ${s.color} font-[Plus_Jakarta_Sans]`}>{s.value}</p>
             </motion.div>
           ))}
@@ -531,7 +531,7 @@ export default function InvoicesPage() {
               onClick={() => setFilter(s as any)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${filter === s
                   ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                  : 'bg-white text-[var(--text-secondary)] border-slate-200 hover:border-blue-300 hover:text-blue-600'
                 }`}
             >
               {s}
@@ -543,12 +543,12 @@ export default function InvoicesPage() {
             </button>
           ))}
           <div className="ml-auto relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-tertiary)]" />
             <Input
               placeholder="Search invoices..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-9 w-56 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm rounded-xl focus:border-blue-500 shadow-sm"
+              className="pl-9 h-9 w-56 bg-white border-slate-200 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm rounded-xl focus:border-blue-500 shadow-sm"
             />
           </div>
         </motion.div>
@@ -560,7 +560,7 @@ export default function InvoicesPage() {
           transition={{ delay: 0.2 }}
           className="rounded-2xl border border-[#E8EDF5] bg-white overflow-hidden shadow-sm"
         >
-          <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-100 text-xs text-slate-500 font-semibold uppercase tracking-wider bg-slate-50">
+          <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-100 text-xs text-[var(--text-tertiary)] font-semibold uppercase tracking-wider bg-slate-50">
             <span>Invoice #</span>
             <span>Client</span>
             <span>Amount</span>
@@ -578,8 +578,8 @@ export default function InvoicesPage() {
               <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4">
                 <Receipt className="w-6 h-6 text-blue-500" />
               </div>
-              <p className="text-slate-900 font-semibold">No invoices yet</p>
-              <p className="text-slate-500 text-sm mt-1">
+              <p className="text-[var(--text-primary)] font-semibold">No invoices yet</p>
+              <p className="text-[var(--text-tertiary)] text-sm mt-1">
                 Click <strong className="text-blue-400">New Invoice</strong> to create your first one
               </p>
               <Button
@@ -616,13 +616,13 @@ export default function InvoicesPage() {
                           <span className="text-xs text-violet-600">🔄 Retainer</span>
                         )}
                       </div>
-                      <p className="hidden md:block text-slate-800 text-sm font-medium">{clientName}</p>
+                      <p className="hidden md:block text-[var(--text-primary)] text-sm font-medium">{clientName}</p>
                       <div className="hidden md:block">
-                        <p className="text-slate-900 font-bold text-sm">
+                        <p className="text-[var(--text-primary)] font-bold text-sm">
                           ₹{inv.total.toLocaleString('en-IN')}
                         </p>
                         {inv.gst_enabled && (
-                          <p className="text-slate-500 text-xs">
+                          <p className="text-[var(--text-tertiary)] text-xs">
                             incl. GST ₹{inv.gst_amount.toLocaleString('en-IN')}
                           </p>
                         )}
@@ -634,7 +634,7 @@ export default function InvoicesPage() {
                         <StatusIcon className="w-3 h-3" />
                         {isOverdue ? 'Overdue' : inv.status}
                       </span>
-                      <span className="hidden md:block text-slate-400 text-xs">
+                      <span className="hidden md:block text-[var(--text-tertiary)] text-xs">
                         {inv.due_date
                           ? format(new Date(inv.due_date), 'dd MMM yyyy')
                           : '—'}
@@ -696,7 +696,7 @@ export default function InvoicesPage() {
 
           {filtered.length > 0 && (
             <div className="px-6 py-3 border-t border-slate-100 bg-slate-50">
-              <p className="text-slate-500 text-xs">
+              <p className="text-[var(--text-tertiary)] text-xs">
                 Showing {filtered.length} of {invoices.length} invoices
               </p>
             </div>
@@ -704,7 +704,7 @@ export default function InvoicesPage() {
         </motion.div>
 
         {/* Late payment notice */}
-        <p className="text-slate-400 text-xs mt-4 text-center">
+        <p className="text-[var(--text-tertiary)] text-xs mt-4 text-center">
           ⚖️ 1.5%/month interest on overdue invoices · MSME delayed payment norms · Hyderabad jurisdiction
         </p>
       </div>

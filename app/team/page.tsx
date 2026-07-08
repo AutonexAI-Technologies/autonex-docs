@@ -48,7 +48,7 @@ const ROLE_ACCESS: Record<string, { label: string; color: string }> = {
   'Head': { label: 'Dept. Access', color: 'text-emerald-400' },
   'Senior': { label: 'Read + Write', color: 'text-teal-400' },
   'Junior': { label: 'Read + Limited', color: 'text-amber-400' },
-  'Intern': { label: 'Read Only', color: 'text-slate-400' },
+  'Intern': { label: 'Read Only', color: 'text-[var(--text-tertiary)]' },
 }
 const statusBadge: Record<string, string> = {
   active: 'badge badge-green', invited: 'badge badge-yellow', inactive: 'badge badge-slate',
@@ -67,11 +67,11 @@ function RemoveModal({ member, onConfirm, onCancel, loading }: {
         <div className="w-14 h-14 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center mb-4 mx-auto">
           <AlertTriangle className="w-6 h-6 text-red-500" />
         </div>
-        <h3 className="text-slate-900 font-bold text-center text-lg mb-1">Remove Member?</h3>
-        <p className="text-slate-500 text-sm text-center mb-1"><span className="text-slate-900 font-semibold">{member.name}</span> will lose all access immediately.</p>
-        <p className="text-slate-400 text-xs text-center mb-6">{member.email}</p>
+        <h3 className="text-[var(--text-primary)] font-bold text-center text-lg mb-1">Remove Member?</h3>
+        <p className="text-[var(--text-tertiary)] text-sm text-center mb-1"><span className="text-[var(--text-primary)] font-semibold">{member.name}</span> will lose all access immediately.</p>
+        <p className="text-[var(--text-tertiary)] text-xs text-center mb-6">{member.email}</p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 h-11 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium">Cancel</button>
+          <button onClick={onCancel} className="flex-1 h-11 rounded-xl border border-slate-200 text-[var(--text-secondary)] hover:bg-slate-50 transition-colors text-sm font-medium">Cancel</button>
           <button onClick={onConfirm} disabled={loading}
             className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Trash2 className="w-4 h-4" />Remove</>}
@@ -87,7 +87,7 @@ const TEAM_ROLES = [
   { value: 'head', label: 'Head', color: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-400' },
   { value: 'senior', label: 'Senior', color: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-400' },
   { value: 'junior', label: 'Junior', color: 'bg-violet-50 text-violet-700 border-violet-200', dot: 'bg-violet-400' },
-  { value: 'intern', label: 'Intern', color: 'bg-slate-50 text-slate-600 border-slate-200', dot: 'bg-slate-400' },
+  { value: 'intern', label: 'Intern', color: 'bg-slate-50 text-[var(--text-secondary)] border-slate-200', dot: 'bg-slate-400' },
 ]
 
 function getRoleBadge(role?: string | null, isLead?: boolean) {
@@ -108,7 +108,7 @@ function getCapacityBadge(capacity?: { active_projects: number; status: string }
   const { active_projects, status } = capacity
   const dot = status === 'available' ? 'bg-green-400' : status === 'busy' ? 'bg-amber-400' : 'bg-slate-300'
   return (
-    <span className="flex items-center gap-1 text-[10px] text-slate-400">
+    <span className="flex items-center gap-1 text-[10px] text-[var(--text-tertiary)]">
       <span className={`w-1.5 h-1.5 rounded-full ${dot} shrink-0`} />
       {active_projects} proj
     </span>
@@ -200,8 +200,8 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
           <Building2 className="w-4 h-4" style={{ color: team.color }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate">{team.name}</p>
-          <div className="flex items-center gap-2 text-[10px] text-slate-500">
+          <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{team.name}</p>
+          <div className="flex items-center gap-2 text-[10px] text-[var(--text-tertiary)]">
             <span>{team.team_memberships.length} member{team.team_memberships.length !== 1 ? 's' : ''}</span>
             {team.client_count !== undefined && <><span>·</span><span>{team.client_count} client{team.client_count !== 1 ? 's' : ''}</span></>}
           </div>
@@ -209,11 +209,11 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
         <div className="flex items-center gap-2">
           {canManage && (
             <button onClick={e => { e.stopPropagation(); onDelete(team.id) }}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+              className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-red-500 hover:bg-red-50 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
-          {expanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
+          {expanded ? <ChevronDown className="w-4 h-4 text-[var(--text-tertiary)]" /> : <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)]" />}
         </div>
       </div>
 
@@ -224,7 +224,7 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
             className="border-t border-slate-100 overflow-hidden">
             <div className="px-4 py-3 space-y-2">
               {team.team_memberships.length === 0 ? (
-                <p className="text-xs text-slate-400 py-2 text-center">No members yet</p>
+                <p className="text-xs text-[var(--text-tertiary)] py-2 text-center">No members yet</p>
               ) : (
                 team.team_memberships.map(tm => (
                   <div key={tm.id} className="flex items-center gap-2.5 group">
@@ -232,8 +232,8 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                       <span className="text-blue-600 font-bold text-[10px]">{tm.team_members.name.charAt(0).toUpperCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-900 truncate">{tm.team_members.name}</p>
-                      <p className="text-[10px] text-slate-400 truncate">{tm.team_members.email}</p>
+                      <p className="text-xs font-medium text-[var(--text-primary)] truncate">{tm.team_members.name}</p>
+                      <p className="text-[10px] text-[var(--text-tertiary)] truncate">{tm.team_members.email}</p>
                     </div>
                     {/* Role badge */}
                     {getRoleBadge((tm as any).role, tm.is_lead)}
@@ -241,7 +241,7 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                     {getCapacityBadge((tm.team_members as any).team_member_capacity?.[0] ?? null)}
                     {canManage && (
                       <button onClick={() => removeMember(tm.team_members.id)}
-                        className="p-1 rounded text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                        className="p-1 rounded text-[var(--text-secondary)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
                         <X className="w-3 h-3" />
                       </button>
                     )}
@@ -255,7 +255,7 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                   {addingMember ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-2 border-t border-slate-100 space-y-2">
                       <select value={selectedMemberId} onChange={e => setSelectedMemberId(e.target.value)}
-                        className="w-full h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:border-blue-400">
+                        className="w-full h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-[var(--text-primary)] focus:outline-none focus:border-blue-400">
                         <option value="">Select member…</option>
                         {available.map(m => <option key={m.id} value={m.id}>{m.name} · {m.role_name || 'No role'}</option>)}
                       </select>
@@ -266,7 +266,7 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                             onClick={() => setSelectedRole(r.value)}
                             className={`flex-1 h-7 rounded-lg border text-[10px] font-semibold transition-all ${selectedRole === r.value
                                 ? r.color + ' border-current shadow-sm'
-                                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
+                                : 'bg-slate-50 text-[var(--text-tertiary)] border-slate-200 hover:border-slate-300'
                               }`}>
                             {r.value === 'head' && '👑 '}{r.label}
                           </button>
@@ -278,12 +278,12 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                           {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Add as {selectedRole}
                         </button>
                         <button onClick={() => { setAddingMember(false); setSelectedMemberId(''); setSelectedRole('junior') }}
-                          className="px-3 h-7 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Cancel</button>
+                          className="px-3 h-7 rounded-lg border border-slate-200 text-[var(--text-tertiary)] text-xs hover:bg-slate-50">Cancel</button>
                       </div>
                     </motion.div>
                   ) : (
                     <button onClick={() => setAddingMember(true)}
-                      className="w-full flex items-center justify-center gap-1.5 h-7 rounded-lg border border-dashed border-slate-300 text-xs text-slate-400 hover:text-blue-600 hover:border-blue-400 transition-colors mt-1">
+                      className="w-full flex items-center justify-center gap-1.5 h-7 rounded-lg border border-dashed border-slate-300 text-xs text-[var(--text-tertiary)] hover:text-blue-600 hover:border-blue-400 transition-colors mt-1">
                       <Plus className="w-3 h-3" />Add Member
                     </button>
                   )}
@@ -294,9 +294,9 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                 <AnimatePresence>
                   {addingClient ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pt-2 border-t border-slate-100 space-y-2">
-                      <p className="text-[10px] text-slate-500 font-semibold uppercase">Assign Client</p>
+                      <p className="text-[10px] text-[var(--text-tertiary)] font-semibold uppercase">Assign Client</p>
                       <select value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)}
-                        className="w-full h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:border-emerald-400">
+                        className="w-full h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-[var(--text-primary)] focus:outline-none focus:border-emerald-400">
                         <option value="">Select client…</option>
                         {allClients.map(c => (
                           <option key={c.id} value={c.id}>{c.name}{c.company ? ` — ${c.company}` : ''}</option>
@@ -308,7 +308,7 @@ function TeamCard({ team, allMembers, allClients, canManage, onDelete, onRefresh
                           {savingClient ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}Assign
                         </button>
                         <button onClick={() => { setAddingClient(false); setSelectedClientId('') }}
-                          className="px-3 h-7 rounded-lg border border-slate-200 text-slate-500 text-xs hover:bg-slate-50">Cancel</button>
+                          className="px-3 h-7 rounded-lg border border-slate-200 text-[var(--text-tertiary)] text-xs hover:bg-slate-50">Cancel</button>
                       </div>
                     </motion.div>
                   ) : (
@@ -430,7 +430,7 @@ export default function TeamPage() {
 
   const active = members.filter(m => m.status === 'active').length
   const invited = members.filter(m => m.status === 'invited').length
-  const inputCls = 'w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-blue-500 transition-colors'
+  const inputCls = 'w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm focus:outline-none focus:border-blue-500 transition-colors'
 
   // Group teams by department
   const deptMap = new Map<string, { name: string; teams: Team[] }>()
@@ -456,12 +456,12 @@ export default function TeamPage() {
           className="flex items-center justify-between flex-wrap gap-4 mb-6">
           <div>
             <h1 className="page-header">Team Management</h1>
-            <p className="text-slate-500 text-sm mt-1">{active} active · {invited} pending · {teams.length} team{teams.length !== 1 ? 's' : ''}</p>
+            <p className="text-[var(--text-tertiary)] text-sm mt-1">{active} active · {invited} pending · {teams.length} team{teams.length !== 1 ? 's' : ''}</p>
           </div>
           {canManage && (
             <div className="flex gap-2">
               <button onClick={() => { setShowNewTeam(v => !v); setShowInvite(false); setActiveTab('teams') }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:border-blue-400 text-slate-700 text-sm font-medium rounded-xl transition-colors">
+                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:border-blue-400 text-[var(--text-secondary)] text-sm font-medium rounded-xl transition-colors">
                 <Plus className="w-4 h-4" />New Team
               </button>
               <Button onClick={() => { setShowInvite(v => !v); setShowNewTeam(false); setActiveTab('members') }}
@@ -487,7 +487,7 @@ export default function TeamPage() {
               </div>
               <div>
                 <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                <p className="text-xs text-slate-500">{s.label}</p>
+                <p className="text-xs text-[var(--text-tertiary)]">{s.label}</p>
               </div>
             </motion.div>
           ))}
@@ -497,7 +497,7 @@ export default function TeamPage() {
         <div className="flex gap-1 mb-6 bg-slate-100 rounded-xl p-1 w-fit">
           {(['members', 'teams'] as const).map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}>
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab ? 'bg-white shadow text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}>
               {tab === 'members' ? '👥 Members' : '🏢 Teams'}
             </button>
           ))}
@@ -511,24 +511,24 @@ export default function TeamPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-slate-900 font-semibold">Invite New Member</h3>
-                    <p className="text-slate-500 text-xs mt-0.5">They'll receive an email with login credentials immediately.</p>
+                    <h3 className="text-[var(--text-primary)] font-semibold">Invite New Member</h3>
+                    <p className="text-[var(--text-tertiary)] text-xs mt-0.5">They'll receive an email with login credentials immediately.</p>
                   </div>
-                  <button onClick={() => setShowInvite(false)} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
+                  <button onClick={() => setShowInvite(false)} className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"><X className="w-4 h-4" /></button>
                 </div>
                 <form onSubmit={sendInvite} className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-600 text-xs mb-1.5 block">Full Name</label>
+                      <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Full Name</label>
                       <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Junaid" className={inputCls} />
                     </div>
                     <div>
-                      <label className="text-slate-600 text-xs mb-1.5 block">Email <span className="text-blue-600">*</span></label>
+                      <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Email <span className="text-blue-600">*</span></label>
                       <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="member@autonexai.org" required className={inputCls} />
                     </div>
                   </div>
                   <div>
-                    <label className="text-slate-600 text-xs mb-1.5 block">Role & Department</label>
+                    <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Role & Department</label>
                     <select value={form.role_id} onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))} className={inputCls}>
                       <option value="">Select role...</option>
                       {departments.map((dept: any) => dept.roles?.length > 0 && (
@@ -544,7 +544,7 @@ export default function TeamPage() {
                     <Button type="submit" disabled={inviting || !form.email} className="anx-gradient text-white h-10 px-6 rounded-xl hover:opacity-90 disabled:opacity-50">
                       {inviting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Sending...</> : '📧 Send Invite →'}
                     </Button>
-                    <Button type="button" variant="ghost" onClick={() => setShowInvite(false)} className="text-slate-500 h-10 px-4 rounded-xl">Cancel</Button>
+                    <Button type="button" variant="ghost" onClick={() => setShowInvite(false)} className="text-[var(--text-tertiary)] h-10 px-4 rounded-xl">Cancel</Button>
                   </div>
                 </form>
               </div>
@@ -560,19 +560,19 @@ export default function TeamPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-slate-900 font-semibold">Create New Team</h3>
-                    <p className="text-slate-500 text-xs mt-0.5">Give it a name and optionally link it to a department.</p>
+                    <h3 className="text-[var(--text-primary)] font-semibold">Create New Team</h3>
+                    <p className="text-[var(--text-tertiary)] text-xs mt-0.5">Give it a name and optionally link it to a department.</p>
                   </div>
-                  <button onClick={() => setShowNewTeam(false)} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
+                  <button onClick={() => setShowNewTeam(false)} className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"><X className="w-4 h-4" /></button>
                 </div>
                 <form onSubmit={createTeam} className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-600 text-xs mb-1.5 block">Team Name <span className="text-blue-600">*</span></label>
+                      <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Team Name <span className="text-blue-600">*</span></label>
                       <input type="text" value={teamForm.name} onChange={e => setTeamForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Design Squad Alpha" required className={inputCls} />
                     </div>
                     <div>
-                      <label className="text-slate-600 text-xs mb-1.5 block">Department (optional)</label>
+                      <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Department (optional)</label>
                       <select value={teamForm.department_id} onChange={e => setTeamForm(f => ({ ...f, department_id: e.target.value }))} className={inputCls}>
                         <option value="">No department</option>
                         {departments.map((d: any) => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -580,12 +580,12 @@ export default function TeamPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-slate-600 text-xs mb-1.5 block">Description (optional)</label>
+                    <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Description (optional)</label>
                     <input type="text" value={teamForm.description} onChange={e => setTeamForm(f => ({ ...f, description: e.target.value }))} placeholder="What does this team do?" className={inputCls} />
                   </div>
                   {/* Color picker */}
                   <div>
-                    <label className="text-slate-600 text-xs mb-1.5 block">Team Color</label>
+                    <label className="text-[var(--text-secondary)] text-xs mb-1.5 block">Team Color</label>
                     <div className="flex gap-2 flex-wrap">
                       {TEAM_COLORS.map(c => (
                         <button key={c} type="button" onClick={() => setTeamForm(f => ({ ...f, color: c }))}
@@ -598,7 +598,7 @@ export default function TeamPage() {
                     <Button type="submit" disabled={creatingTeam || !teamForm.name.trim()} className="bg-blue-600 hover:bg-blue-500 text-white h-10 px-6 rounded-xl disabled:opacity-50">
                       {creatingTeam ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Creating...</> : '✅ Create Team'}
                     </Button>
-                    <Button type="button" variant="ghost" onClick={() => setShowNewTeam(false)} className="text-slate-500 h-10 px-4 rounded-xl">Cancel</Button>
+                    <Button type="button" variant="ghost" onClick={() => setShowNewTeam(false)} className="text-[var(--text-tertiary)] h-10 px-4 rounded-xl">Cancel</Button>
                   </div>
                 </form>
               </div>
@@ -612,14 +612,14 @@ export default function TeamPage() {
             className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <div>
-                <h2 className="text-slate-900 font-semibold text-sm">Team Members</h2>
-                <p className="text-slate-500 text-xs">{members.length} member{members.length !== 1 ? 's' : ''}</p>
+                <h2 className="text-[var(--text-primary)] font-semibold text-sm">Team Members</h2>
+                <p className="text-[var(--text-tertiary)] text-xs">{members.length} member{members.length !== 1 ? 's' : ''}</p>
               </div>
-              <button onClick={loadMembers} className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-500 hover:text-blue-600 transition-colors">
+              <button onClick={loadMembers} className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-[var(--text-tertiary)] hover:text-blue-600 transition-colors">
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
-            <div className="hidden md:grid px-6 py-3 border-b border-slate-100 text-[10px] text-slate-500 uppercase tracking-wider"
+            <div className="hidden md:grid px-6 py-3 border-b border-slate-100 text-[10px] text-[var(--text-tertiary)] uppercase tracking-wider"
               style={{ gridTemplateColumns: '2fr 1fr 1fr 0.8fr 1fr 1fr' }}>
               <span>Member</span><span>Department</span><span>Role</span><span>Status</span><span>Joined</span><span className="text-right">Actions</span>
             </div>
@@ -627,8 +627,8 @@ export default function TeamPage() {
               <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 text-blue-500 animate-spin" /></div>
             ) : members.length === 0 ? (
               <div className="flex flex-col items-center py-16 text-center">
-                <Users className="w-8 h-8 text-slate-300 mb-3" />
-                <p className="text-slate-400 text-sm">No members yet — invite someone above</p>
+                <Users className="w-8 h-8 text-[var(--text-secondary)] mb-3" />
+                <p className="text-[var(--text-tertiary)] text-sm">No members yet — invite someone above</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
@@ -639,25 +639,25 @@ export default function TeamPage() {
                       <div className="hidden md:grid items-center px-6 py-4 hover:bg-slate-50 transition-colors" style={{ gridTemplateColumns: '2fr 1fr 1fr 0.8fr 1fr 1fr' }}>
                         <div className="flex items-center gap-3">
                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${m.status === 'invited' ? 'bg-amber-50 border border-amber-200 text-amber-600'
-                              : m.status === 'inactive' ? 'bg-slate-100 border border-slate-200 text-slate-400'
+                              : m.status === 'inactive' ? 'bg-slate-100 border border-slate-200 text-[var(--text-tertiary)]'
                                 : 'bg-blue-50 border border-blue-200 text-blue-600'}`}>
                             {m.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className={`text-sm font-medium ${m.status === 'inactive' ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{m.name}</p>
-                            <p className="text-slate-400 text-xs">{m.email}</p>
+                            <p className={`text-sm font-medium ${m.status === 'inactive' ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]'}`}>{m.name}</p>
+                            <p className="text-[var(--text-tertiary)] text-xs">{m.email}</p>
                           </div>
                         </div>
-                        <span className="text-slate-500 text-xs">{m.department_name || '—'}</span>
+                        <span className="text-[var(--text-tertiary)] text-xs">{m.department_name || '—'}</span>
                         <div>
-                          <p className="text-slate-700 text-xs">{m.role_name || '—'}</p>
+                          <p className="text-[var(--text-secondary)] text-xs">{m.role_name || '—'}</p>
                           {accessInfo && <p className={`text-[10px] ${accessInfo.color}`}>{accessInfo.label}</p>}
                         </div>
                         <span className={statusBadge[m.status] || 'badge badge-slate'}>{m.status}</span>
-                        <span className="text-slate-400 text-xs">{m.joined_at ? format(new Date(m.joined_at), 'dd MMM yyyy') : '—'}</span>
+                        <span className="text-[var(--text-tertiary)] text-xs">{m.joined_at ? format(new Date(m.joined_at), 'dd MMM yyyy') : '—'}</span>
                         <div className="flex items-center justify-end gap-2">
                           {canManage && (linkLoading === m.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                            <Loader2 className="w-4 h-4 animate-spin text-[var(--text-tertiary)]" />
                           ) : (
                             <>
                               <button onClick={() => sendLink(m)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors">
@@ -668,14 +668,14 @@ export default function TeamPage() {
                               </button>
                             </>
                           ))}
-                          {!canManage && <span className="text-slate-400 text-xs">View only</span>}
+                          {!canManage && <span className="text-[var(--text-tertiary)] text-xs">View only</span>}
                         </div>
                       </div>
                       {/* Mobile */}
                       <div className="md:hidden px-5 py-4 space-y-2">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-sm">{m.name.charAt(0).toUpperCase()}</div>
-                          <div><p className="text-slate-900 text-sm font-medium">{m.name}</p><p className="text-slate-400 text-xs">{m.email}</p></div>
+                          <div><p className="text-[var(--text-primary)] text-sm font-medium">{m.name}</p><p className="text-[var(--text-tertiary)] text-xs">{m.email}</p></div>
                           <span className={`ml-auto ${statusBadge[m.status]}`}>{m.status}</span>
                         </div>
                         {canManage && (
@@ -704,8 +704,8 @@ export default function TeamPage() {
               <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 text-blue-500 animate-spin" /></div>
             ) : teams.length === 0 ? (
               <div className="flex flex-col items-center py-20 text-center">
-                <Building2 className="w-10 h-10 text-slate-300 mb-3" />
-                <p className="text-slate-500 text-sm">No teams yet</p>
+                <Building2 className="w-10 h-10 text-[var(--text-secondary)] mb-3" />
+                <p className="text-[var(--text-tertiary)] text-sm">No teams yet</p>
                 {canManage && <button onClick={() => setShowNewTeam(true)} className="mt-2 text-blue-600 text-xs hover:underline">Create your first team</button>}
               </div>
             ) : (
@@ -714,9 +714,9 @@ export default function TeamPage() {
                 {Array.from(deptMap.entries()).map(([deptId, { name, teams: deptTeams }]) => (
                   <div key={deptId}>
                     <div className="flex items-center gap-2 mb-3">
-                      <Building2 className="w-4 h-4 text-slate-400" />
-                      <h3 className="text-sm font-semibold text-slate-700">{name}</h3>
-                      <span className="text-xs text-slate-400">({deptTeams.length} team{deptTeams.length !== 1 ? 's' : ''})</span>
+                      <Building2 className="w-4 h-4 text-[var(--text-tertiary)]" />
+                      <h3 className="text-sm font-semibold text-[var(--text-secondary)]">{name}</h3>
+                      <span className="text-xs text-[var(--text-tertiary)]">({deptTeams.length} team{deptTeams.length !== 1 ? 's' : ''})</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {deptTeams.map(t => (
@@ -730,8 +730,8 @@ export default function TeamPage() {
                 {unassigned.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-3">
-                      <Briefcase className="w-4 h-4 text-slate-400" />
-                      <h3 className="text-sm font-semibold text-slate-700">Other Teams</h3>
+                      <Briefcase className="w-4 h-4 text-[var(--text-tertiary)]" />
+                      <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Other Teams</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {unassigned.map(t => (
@@ -745,7 +745,7 @@ export default function TeamPage() {
           </motion.div>
         )}
 
-        <p className="text-slate-400 text-xs mt-6 text-center">🔒 Removed members lose access immediately · Re-invite anytime</p>
+        <p className="text-[var(--text-tertiary)] text-xs mt-6 text-center">🔒 Removed members lose access immediately · Re-invite anytime</p>
       </div>
     </>
   )

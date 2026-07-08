@@ -77,7 +77,7 @@ export default function RetainersPage() {
       >
         <div>
           <h1 className="page-header">Monthly Retainers</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">
             {active.length} active · ₹{totalMonthly.toLocaleString('en-IN')}/mo recurring
           </p>
         </div>
@@ -130,7 +130,7 @@ export default function RetainersPage() {
             transition={{ delay: i * 0.07 }}
             className={`stat-card border ${s.border}`}
           >
-            <p className="text-slate-400 text-sm mb-1">{s.label}</p>
+            <p className="text-[var(--text-tertiary)] text-sm mb-1">{s.label}</p>
             <p className={`text-2xl font-bold ${s.color} font-[Plus_Jakarta_Sans]`}>{s.value}</p>
           </motion.div>
         ))}
@@ -143,7 +143,7 @@ export default function RetainersPage() {
         transition={{ delay: 0.2 }}
         className="rounded-2xl border border-slate-200 bg-white overflow-hidden"
       >
-        <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
+        <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-200 text-xs text-[var(--text-tertiary)] uppercase tracking-wider">
           <span>Client</span>
           <span>Amount</span>
           <span>Cycle</span>
@@ -160,10 +160,10 @@ export default function RetainersPage() {
         ) : retainers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
-              <RefreshCw className="w-6 h-6 text-slate-600" />
+              <RefreshCw className="w-6 h-6 text-[var(--text-secondary)]" />
             </div>
             <p className="text-white font-medium">No retainers yet</p>
-            <p className="text-slate-500 text-sm mt-1">Set up a monthly retainer when adding a client</p>
+            <p className="text-[var(--text-tertiary)] text-sm mt-1">Set up a monthly retainer when adding a client</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -183,12 +183,12 @@ export default function RetainersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-6 py-4 hover:bg-slate-50 transition-colors group">
                     <div>
                       <p className="text-white text-sm font-medium">{clientName}</p>
-                      <p className="text-slate-500 text-xs">{(r as any).clients?.email}</p>
+                      <p className="text-[var(--text-tertiary)] text-xs">{(r as any).clients?.email}</p>
                     </div>
                     <p className="hidden md:block text-white font-semibold text-sm">
-                      ₹{r.amount.toLocaleString('en-IN')}<span className="text-slate-500 font-normal text-xs">/mo</span>
+                      ₹{r.amount.toLocaleString('en-IN')}<span className="text-[var(--text-tertiary)] font-normal text-xs">/mo</span>
                     </p>
-                    <span className="hidden md:block text-slate-400 text-xs capitalize">{r.billing_cycle}</span>
+                    <span className="hidden md:block text-[var(--text-tertiary)] text-xs capitalize">{r.billing_cycle}</span>
                     <span className={`hidden md:inline-flex ${statusStyle[r.status]}`}>{r.status}</span>
                     <div className="hidden md:block">
                       <p className={`text-xs font-medium ${isOverdue ? 'text-red-400' : isDue ? 'text-amber-400' : 'text-slate-300'}`}>
@@ -204,7 +204,7 @@ export default function RetainersPage() {
                         className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-all ${
                           (r as any).auto_invoice
                             ? 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100'
-                            : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600'
+                            : 'bg-slate-50 border-slate-200 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
                         }`}
                       >
                         {(r as any).auto_invoice

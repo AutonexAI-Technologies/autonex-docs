@@ -117,9 +117,9 @@ export default function SettingsPage() {
     setSaving(false)
   }
 
-  const inputClass = 'h-10 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:border-blue-500/50 text-sm'
-  const labelClass = 'text-slate-400 text-xs mb-1.5 block'
-  const iconInputClass = 'w-full h-11 pl-11 pr-4 bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-sm transition-all'
+  const inputClass = 'h-10 bg-white border-slate-200 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-xl focus:border-blue-500/50 text-sm'
+  const labelClass = 'text-[var(--text-tertiary)] text-xs mb-1.5 block'
+  const iconInputClass = 'w-full h-11 pl-11 pr-4 bg-white border border-slate-200 text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-sm transition-all'
 
   return (
     <div className="flex h-[calc(100vh-56px)]">
@@ -132,7 +132,7 @@ export default function SettingsPage() {
             className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
               active === section.id
                 ? 'bg-blue-500/10 text-blue-600 border-r-2 border-blue-500'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-slate-100'
             }`}
           >
             <section.icon className="w-4 h-4 shrink-0" />
@@ -148,14 +148,14 @@ export default function SettingsPage() {
           {/* ── Profile ── */}
           {active === 'profile' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">My Profile</h2>
-              <p className="text-slate-400 text-sm mb-6">Your personal details shown in the system.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">My Profile</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Your personal details shown in the system.</p>
               <div className="space-y-4">
                 {/* Full Name */}
                 <div>
                   <label className={labelClass}>Full Name</label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                     <input
                       value={profile.full_name}
                       onChange={e => setProfile(p => ({ ...p, full_name: e.target.value }))}
@@ -168,20 +168,20 @@ export default function SettingsPage() {
                 <div>
                   <label className={labelClass}>Email Address</label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                     <input
                       value={profile.email}
                       readOnly
                       className={iconInputClass + ' opacity-60 cursor-not-allowed'}
                     />
                   </div>
-                  <p className="text-slate-400 text-xs mt-1">Email cannot be changed here. Contact admin.</p>
+                  <p className="text-[var(--text-tertiary)] text-xs mt-1">Email cannot be changed here. Contact admin.</p>
                 </div>
                 {/* Phone */}
                 <div>
                   <label className={labelClass}>Phone</label>
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                     <input
                       value={profile.phone}
                       onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
@@ -202,13 +202,13 @@ export default function SettingsPage() {
 
               {/* Change Password */}
               <div className="mt-8 pt-6 border-t border-slate-200">
-                <h3 className="text-slate-900 font-semibold text-base mb-1">Change Password</h3>
-                <p className="text-slate-400 text-sm mb-4">Update your login password.</p>
+                <h3 className="text-[var(--text-primary)] font-semibold text-base mb-1">Change Password</h3>
+                <p className="text-[var(--text-tertiary)] text-sm mb-4">Update your login password.</p>
                 <div className="space-y-3">
                   <div>
                     <label className={labelClass}>New Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                       <input
                         type={showPw ? 'text' : 'password'}
                         value={pwForm.new_pw}
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => setShowPw(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
                       >
                         {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -229,7 +229,7 @@ export default function SettingsPage() {
                   <div>
                     <label className={labelClass}>Confirm Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
                       <input
                         type="password"
                         value={pwForm.confirm}
@@ -253,8 +253,8 @@ export default function SettingsPage() {
           )}
           {active === 'branding' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Branding</h2>
-              <p className="text-slate-400 text-sm mb-6">Appears on all generated PDFs and emails.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Branding</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Appears on all generated PDFs and emails.</p>
               <div className="space-y-4">
                 <div>
                   <label className={labelClass}>Company Name</label>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                 <div className="pt-2">
                   <label className={labelClass}>Logo (URL)</label>
                   <Input className={inputClass} placeholder="https://..." />
-                  <p className="text-slate-600 text-xs mt-1">High-res PNG recommended for PDF headers</p>
+                  <p className="text-[var(--text-secondary)] text-xs mt-1">High-res PNG recommended for PDF headers</p>
                 </div>
               </div>
             </motion.div>
@@ -280,15 +280,15 @@ export default function SettingsPage() {
           {/* Legal Details */}
           {active === 'legal' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Legal Details</h2>
-              <p className="text-slate-400 text-sm mb-6">Shown on invoices and contracts. Required for GST compliance.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Legal Details</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Shown on invoices and contracts. Required for GST compliance.</p>
               <div className="space-y-4">
                 <div>
                   <label className={labelClass}>Registered Address</label>
                   <textarea
                     value={legal.registered_address}
                     onChange={e => setLegal(p => ({ ...p, registered_address: e.target.value }))}
-                    className="w-full h-24 px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500/50 resize-none placeholder:text-slate-400"
+                    className="w-full h-24 px-3 py-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:border-blue-500/50 resize-none placeholder:text-[var(--text-tertiary)]"
                     placeholder="Registered address with city, state, PIN..."
                   />
                 </div>
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                     <Input value={legal.pan_number} onChange={e => setLegal(p => ({ ...p, pan_number: e.target.value }))} className={inputClass} placeholder="XXXXX1234X" />
                   </div>
                 </div>
-                <div className="px-4 py-3 rounded-xl border border-blue-500/15 bg-blue-500/5 text-xs text-slate-400">
+                <div className="px-4 py-3 rounded-xl border border-blue-500/15 bg-blue-500/5 text-xs text-[var(--text-tertiary)]">
                   ⚖️ Jurisdiction: Hyderabad, Telangana, India · Governed by Indian Contract Act, 1872 · IT Act, 2000
                 </div>
               </div>
@@ -312,8 +312,8 @@ export default function SettingsPage() {
           {/* Payment Details */}
           {active === 'payment' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Payment Details</h2>
-              <p className="text-slate-400 text-sm mb-6">Auto-fills on every invoice. Update once — applies everywhere.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Payment Details</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Auto-fills on every invoice. Update once — applies everywhere.</p>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -340,8 +340,8 @@ export default function SettingsPage() {
           {/* Email Config */}
           {active === 'email' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Email Configuration</h2>
-              <p className="text-slate-400 text-sm mb-6">Configure how emails appear to clients. Uses Resend.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Email Configuration</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Configure how emails appear to clients. Uses Resend.</p>
               <div className="space-y-4">
                 <div>
                   <label className={labelClass}>From Name</label>
@@ -356,7 +356,7 @@ export default function SettingsPage() {
                   <textarea
                     value={emailConfig.signature}
                     onChange={e => setEmailConfig(p => ({ ...p, signature: e.target.value }))}
-                    className="w-full h-24 px-3 py-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:outline-none focus:border-blue-500/50 resize-none placeholder:text-slate-400"
+                    className="w-full h-24 px-3 py-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:border-blue-500/50 resize-none placeholder:text-[var(--text-tertiary)]"
                     placeholder="Best regards,&#10;Team Autonex AI"
                   />
                 </div>
@@ -367,20 +367,20 @@ export default function SettingsPage() {
           {/* Service Rates */}
           {active === 'services' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Default Service Rates</h2>
-              <p className="text-slate-400 text-sm mb-2">Changes apply to future clients only. Existing clients are unaffected.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Default Service Rates</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-2">Changes apply to future clients only. Existing clients are unaffected.</p>
               <div className="mb-6 px-4 py-2.5 rounded-xl border border-amber-500/15 bg-amber-500/5 text-amber-400 text-xs">
                 ⚠️ Each client's rate can be overridden individually during intake. These are just defaults.
               </div>
               <div className="rounded-xl border border-slate-200 overflow-hidden">
-                <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 bg-white/[0.02] border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider">
+                <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 bg-white/[0.02] border-b border-slate-200 text-xs text-[var(--text-tertiary)] uppercase tracking-wider">
                   <span>Service</span>
                   <span>Setup Fee (₹)</span>
                   <span>Monthly Retainer (₹)</span>
                 </div>
                 {serviceRates.map((svc, i) => (
                   <div key={svc.id} className="grid grid-cols-[2fr_1fr_1fr] gap-4 items-center px-4 py-3 border-b border-slate-100 last:border-0">
-                    <span className="text-slate-300 text-sm flex items-center gap-2">
+                    <span className="text-[var(--text-secondary)] text-sm flex items-center gap-2">
                       <span>{svc.emoji}</span>
                       <span className="truncate">{svc.name}</span>
                     </span>
@@ -388,13 +388,13 @@ export default function SettingsPage() {
                       type="number"
                       value={svc.setup_fee}
                       onChange={e => setServiceRates(prev => prev.map((s, idx) => idx === i ? { ...s, setup_fee: Number(e.target.value) } : s))}
-                      className="h-8 px-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:outline-none focus:border-blue-500/50 w-full"
+                      className="h-8 px-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-lg focus:outline-none focus:border-blue-500/50 w-full"
                     />
                     <input
                       type="number"
                       value={svc.retainer_fee}
                       onChange={e => setServiceRates(prev => prev.map((s, idx) => idx === i ? { ...s, retainer_fee: Number(e.target.value) } : s))}
-                      className="h-8 px-2.5 bg-white border border-slate-200 text-slate-900 text-sm rounded-lg focus:outline-none focus:border-blue-500/50 w-full"
+                      className="h-8 px-2.5 bg-white border border-slate-200 text-[var(--text-primary)] text-sm rounded-lg focus:outline-none focus:border-blue-500/50 w-full"
                     />
                   </div>
                 ))}
@@ -405,19 +405,19 @@ export default function SettingsPage() {
           {/* Security */}
           {active === 'security' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Security</h2>
-              <p className="text-slate-400 text-sm mb-6">Manage your session and password.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Security</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Manage your session and password.</p>
               <div className="space-y-4">
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-slate-900 text-sm font-medium mb-1">Change Password</p>
-                  <p className="text-slate-500 text-xs mb-4">A reset link will be sent to your registered email.</p>
-                  <Button variant="outline" className="border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-sm h-9 px-4 rounded-xl">
+                  <p className="text-[var(--text-primary)] text-sm font-medium mb-1">Change Password</p>
+                  <p className="text-[var(--text-tertiary)] text-xs mb-4">A reset link will be sent to your registered email.</p>
+                  <Button variant="outline" className="border-slate-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-100 text-sm h-9 px-4 rounded-xl">
                     Send Reset Link
                   </Button>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-slate-900 text-sm font-medium mb-1">Active Sessions</p>
-                  <p className="text-slate-500 text-xs mb-4">You are currently signed in on this device.</p>
+                  <p className="text-[var(--text-primary)] text-sm font-medium mb-1">Active Sessions</p>
+                  <p className="text-[var(--text-tertiary)] text-xs mb-4">You are currently signed in on this device.</p>
                   <Button variant="outline" className="border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/5 text-sm h-9 px-4 rounded-xl">
                     Sign Out All Devices
                   </Button>
@@ -429,8 +429,8 @@ export default function SettingsPage() {
           {/* Notifications in settings */}
           {active === 'notifications' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <h2 className="text-slate-900 font-bold text-lg mb-1">Notification Preferences</h2>
-              <p className="text-slate-400 text-sm mb-6">Per-user control. These are your personal preferences.</p>
+              <h2 className="text-[var(--text-primary)] font-bold text-lg mb-1">Notification Preferences</h2>
+              <p className="text-[var(--text-tertiary)] text-sm mb-6">Per-user control. These are your personal preferences.</p>
               <div className="rounded-xl border border-slate-200 overflow-hidden">
                 {[
                   'New client added',
@@ -440,13 +440,13 @@ export default function SettingsPage() {
                   'New team member joined',
                 ].map(pref => (
                   <div key={pref} className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 last:border-0">
-                    <span className="text-slate-300 text-sm">{pref}</span>
+                    <span className="text-[var(--text-secondary)] text-sm">{pref}</span>
                     <div className="flex gap-4">
-                      <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] cursor-pointer">
                         <input type="checkbox" defaultChecked className="accent-blue-500" />
                         In-app
                       </label>
-                      <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] cursor-pointer">
                         <input type="checkbox" defaultChecked className="accent-blue-500" />
                         Email
                       </label>

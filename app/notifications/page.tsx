@@ -60,7 +60,7 @@ export default function NotificationsPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between flex-wrap gap-4 mb-8">
         <div>
           <h1 className="page-header">Notifications</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">
             {loading ? 'Loading...' : unread > 0 ? `${unread} unread notification${unread > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
             onClick={markAllRead}
             disabled={marking}
             variant="ghost"
-            className="text-slate-400 hover:text-white gap-2 h-9 px-4 rounded-xl border border-slate-200"
+            className="text-[var(--text-tertiary)] hover:text-white gap-2 h-9 px-4 rounded-xl border border-slate-200"
           >
             {marking ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
             Mark all read
@@ -85,10 +85,10 @@ export default function NotificationsPage() {
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
-            <Bell className="w-6 h-6 text-slate-600" />
+            <Bell className="w-6 h-6 text-[var(--text-secondary)]" />
           </div>
           <p className="text-white font-medium">No notifications yet</p>
-          <p className="text-slate-500 text-sm mt-1">Activity and alerts will appear here</p>
+          <p className="text-[var(--text-tertiary)] text-sm mt-1">Activity and alerts will appear here</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -113,9 +113,9 @@ export default function NotificationsPage() {
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                     )}
                   </div>
-                  <p className="text-slate-400 text-xs mt-0.5">{notif.message}</p>
+                  <p className="text-[var(--text-tertiary)] text-xs mt-0.5">{notif.message}</p>
                 </div>
-                <span className="text-slate-600 text-xs shrink-0">
+                <span className="text-[var(--text-secondary)] text-xs shrink-0">
                   {format(new Date(notif.created_at), 'dd MMM, HH:mm')}
                 </span>
               </motion.div>
@@ -143,14 +143,14 @@ export default function NotificationsPage() {
             <div key={pref.label} className="flex items-center justify-between py-2.5 border-b border-slate-200 last:border-0">
               <div>
                 <p className="text-white text-sm">{pref.label}</p>
-                <p className="text-slate-500 text-xs">{pref.desc}</p>
+                <p className="text-[var(--text-tertiary)] text-xs">{pref.desc}</p>
               </div>
               <div className="flex gap-2">
-                <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                <label className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] cursor-pointer">
                   <input type="checkbox" defaultChecked className="accent-blue-500 w-3.5 h-3.5 rounded" />
                   In-app
                 </label>
-                <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                <label className="flex items-center gap-1.5 text-xs text-[var(--text-tertiary)] cursor-pointer">
                   <input type="checkbox" defaultChecked className="accent-blue-500 w-3.5 h-3.5 rounded" />
                   Email
                 </label>

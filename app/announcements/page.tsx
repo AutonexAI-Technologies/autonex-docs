@@ -162,7 +162,7 @@ export default function AnnouncementsPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">Announcements</h1>
-                <p className="text-xs text-slate-500">Company-wide & department updates</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Company-wide & department updates</p>
               </div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function AnnouncementsPage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap border transition-all ${
                   deptFilter === id
                     ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/[0.15]'
+                    : 'border-white/[0.08] text-[var(--text-tertiary)] hover:text-slate-200 hover:border-white/[0.15]'
                 }`}
                 style={deptFilter !== id ? { background: 'rgba(255,255,255,0.04)' } : {}}
               >
@@ -228,7 +228,7 @@ export default function AnnouncementsPage() {
                   </div>
                   <p className="text-sm font-bold text-white">New Announcement</p>
                 </div>
-                <button onClick={() => setShowNew(false)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-slate-500 hover:text-slate-300 transition-colors">
+                <button onClick={() => setShowNew(false)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -239,7 +239,7 @@ export default function AnnouncementsPage() {
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   placeholder="Announcement title…"
-                  className="w-full text-base font-semibold text-white placeholder:text-slate-600 bg-transparent outline-none border-b border-white/[0.08] pb-3"
+                  className="w-full text-base font-semibold text-white placeholder:text-[var(--text-secondary)] bg-transparent outline-none border-b border-white/[0.08] pb-3"
                 />
 
                 {/* Content */}
@@ -248,7 +248,7 @@ export default function AnnouncementsPage() {
                   onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
                   placeholder="Write your announcement… You can use plain text."
                   rows={5}
-                  className="w-full text-sm text-slate-300 placeholder:text-slate-600 bg-transparent outline-none resize-none leading-relaxed"
+                  className="w-full text-sm text-[var(--text-secondary)] placeholder:text-[var(--text-secondary)] bg-transparent outline-none resize-none leading-relaxed"
                 />
 
                 {/* Bottom controls */}
@@ -259,7 +259,7 @@ export default function AnnouncementsPage() {
                       value={form.department_id}
                       onChange={e => setForm(f => ({ ...f, department_id: e.target.value }))}
                       disabled={isHead}
-                      className="h-8 px-3 rounded-lg text-[12px] text-slate-300 outline-none border border-white/[0.09] transition-all"
+                      className="h-8 px-3 rounded-lg text-[12px] text-[var(--text-secondary)] outline-none border border-white/[0.09] transition-all"
                       style={{ background: 'rgba(255,255,255,0.05)' }}
                     >
                       <option value="">🌐 Everyone</option>
@@ -274,7 +274,7 @@ export default function AnnouncementsPage() {
                       className={`flex items-center gap-1.5 h-8 px-3 rounded-lg text-[11px] font-semibold border transition-all ${
                         form.pinned
                           ? 'bg-blue-600/20 text-blue-400 border-blue-500/30'
-                          : 'text-slate-500 border-white/[0.08] hover:text-slate-300'
+                          : 'text-[var(--text-tertiary)] border-white/[0.08] hover:text-[var(--text-secondary)]'
                       }`}
                       style={!form.pinned ? { background: 'rgba(255,255,255,0.04)' } : {}}
                     >
@@ -310,11 +310,11 @@ export default function AnnouncementsPage() {
           >
             <div className="w-14 h-14 rounded-2xl border border-white/[0.08] flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <Megaphone className="w-6 h-6 text-slate-600" />
+              <Megaphone className="w-6 h-6 text-[var(--text-secondary)]" />
             </div>
             <div className="text-center">
-              <p className="text-slate-400 font-medium mb-1">No announcements yet</p>
-              <p className="text-slate-600 text-sm">Important updates will appear here.</p>
+              <p className="text-[var(--text-tertiary)] font-medium mb-1">No announcements yet</p>
+              <p className="text-[var(--text-secondary)] text-sm">Important updates will appear here.</p>
             </div>
             {canPost && (
               <button onClick={() => setShowNew(true)}
@@ -341,7 +341,7 @@ export default function AnnouncementsPage() {
                 {regularList.length > 0 && (
                   <div className="flex items-center gap-3 my-5">
                     <div className="flex-1 h-px bg-white/[0.06]" />
-                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Recent</span>
+                    <span className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Recent</span>
                     <div className="flex-1 h-px bg-white/[0.06]" />
                   </div>
                 )}
@@ -398,9 +398,9 @@ function AnnouncementCard({ a, i, canPost, onPin, onDelete }: {
               <h3 className="text-sm font-bold text-white truncate">{a.title}</h3>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[11px] font-medium text-slate-400">{a.author_name}</span>
-              <span className="text-slate-600">·</span>
-              <span className="text-[11px] text-slate-500 flex items-center gap-1">
+              <span className="text-[11px] font-medium text-[var(--text-tertiary)]">{a.author_name}</span>
+              <span className="text-[var(--text-secondary)]">·</span>
+              <span className="text-[11px] text-[var(--text-tertiary)] flex items-center gap-1">
                 <Clock className="w-2.5 h-2.5" />
                 {timeAgo(a.created_at)}
               </span>
@@ -417,7 +417,7 @@ function AnnouncementCard({ a, i, canPost, onPin, onDelete }: {
               {a.departments.name}
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-white/[0.08] text-slate-500 font-semibold"
+            <span className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-white/[0.08] text-[var(--text-tertiary)] font-semibold"
               style={{ background: 'rgba(255,255,255,0.04)' }}>
               <Globe className="w-2.5 h-2.5" />
               Company
@@ -433,14 +433,14 @@ function AnnouncementCard({ a, i, canPost, onPin, onDelete }: {
                 className={`p-1.5 rounded-lg transition-colors ${
                   a.pinned
                     ? 'text-blue-400 hover:bg-blue-500/10'
-                    : 'text-slate-600 hover:text-slate-300 hover:bg-white/[0.06]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-secondary)] hover:bg-white/[0.06]'
                 }`}
               >
                 <Pin className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(a.id)}
-                className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -450,7 +450,7 @@ function AnnouncementCard({ a, i, canPost, onPin, onDelete }: {
       </div>
 
       {/* Content */}
-      <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap pl-11">
+      <p className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap pl-11">
         {preview}
       </p>
       {isLong && (

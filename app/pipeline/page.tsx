@@ -31,12 +31,12 @@ interface PipelineClient {
 // ── Column Config ─────────────────────────────────────────────────────────────
 
 const COLUMNS = [
-  { key: 'lead' as PipelineStatus, label: 'Lead', icon: Users, color: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-200' },
-  { key: 'proposal_sent' as PipelineStatus, label: 'Proposal Sent', icon: FileText, color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-200' },
-  { key: 'contract_signed' as PipelineStatus, label: 'Contract Signed', icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
-  { key: 'active' as PipelineStatus, label: 'Active', icon: Zap, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-  { key: 'review' as PipelineStatus, label: 'In Review', icon: Eye, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-  { key: 'completed' as PipelineStatus, label: 'Completed', icon: TrendingUp, color: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-200' },
+  { key: 'lead' as PipelineStatus, label: 'Lead', icon: Users, accent: '#6E6E73', accentBg: 'rgba(110,110,115,0.1)' },
+  { key: 'proposal_sent' as PipelineStatus, label: 'Proposal Sent', icon: FileText, accent: '#5856D6', accentBg: 'rgba(88,86,214,0.1)' },
+  { key: 'contract_signed' as PipelineStatus, label: 'Contract Signed', icon: CheckCircle2, accent: '#0071E3', accentBg: 'rgba(0,113,227,0.1)' },
+  { key: 'active' as PipelineStatus, label: 'Active', icon: Zap, accent: '#30D158', accentBg: 'rgba(48,209,88,0.1)' },
+  { key: 'review' as PipelineStatus, label: 'In Review', icon: Eye, accent: '#FF9F0A', accentBg: 'rgba(255,159,10,0.1)' },
+  { key: 'completed' as PipelineStatus, label: 'Completed', icon: TrendingUp, accent: '#34AADC', accentBg: 'rgba(52,170,220,0.1)' },
 ]
 
 function serviceInitials(service: string) {
@@ -68,17 +68,23 @@ function ClientCard({ client, onDragStart, onDelete, viewOnly }: {
       exit={{ opacity: 0, scale: 0.95 }}
       draggable={!viewOnly}
       onDragStart={() => !viewOnly && onDragStart(client.id)}
-      className={`group bg-white border border-slate-200 rounded-xl p-3.5 transition-all duration-200 hover:border-blue-300 hover:shadow-md shadow-sm ${viewOnly ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
+      className="card p-3.5"
+      style={{
+        cursor: viewOnly ? 'default' : 'grab',
+        transition: 'box-shadow 0.15s, transform 0.15s',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-md)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = ''; (e.currentTarget as HTMLDivElement).style.transform = '' }}
     >
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shrink-0">
-            <span className="text-[9px] font-bold text-white">{serviceInitials(client.service_type || 'CU')}</span>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'var(--accent-light)' }}>
+            <span className="text-[9px] font-bold" style={{ color: 'var(--accent)' }}>{serviceInitials(client.service_type || 'CU')}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-slate-900 truncate leading-tight">{client.name}</p>
+            <p className="text-[13px] font-semibold truncate leading-tight" style={{ color: 'var(--text-primary)' }}>{client.name}</p>
             {client.company && (
-              <p className="text-[10px] text-slate-500 truncate flex items-center gap-1">
+              <p className="text-[10px] truncate flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
                 <Building2 className="w-2.5 h-2.5 shrink-0" />{client.company}
               </p>
             )}
@@ -86,25 +92,31 @@ function ClientCard({ client, onDragStart, onDelete, viewOnly }: {
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
           <Link href={`/clients/${client.id}`} onClick={e => e.stopPropagation()}
-            className="p-1 rounded-md hover:bg-blue-50 transition-colors">
-            <ExternalLink className="w-3 h-3 text-blue-500" />
+            className="p-1 rounded-md transition-colors"
+            style={{ color: 'var(--accent)' }}
+            onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--accent-light)'}
+            onMouseLeave={(e: any) => e.currentTarget.style.background = 'transparent'}>
+            <ExternalLink className="w-3 h-3" />
           </Link>
           {!viewOnly && (
             <button
               onClick={e => { e.stopPropagation(); onDelete(client.id) }}
               title="Remove from pipeline"
-              className="p-1 rounded-md hover:bg-amber-50 text-slate-300 hover:text-amber-500 transition-colors">
+              className="p-1 rounded-md transition-colors"
+              style={{ color: 'var(--text-tertiary)' }}
+              onMouseEnter={(e: any) => { e.currentTarget.style.color = 'var(--error)'; e.currentTarget.style.background = 'var(--error-bg)' }}
+              onMouseLeave={(e: any) => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent' }}>
               <X className="w-3 h-3" />
             </button>
           )}
         </div>
       </div>
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="badge badge-blue text-[10px]">{client.service_type || 'Custom'}</span>
+        <span className="badge badge-blue">{client.service_type || 'Custom'}</span>
       </div>
-      <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-        <span className="text-[10px] text-slate-400">{timeAgo(client.created_at)}</span>
-        <span className="text-[10px] text-slate-400 truncate max-w-[120px]">{client.email}</span>
+      <div className="mt-2.5 pt-2.5 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
+        <span className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>{timeAgo(client.created_at)}</span>
+        <span className="text-[10px] truncate max-w-[120px]" style={{ color: 'var(--text-tertiary)' }}>{client.email}</span>
       </div>
     </motion.div>
   )
@@ -125,29 +137,36 @@ function KanbanColumn({ col, clients, onDragStart, onDrop, isOver, onDragOver, o
   const Icon = col.icon
   return (
     <div
-      className={`flex flex-col min-w-[260px] w-[260px] shrink-0 rounded-2xl border transition-all duration-200 ${isOver && !viewOnly ? 'border-blue-400 bg-blue-50/50 shadow-lg shadow-blue-100' : 'border-slate-200 bg-slate-50'
-        }`}
+      className="flex flex-col min-w-[256px] w-[256px] shrink-0 rounded-xl overflow-hidden"
+      style={{
+        border: isOver && !viewOnly ? `2px solid ${col.accent}` : '1px solid var(--border)',
+        background: isOver && !viewOnly ? col.accentBg : 'var(--surface-2)',
+        boxShadow: isOver && !viewOnly ? `0 4px 24px ${col.accent}22` : 'none',
+        transition: 'all 0.15s',
+      }}
       onDragOver={e => { if (!viewOnly) { e.preventDefault(); onDragOver() } }}
       onDrop={e => { if (!viewOnly) { e.preventDefault(); onDrop(col.key) } }}
     >
-      <div className="px-3.5 py-3 border-b border-slate-200 flex items-center justify-between bg-white rounded-t-2xl">
+      <div className="px-3.5 py-3 flex items-center justify-between" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-2">
-          <div className={`w-6 h-6 rounded-md ${col.bg} border ${col.border} flex items-center justify-center`}>
-            <Icon className={`w-3 h-3 ${col.color}`} />
+          <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: col.accentBg }}>
+            <Icon className="w-3 h-3" style={{ color: col.accent }} />
           </div>
-          <span className="text-sm font-semibold text-slate-900">{col.label}</span>
+          <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>{col.label}</span>
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${col.bg} ${col.color}`}>{clients.length}</span>
+        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: col.accentBg, color: col.accent }}>
+          {clients.length}
+        </span>
       </div>
-      <div className="flex-1 p-2.5 space-y-2.5 min-h-[120px] overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin">
+      <div className="flex-1 p-2.5 space-y-2.5 min-h-[120px] overflow-y-auto max-h-[calc(100vh-190px)] scrollbar-thin">
         <AnimatePresence>
           {clients.map(c => (
             <ClientCard key={c.id} client={c} onDragStart={onDragStart} onDelete={onDelete} viewOnly={viewOnly} />
           ))}
         </AnimatePresence>
         {clients.length === 0 && (
-          <div className="h-20 flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white">
-            <p className="text-[11px] text-slate-400">{viewOnly ? 'No clients' : 'Drop here'}</p>
+          <div className="h-20 flex items-center justify-center rounded-lg" style={{ border: '1.5px dashed var(--border-strong)' }}>
+            <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{viewOnly ? 'No clients' : 'Drop here'}</p>
           </div>
         )}
       </div>
@@ -402,55 +421,56 @@ export default function PipelinePage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-200">
-        <div className="flex items-center justify-between">
+      <div className="px-6 py-5 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="page-header flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-blue-600" />
+            <h1 className="flex items-center gap-2 text-[20px] font-bold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
+              <Briefcase className="w-5 h-5" style={{ color: 'var(--accent)' }} />
               Pipeline
-              {viewOnly && <span className="text-xs font-normal text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">View Only</span>}
+              {viewOnly && <span className="badge badge-yellow">View Only</span>}
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              {viewOnly ? 'Track project stages' : 'Drag clients between stages · use Move to Stage for quick reassignment'}
+            <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+              {viewOnly ? 'Track project stages' : 'Drag clients between stages · use Move to Stage for quick assignment'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {/* Stats */}
-            <div className="hidden sm:flex items-center gap-4">
-              <div className="text-center"><p className="text-lg font-bold text-slate-900">{totals.total}</p><p className="text-[10px] text-slate-500">Total</p></div>
-              <div className="w-px h-8 bg-slate-200" />
-              <div className="text-center"><p className="text-lg font-bold text-emerald-600">{totals.active}</p><p className="text-[10px] text-slate-500">Active</p></div>
-              <div className="w-px h-8 bg-slate-200" />
-              <div className="text-center"><p className="text-lg font-bold text-slate-500">{totals.lead}</p><p className="text-[10px] text-slate-500">Leads</p></div>
+            <div className="hidden sm:flex items-center gap-4 pr-4" style={{ borderRight: '1px solid var(--border)' }}>
+              <div className="text-center">
+                <p className="text-[17px] font-bold" style={{ color: 'var(--text-primary)' }}>{totals.total}</p>
+                <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>Total</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[17px] font-bold" style={{ color: '#30D158' }}>{totals.active}</p>
+                <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>Active</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[17px] font-bold" style={{ color: 'var(--text-secondary)' }}>{totals.lead}</p>
+                <p className="text-[10px]" style={{ color: 'var(--text-tertiary)' }}>Leads</p>
+              </div>
             </div>
-            {/* My Team filter */}
             <button onClick={() => setMyTeamOnly(!myTeamOnly)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${myTeamOnly ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-700'
-                }`}>
-              <Filter className="w-3.5 h-3.5" />
-              My Team
+              className="btn btn-sm gap-1.5"
+              style={myTeamOnly ? { background: 'var(--accent)', color: '#fff', border: 'none' } : {}}>
+              <Filter className="w-3.5 h-3.5" /> My Team
             </button>
             {!viewOnly && (
               <>
-                <button onClick={() => setShowMoveModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-sm font-medium rounded-xl transition-colors">
+                <button onClick={() => setShowMoveModal(true)} className="btn btn-secondary btn-sm gap-1.5">
                   <Users className="w-3.5 h-3.5" /> Move to Stage
                 </button>
-                <Link href="/clients/new"
-                  className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors">
-                  <Plus className="w-3.5 h-3.5" /> Add Client
-                </Link>
+                <Link href="/clients/new"><button className="btn btn-primary btn-sm gap-1.5"><Plus className="w-3.5 h-3.5" /> Add Client</button></Link>
               </>
             )}
           </div>
         </div>
       </div>
 
-      {saving && <div className="px-6 py-2 bg-blue-50 border-b border-blue-200 text-xs text-blue-600 font-medium">Saving…</div>}
+      {saving && <div className="px-6 py-2 text-[12px] font-medium" style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderBottom: '1px solid rgba(0,113,227,0.15)' }}>Saving…</div>}
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="spinner" />
         </div>
       ) : (
         <div className="flex-1 overflow-x-auto p-6">
