@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createAdminSupabaseClient } from '@/lib/supabaseServer'
 
 function getPortalUrl(origin: string) {
+  // Local development: portal runs on port+1
   if (origin.startsWith('http://localhost:')) {
     const portMatch = origin.match(/:(\d+)$/)
     if (portMatch) {
@@ -11,7 +12,10 @@ function getPortalUrl(origin: string) {
     }
     return 'http://localhost:3001'
   }
-  return process.env.NEXT_PUBLIC_PORTAL_URL || 'https://autonex-portal.vercel.app'
+
+  // Production: explicit mapping of known CRM → Portal URLs
+  const PRODUCTION_PORTAL_URL = 'https://autonex-docs-8x12.vercel.app'
+  return process.env.NEXT_PUBLIC_PORTAL_URL || PRODUCTION_PORTAL_URL
 }
 
 /**
